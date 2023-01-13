@@ -96,8 +96,11 @@ begin
   begin
     FrmChatGPT := TFrmChatGPT.Create(nil);
     FrmChatGPT.ApiKey := FApiKey;
-    FrmChatGPT.ShowModal;
-    FreeAndNil(FrmChatGPT);
+    try
+      FrmChatGPT.ShowModal;
+    finally
+      FreeAndNil(FrmChatGPT);
+    end;
   end;
 end;
 
