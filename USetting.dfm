@@ -3,7 +3,7 @@ object Frm_Setting: TFrm_Setting
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'Setting'
-  ClientHeight = 184
+  ClientHeight = 215
   ClientWidth = 418
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

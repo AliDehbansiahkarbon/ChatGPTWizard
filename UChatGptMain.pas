@@ -20,9 +20,10 @@ type
 {*********************************************************}
   TChatGptMenuWizard = class(TInterfacedObject, IOTAWizard)
   private
-    FRoot, FAskMenu: TMenuItem;
+    FRoot, FAskMenu, FSettingMenu: TMenuItem;
     FSetting: TSingletonSettingObj;
     procedure AskMenuClick(Sender: TObject);
+    procedure ChatGPTSettingMenuClick(Sender: TObject);
   protected
     { protected declarations }
   public
@@ -51,6 +52,7 @@ type
   private
     FMenuHook: TCpMenuHook;
     function GetQuestion(AStr: string): string;
+    procedure FormatSource;
   public
     constructor Create;
     destructor Destroy;override;
@@ -63,7 +65,7 @@ type
     procedure DockFormVisibleChanged(const EditWindow: INTAEditWindow; DockForm: TDockableForm);
     procedure DockFormUpdated(const EditWindow: INTAEditWindow; DockForm: TDockableForm);
     procedure DockFormRefresh(const EditWindow: INTAEditWindow; DockForm: TDockableForm);
-    procedure CnAddEditorContextMenu;
+    procedure AddEditorContextMenu;
     function AddMenuItem(AParentMenu: TMenuItem; AName, ACaption: string; AOnClick: TChatGPTOnCliskType; AShortCut: string): TMenuItem;
   end;
 
@@ -76,10 +78,8 @@ type
     FMainMenuIndex: Integer = WizardFail;
     FNotifierIndex: Integer = WizardFail;
     FChatGPTSubMenu: TCpMenuItemDef;
-    FkeyWords: TList<string>;
 
     procedure RemoveAferUnInstall;
-    procedure FillFkeyWords;
     procedure register;
 
 implementation
@@ -102,27 +102,26 @@ begin
     (BorlandIDEServices as IOTAEditorServices).RemoveNotifier(FNotifierIndex);
 end;
 
-procedure FillFkeyWords;
-begin
-  FkeyWords := TList<string>.Create;
-  FkeyWords.Add('unit');
-  FkeyWords.Add('interface');
-  FkeyWords.Add('uses');
-  FkeyWords.Add('type');
-  FkeyWords.Add('private');
-  FkeyWords.Add('protected');
-  FkeyWords.Add('public');
-  FkeyWords.Add('published');
-  FkeyWords.Add('implementation');
-  FkeyWords.Add('var');
-  FkeyWords.Add('begin');
-  FkeyWords.Add('end;');
-  FkeyWords.Add('initialization');
-  FkeyWords.Add('finalization');
-  FkeyWords.Add('end.');
-end;
-
 { TChatGptMenuWizard }
+
+procedure TChatGptMenuWizard.ChatGPTSettingMenuClick(Sender: TObject);
+begin
+  FSetting := TSingletonSettingObj.Instance;
+  FSetting.ReadRegistry;
+  Frm_Setting := TFrm_Setting.Create(nil);
+  try
+    Frm_Setting.Edt_ApiKey.Text := FSetting.ApiKey;
+    Frm_Setting.Edt_Url.Text := FSetting.URL;
+    Frm_Setting.Edt_MaxToken.Text := FSetting.MaxToken.ToString;
+    Frm_Setting.Edt_Temperature.Text := FSetting.Temperature.ToString;
+    Frm_Setting.cbbModel.ItemIndex := Frm_Setting.cbbModel.Items.IndexOf(FSetting.Model);
+    Frm_Setting.Edt_SourceIdentifier.Text := FSetting.Identifier;
+    Frm_Setting.ShowModal;
+  finally
+    Frm_Setting.Free;
+    FSetting.ReadRegistry;
+  end;
+end;
 
 constructor TChatGptMenuWizard.Create;
 var
@@ -138,12 +137,22 @@ begin
     FAskMenu.ImageIndex := 1;
   end;
 
+  if not Assigned(FSettingMenu) then
+  begin
+    FSettingMenu := TMenuItem.Create(nil);
+    FSettingMenu.Name := 'Mnu_ChatGPTSetting';
+    FSettingMenu.Caption := 'ChatGPT Setting';
+    FSettingMenu.OnClick := ChatGPTSettingMenuClick;
+    FSettingMenu.ImageIndex := 36;
+  end;
+
   if not Assigned(FRoot) then
   begin
     FRoot := TMenuItem.Create(nil);
     FRoot.Caption := 'ChatGPT';
     FRoot.Name := 'ChatGPTRootMenu';
     FRoot.Add(FAskMenu);
+    FRoot.Add(FSettingMenu);
   end;
 
   if not Assigned((BorlandIDEServices as INTAServices).MainMenu.Items.Find('ChatGPTRootMenu')) then
@@ -269,7 +278,7 @@ begin
         try
           Frm_Progress.ShowModal;
           LvEditView.Buffer.EditPosition.InsertText(Frm_Progress.Answer.TrimLineText);
-
+          FormatSource;
         finally
           FreeAndNil(Frm_Progress);
         end;
@@ -289,7 +298,7 @@ begin
     AddMenuItem(MenuItem, 'ChatGPTAskSubMenu', 'Ask', OnChatGPTAskSubMenuClick, 'CTRL+ALT+SHIFT+A');
 end;
 
-procedure TEditNotifierHelper.CnAddEditorContextMenu;
+procedure TEditNotifierHelper.AddEditorContextMenu;
 var
   FEditorPopUpMenu: TPopupMenu;
 begin
@@ -330,12 +339,19 @@ end;
 procedure TEditNotifierHelper.EditorViewActivated(const EditWindow: INTAEditWindow; const EditView: IOTAEditView);
 begin
   if not Assigned(FChatGPTSubMenu) then
-    //AddEditorContextMenu;
-    CnAddEditorContextMenu;
+    AddEditorContextMenu;
 end;
 
 procedure TEditNotifierHelper.EditorViewModified(const EditWindow: INTAEditWindow; const EditView: IOTAEditView);
 begin
+end;
+
+procedure TEditNotifierHelper.FormatSource;
+var
+  FEditorPopUpMenu: TPopupMenu;
+begin
+  FEditorPopUpMenu := TPopupMenu((BorlandIDEServices as IOTAEditorServices).TopView.GetEditWindow.Form.FindComponent('EditorLocalMenu'));
+  FEditorPopUpMenu.Items.Find('Format Source').Click;
 end;
 
 function TEditNotifierHelper.GetQuestion(AStr: string): string;
@@ -373,20 +389,14 @@ var
   I: Integer;
 begin
   for I := 0 to Pred(Self.Count) do
-  begin
     Self[I] := Trim(Self[I]);
-//
-//    if not ((FkeyWords.Contains(Self[I])) or (LeftStr(Self[I], 9).ToLower = 'function ') or (LeftStr(Self[I], 10).ToLower = 'procedure ')) then
-//      Self[I] := '  ' + Self[I];
-  end;
+
   Result := Self.Text;
 end;
 
 initialization
   FChatGPTSubMenu := nil;
-  FillFkeyWords;
 
 finalization
-  FkeyWords.Free;
   RemoveAferUnInstall;
 end.
