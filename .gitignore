@@ -8,8 +8,6 @@
 *.identcache
 *.res
 *.exe
-ssleay32.dll
-libeay32.dll
 *.dcu
 *.dsk
 desktop.ini
