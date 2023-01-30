@@ -2,9 +2,9 @@ unit UChatGptMain;
 
 interface
 uses
-  System.Classes, System.SysUtils, Vcl.Controls, Vcl.Menus, Vcl.Dialogs, System.Win.Registry,
-  Winapi.Windows, {$IFNDEF NEXTGEN}System.StrUtils{$ELSE}AnsiStrings{$ENDIF !NEXTGEN}, ToolsAPI,
-  DockForm, System.Generics.Collections, UMenuHook;
+  System.Classes, System.SysUtils, Vcl.Controls, Vcl.Menus, Vcl.Dialogs, Winapi.Windows,
+  {$IFNDEF NEXTGEN}System.StrUtils{$ELSE}AnsiStrings{$ENDIF !NEXTGEN}, ToolsAPI,
+  DockForm, System.Generics.Collections, UMenuHook, USetting;
 
 type
   TTStringListHelper = class helper for TStringList
@@ -21,10 +21,8 @@ type
   TChatGptMenuWizard = class(TInterfacedObject, IOTAWizard)
   private
     FRoot, FAskMenu: TMenuItem;
-    class var FApiKey: string;
+    FSetting: TSingletonSettingObj;
     procedure AskMenuClick(Sender: TObject);
-    class procedure ReadRegistry;
-    class procedure WriteToRegistry(AApiKey: string);
   protected
     { protected declarations }
   public
@@ -71,8 +69,8 @@ type
 
   const
     WizardFail = -1;
-    LeftIdentifier = 'cpt:';
-    RightIdentifier = ':cpt';
+    LeftIdentifier = DefaultIdentifier + ':';
+    RightIdentifier = ':' + DefaultIdentifier;
 
   var
     FMainMenuIndex: Integer = WizardFail;
@@ -153,7 +151,7 @@ begin
     LvMainMenu := (BorlandIDEServices as INTAServices).MainMenu;
     LvMainMenu.Items.Insert(LvMainMenu.Items.Count - 1, FRoot);
   end;
-  ReadRegistry;
+  TSingletonSettingObj.Instance.ReadRegistry;
 end;
 
 procedure TChatGptMenuWizard.AfterSave;
@@ -162,21 +160,20 @@ begin
 end;
 
 procedure TChatGptMenuWizard.AskMenuClick(Sender: TObject);
+var
+  LvSettingObj: TSingletonSettingObj;
 begin
-  ReadRegistry;
-  if FApiKey = '' then
+  LvSettingObj := TSingletonSettingObj.Instance;
+  LvSettingObj.ReadRegistry;
+  if LvSettingObj.ApiKey = '' then
   begin
-    FApiKey := Trim(InputBox('You need an API key', 'Your key', ''));
-    if FApiKey <> '' then
-      WriteToRegistry(FApiKey)
-    else
+    if LvSettingObj.GetSetting.Trim.IsEmpty then
       Exit;
   end;
 
-  if FApiKey <> EmptyStr then
+  if LvSettingObj.ApiKey <> EmptyStr then
   begin
     FrmChatGPT := TFrmChatGPT.Create(nil);
-    FrmChatGPT.ApiKey := FApiKey;
     try
       FrmChatGPT.ShowModal;
     finally
@@ -224,45 +221,6 @@ begin
 //Do noting yet, its created by interface force!
 end;
 
-class procedure TChatGptMenuWizard.ReadRegistry;
-var
-  LvRegKey: TRegistry;
-begin
-  FApiKey := '';
-
-  LvRegKey := TRegistry.Create;
-  try
-    with LvRegKey do
-    begin
-      CloseKey;
-      RootKey := HKEY_CURRENT_USER;
-
-      if OpenKey('\SOFTWARE\ChatGPTWizard', False) then
-        FApiKey := ReadString('ChatGPTApiKey');
-    end;
-  finally
-    LvRegKey.Free;
-  end;
-end;
-
-class procedure TChatGptMenuWizard.WriteToRegistry(AApiKey: string);
-var
-  LvRegKey: TRegistry;
-begin
-  LvRegKey := TRegistry.Create;
-  try
-    with LvRegKey do
-    begin
-      CloseKey;
-      RootKey := HKEY_CURRENT_USER;
-      if OpenKey('\SOFTWARE\ChatGPTWizard', True) then
-        WriteString('ChatGPTApiKey', AApiKey);
-    end;
-  finally
-    LvRegKey.Free;
-  end;
-end;
-
 { TEditNotifierHelper }
 
 function TEditNotifierHelper.AddMenuItem(AParentMenu: TMenuItem; AName, ACaption: string; AOnClick: TChatGPTOnCliskType; AShortCut: string): TMenuItem;
@@ -284,13 +242,10 @@ var
   LvEditBlock: IOTAEditBlock;
   LvSelectedText: string;
 begin
-  TChatGptMenuWizard.ReadRegistry; //Class method!
-  if TChatGptMenuWizard.FApiKey = '' then
+  TSingletonSettingObj.Instance.ReadRegistry;
+  if TSingletonSettingObj.Instance.ApiKey = '' then
   begin
-    TChatGptMenuWizard.FApiKey := Trim(InputBox('You need an API key', 'Your key', ''));
-    if TChatGptMenuWizard.FApiKey <> '' then
-      TChatGptMenuWizard.WriteToRegistry(TChatGptMenuWizard.FApiKey) // Class method!
-    else
+    if TSingletonSettingObj.Instance.GetSetting.Trim.IsEmpty then
       Exit;
   end;
 
@@ -307,14 +262,14 @@ begin
     //If it is a ChatGPT question
     if (SameStr(LeftStr(LvSelectedText, 4).ToLower, LeftIdentifier)) and (SameStr(RightStr(LvSelectedText, 4).ToLower, RightIdentifier)) then
     begin
-      if TChatGptMenuWizard.FApiKey <> EmptyStr then
+      if not TSingletonSettingObj.Instance.ApiKey.Trim.IsEmpty then
       begin
         Frm_Progress := TFrm_Progress.Create(nil);
-        Frm_Progress.ApiKey := TChatGptMenuWizard.FApiKey;
         frm_Progress.SelectedText := GetQuestion(LvEditBlock.Text);
         try
           Frm_Progress.ShowModal;
           LvEditView.Buffer.EditPosition.InsertText(Frm_Progress.Answer.TrimLineText);
+
         finally
           FreeAndNil(Frm_Progress);
         end;
@@ -435,4 +390,3 @@ finalization
   FkeyWords.Free;
   RemoveAferUnInstall;
 end.
-

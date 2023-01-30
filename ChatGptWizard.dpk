@@ -42,6 +42,7 @@ contains
   UThread in 'UThread.pas',
   UQuestion in 'UQuestion.pas' {FrmChatGPT},
   UProgress in 'UProgress.pas' {Frm_Progress},
-  UMenuHook in 'UMenuHook.pas';
+  UMenuHook in 'UMenuHook.pas',
+  USetting in 'USetting.pas' {Frm_Setting};
 
 end.

@@ -3,7 +3,7 @@ unit UThread;
 interface
 uses
   System.Classes, System.SysUtils, IdHTTP, IdSSLOpenSSL, IdComponent, Vcl.Dialogs,
-  XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows;
+  XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows, USetting;
 
 const
   WM_UPDATE_MESSAGE = WM_USER + 5874;
@@ -17,10 +17,11 @@ type
     FModel: string;
     FApiKey: string;
     FFormattedResponse: TStringList;
+    FUrl: string;
   protected
     procedure Execute; override;
   public
-    constructor Create(AHandle: HWND; AApiKey, AModel, APrompt: string);
+    constructor Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string);
     destructor Destroy; override;
   end;
 
@@ -84,17 +85,19 @@ type
   TOpenAIAPI = class
   private
     FAccessToken: string;
+    FUrl: string;
   public
-    constructor Create(const AAccessToken: string);
+    constructor Create(const AAccessToken, AUrl: string);
     function Query(const AModel: string; const APrompt: string): string;
   end;
 
 implementation
 
-constructor TOpenAIAPI.Create(const AAccessToken: string);
+constructor TOpenAIAPI.Create(const AAccessToken, AUrl: string);
 begin
   inherited Create;
   FAccessToken := AAccessToken;
+  FUrl := AUrl;
 end;
 
 function TOpenAIAPI.Query(const AModel: string; const APrompt: string): string;
@@ -128,7 +131,7 @@ begin
     LvHttpClient.Request.CustomHeaders.AddValue('Authorization', 'Bearer '+ FAccessToken);
     LvHttpClient.Request.ContentType := 'application/json';
     try
-      Response := LvHttpClient.Post('https://api.openai.com/v1/completions', LvParamStream);
+      Response := LvHttpClient.Post(FUrl , LvParamStream);
       if not Response.IsEmpty then
         Result := LvChatGPTResponse.FromJSON(response).Choices[0].Text.Trim;
     except on E: Exception do
@@ -161,7 +164,7 @@ end;
 
 { TExecutorTrd }
 
-constructor TExecutorTrd.Create(AHandle: HWND; AApiKey, AModel, APrompt: string);
+constructor TExecutorTrd.Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string);
 begin
   inherited Create(True);
   FreeOnTerminate := True;
@@ -170,6 +173,7 @@ begin
   FModel := AModel;
   FPrompt := APrompt;
   FHandle := AHandle;
+  FUrl := AUrl;
   SendMessage(FHandle, WM_PROGRESS_MESSAGE, 1, 0);
 end;
 
@@ -186,7 +190,7 @@ var
   LvResult: string;
 begin
   inherited;
-  LvAPI := TOpenAIAPI.Create(FApiKey);
+  LvAPI := TOpenAIAPI.Create(FApiKey, FUrl);
   try
     try
       LvResult := LvAPI.Query(FModel, FPrompt).Trim;

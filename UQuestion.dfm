@@ -2,8 +2,8 @@ object FrmChatGPT: TFrmChatGPT
   Left = 0
   Top = 0
   Caption = 'ChatGPT'
-  ClientHeight = 527
-  ClientWidth = 561
+  ClientHeight = 519
+  ClientWidth = 559
   Color = clBtnFace
   Constraints.MinHeight = 550
   Constraints.MinWidth = 570
@@ -17,13 +17,13 @@ object FrmChatGPT: TFrmChatGPT
   object pnlMain: TPanel
     Left = 0
     Top = 0
-    Width = 561
-    Height = 527
+    Width = 559
+    Height = 519
     Align = alClient
     TabOrder = 0
     DesignSize = (
-      561
-      527)
+      559
+      519)
     object Label1: TLabel
       Left = 11
       Top = 19
@@ -51,7 +51,7 @@ object FrmChatGPT: TFrmChatGPT
       ParentFont = False
     end
     object Btn_Ask: TButton
-      Left = 474
+      Left = 472
       Top = 14
       Width = 75
       Height = 91
@@ -63,7 +63,7 @@ object FrmChatGPT: TFrmChatGPT
     object mmoQuestion: TMemo
       Left = 68
       Top = 16
-      Width = 400
+      Width = 398
       Height = 89
       Hint = 'Type a question and press Ctrl + Enter'
       Anchors = [akLeft, akTop, akRight]
@@ -84,8 +84,8 @@ object FrmChatGPT: TFrmChatGPT
     object mmoAnswer: TMemo
       Left = 68
       Top = 124
-      Width = 400
-      Height = 371
+      Width = 398
+      Height = 363
       Anchors = [akLeft, akTop, akRight, akBottom]
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -100,7 +100,7 @@ object FrmChatGPT: TFrmChatGPT
     end
     object ProgressBar1: TProgressBar
       Left = 4
-      Top = 508
+      Top = 500
       Width = 150
       Height = 17
       Anchors = [akLeft, akBottom]

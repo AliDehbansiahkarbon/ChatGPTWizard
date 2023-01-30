@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls, Vcl.ExtCtrls, UThread,
-  Vcl.Menus;
+  Vcl.Menus, USetting, Vcl.Clipbrd;
 
 type
   TFrmChatGPT = class(TForm)
@@ -23,8 +23,9 @@ type
     procedure Btn_AskClick(Sender: TObject);
     procedure CopytoClipboard1Click(Sender: TObject);
     procedure Btn_ClipboardClick(Sender: TObject);
+  private
+    FTrd: TExecutorTrd;
   public
-    ApiKey: string;
     procedure OnUpdateMessage(var Msg: TMessage); message WM_UPDATE_MESSAGE;
     procedure OnProgressMessage(var Msg: TMessage); message WM_PROGRESS_MESSAGE;
   end;
@@ -38,21 +39,27 @@ implementation
 
 procedure TFrmChatGPT.Btn_AskClick(Sender: TObject);
 var
-  LvTrd: TExecutorTrd;
+  LvApiKey: string;
+  LvUrl: string;
 begin
+  Cs.Enter;
+  LvApiKey := TSingletonSettingObj.Instance.ApiKey;
+  LvUrl := TSingletonSettingObj.Instance.URL;
+  Cs.Leave;
+
   mmoAnswer.Clear;
-  LvTrd := TExecutorTrd.Create(Self.Handle, ApiKey, 'text-davinci-003', mmoQuestion.Lines.Text);
-  LvTrd.Start;
+  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, 'text-davinci-003', mmoQuestion.Lines.Text, LvUrl);
+  FTrd.Start;
 end;
 
 procedure TFrmChatGPT.Btn_ClipboardClick(Sender: TObject);
 begin
-  mmoAnswer.CopyToClipboard;
+  Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
 end;
 
 procedure TFrmChatGPT.CopytoClipboard1Click(Sender: TObject);
 begin
-  mmoAnswer.CopyToClipboard;
+  Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
 end;
 
 procedure TFrmChatGPT.mmoQuestionKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);

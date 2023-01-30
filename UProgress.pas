@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls,
-  Winapi.Messages, UThread, Vcl.Buttons;
+  Winapi.Messages, UThread, Vcl.Buttons, USetting;
 
 type
   TFrm_Progress = class(TForm)
@@ -22,7 +22,6 @@ type
     FTrd: TExecutorTrd;
     { Private declarations }
   public
-    ApiKey: string;
     SelectedText: string;
     Answer: TStringList;
     procedure OnUpdateMessage(var Msg: TMessage); message WM_UPDATE_MESSAGE;
@@ -59,8 +58,16 @@ begin
 end;
 
 procedure TFrm_Progress.FormShow(Sender: TObject);
+var
+  LvApiKey: string;
+  LvUrl: string;
 begin
-  FTrd := TExecutorTrd.Create(Self.Handle, ApiKey, 'text-davinci-003', SelectedText);
+  Cs.Enter;
+  LvApiKey := TSingletonSettingObj.Instance.ApiKey;
+  LvUrl := TSingletonSettingObj.Instance.URL;
+  Cs.Leave;
+
+  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, 'text-davinci-003', SelectedText, LvUrl);
   FTrd.Start;
 end;
 

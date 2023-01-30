@@ -102,6 +102,10 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="UMenuHook.pas"/>
+        <DCCReference Include="USetting.pas">
+            <Form>Frm_Setting</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
