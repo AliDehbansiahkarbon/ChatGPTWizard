@@ -116,6 +116,7 @@ begin
     Frm_Setting.Edt_Temperature.Text := FSetting.Temperature.ToString;
     Frm_Setting.cbbModel.ItemIndex := Frm_Setting.cbbModel.Items.IndexOf(FSetting.Model);
     Frm_Setting.Edt_SourceIdentifier.Text := FSetting.Identifier;
+    Frm_Setting.chk_CodeFormatter.Checked := FSetting.CodeFormatter;
     Frm_Setting.ShowModal;
   finally
     Frm_Setting.Free;
@@ -278,7 +279,8 @@ begin
         try
           Frm_Progress.ShowModal;
           LvEditView.Buffer.EditPosition.InsertText(Frm_Progress.Answer.TrimLineText);
-          FormatSource;
+          if TSingletonSettingObj.Instance.CodeFormatter then
+            FormatSource;
         finally
           FreeAndNil(Frm_Progress);
         end;

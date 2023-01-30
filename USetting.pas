@@ -23,6 +23,7 @@ type
     FMaxToken: Integer;
     FTemperature: Integer;
     FIdentifier: string;
+    FCodeFormatter: Boolean;
     class var FInstance: TSingletonSettingObj;
     class function GetInstance: TSingletonSettingObj; static;
     procedure LoadDefaults;
@@ -39,6 +40,7 @@ type
     property MaxToken: Integer read FMaxToken write FMaxToken;
     property Temperature: Integer read FTemperature write FTemperature;
     property Identifier: string read FIdentifier write FIdentifier;
+    property CodeFormatter: Boolean read FCodeFormatter write FCodeFormatter;
   end;
 
   TFrm_Setting = class(TForm)
@@ -57,6 +59,7 @@ type
     Btn_Default: TButton;
     Lbl_SourceIdentifier: TLabel;
     Edt_SourceIdentifier: TEdit;
+    chk_CodeFormatter: TCheckBox;
     procedure Btn_SaveClick(Sender: TObject);
     procedure Btn_DefaultClick(Sender: TObject);
   private
@@ -77,12 +80,7 @@ implementation
 constructor TSingletonSettingObj.Create;
 begin
   inherited;
-  FApiKey := '';
-  FURL := DefaultURL;
-  FModel:= DefaultModel;
-  FMaxToken:= DefaultMaxToken;
-  FTemperature := DefaultTemperature;
-  FIdentifier := DefaultIdentifier;
+  LoadDefaults;
 end;
 
 class function TSingletonSettingObj.GetInstance: TSingletonSettingObj;
@@ -112,7 +110,8 @@ begin
   FModel := DefaultModel;
   FMaxToken := DefaultMaxToken;
   FTemperature := DefaultTemperature;
-  FIdentifier := 'cpt';
+  FIdentifier := DefaultIdentifier;
+  FCodeFormatter := True;
 end;
 
 procedure TSingletonSettingObj.ReadRegistry;
@@ -151,6 +150,8 @@ begin
           FIdentifier := ReadString('ChatGPTSourceIdentifier');
           if FIdentifier.Trim.IsEmpty then
             FIdentifier := DefaultIdentifier;
+
+          FCodeFormatter := ReadBool('ChatGPTCodeFormatter');
         end;
       end;
     except
@@ -179,6 +180,7 @@ begin
         WriteInteger('ChatGPTMaxToken', FMaxToken);
         WriteInteger('ChatGPTTemperature', FTemperature);
         WriteString('ChatGPTSourceIdentifier', FIdentifier);
+        WriteBool('ChatGPTCodeFormatter', FCodeFormatter);
       end;
     end;
   finally
@@ -193,6 +195,7 @@ begin
   cbbModel.ItemIndex := 0;
   Edt_MaxToken.Text := IntToStr(DefaultMaxToken);
   Edt_Temperature.Text := IntToStr(DefaultTemperature);
+  chk_CodeFormatter.Checked := True;
 end;
 
 procedure TFrm_Setting.Btn_SaveClick(Sender: TObject);

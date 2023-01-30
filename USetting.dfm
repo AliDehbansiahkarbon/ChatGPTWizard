@@ -3,8 +3,8 @@ object Frm_Setting: TFrm_Setting
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'Setting'
-  ClientHeight = 215
-  ClientWidth = 418
+  ClientHeight = 240
+  ClientWidth = 452
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,10 +17,12 @@ object Frm_Setting: TFrm_Setting
     AlignWithMargins = True
     Left = 3
     Top = 3
-    Width = 412
-    Height = 249
-    Align = alTop
+    Width = 446
+    Height = 234
+    Align = alClient
     TabOrder = 0
+    ExplicitWidth = 412
+    ExplicitHeight = 249
     object Label1: TLabel
       Left = 20
       Top = 24
@@ -64,7 +66,7 @@ object Frm_Setting: TFrm_Setting
       Caption = 'Identifier:'
     end
     object Edt_Url: TEdit
-      Left = 75
+      Left = 79
       Top = 18
       Width = 328
       Height = 23
@@ -72,14 +74,14 @@ object Frm_Setting: TFrm_Setting
       Text = 'https://api.openai.com/v1/completions'
     end
     object Edt_ApiKey: TEdit
-      Left = 75
+      Left = 79
       Top = 48
       Width = 328
       Height = 23
       TabOrder = 1
     end
     object Edt_MaxToken: TEdit
-      Left = 75
+      Left = 79
       Top = 107
       Width = 122
       Height = 23
@@ -88,7 +90,7 @@ object Frm_Setting: TFrm_Setting
       Text = '2048'
     end
     object Edt_Temperature: TEdit
-      Left = 75
+      Left = 79
       Top = 137
       Width = 122
       Height = 23
@@ -97,7 +99,7 @@ object Frm_Setting: TFrm_Setting
       Text = '0'
     end
     object cbbModel: TComboBox
-      Left = 75
+      Left = 79
       Top = 78
       Width = 122
       Height = 23
@@ -111,8 +113,8 @@ object Frm_Setting: TFrm_Setting
         'text-ada-001')
     end
     object Btn_Save: TButton
-      Left = 320
-      Top = 178
+      Left = 356
+      Top = 191
       Width = 83
       Height = 28
       Caption = 'Save && Close'
@@ -120,8 +122,8 @@ object Frm_Setting: TFrm_Setting
       OnClick = Btn_SaveClick
     end
     object Btn_Default: TButton
-      Left = 320
-      Top = 147
+      Left = 356
+      Top = 160
       Width = 83
       Height = 28
       Caption = 'Load Defaults'
@@ -129,13 +131,25 @@ object Frm_Setting: TFrm_Setting
       OnClick = Btn_DefaultClick
     end
     object Edt_SourceIdentifier: TEdit
-      Left = 75
+      Left = 79
       Top = 166
       Width = 38
       Height = 23
       Alignment = taCenter
       TabOrder = 7
       Text = 'cpt'
+    end
+    object chk_CodeFormatter: TCheckBox
+      Left = 20
+      Top = 202
+      Width = 128
+      Height = 17
+      BiDiMode = bdRightToLeft
+      Caption = 'Call Code Formatter'
+      Checked = True
+      ParentBiDiMode = False
+      State = cbChecked
+      TabOrder = 8
     end
   end
 end
