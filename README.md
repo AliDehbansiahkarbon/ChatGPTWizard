@@ -11,7 +11,9 @@
 or you can use a build event on project's propertises to copy these two class libraries if there is not.
 Another point: You don't have to do that because it will work fine when you open any project in the IDE before using this plugin! I'm not sure that this behavior depends on the installed components or libraries or the IDE will load SSL libraries at the moment you open even a new application, although using the plugin when you are working on a project seems more useful anyway.</h3>
 
-
+<h3><b>How to install</b></h3>
+ Open the project, right click on the project in project manager, build and install.  
+  
 <h3><b>How to use</b></h3>
 
 1. you can use the ChatGPT menu from the IDE's main menu directly to ask questions asnd get the answer.
