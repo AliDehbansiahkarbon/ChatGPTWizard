@@ -16,8 +16,7 @@ Another point: You don't have to do that because it will work fine when you open
 1. you can use the ChatGPT menu from the IDE's main menu directly to ask questions asnd get the answer.
 ![image](https://user-images.githubusercontent.com/5601608/215458671-a48a4e1d-3b2c-45bd-9da5-603ab82129dc.png)
 
-1. Make a question directly inside the code editor and sorround it with cpt::cpt and press Ctrl+Shift+Alt+A or simply 
-  select Ask from the editor's contex menu by right clicking on the selected text.
+1. If you need to use the ChatGPT inside the editor you need to make(type) a question directly inside the code editor and sorround it with "cpt:" at the beginning and ":cpt" at the end of question then press Ctrl+Shift+Alt+A or simply select "Ask" from the editor's contex menu by right clicking on the selected text.
   
 <br><h2>Simple Test scenario</h2>
 Open a new vcl applicatiopn project, add a new unit and remove all the code from it! and type the following line, select all and press Ctrl+Shift+Alt+A.<br>
