@@ -21,8 +21,6 @@ object Frm_Setting: TFrm_Setting
     Height = 234
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 412
-    ExplicitHeight = 249
     object Label1: TLabel
       Left = 20
       Top = 24
@@ -68,7 +66,7 @@ object Frm_Setting: TFrm_Setting
     object Edt_Url: TEdit
       Left = 79
       Top = 18
-      Width = 328
+      Width = 354
       Height = 23
       TabOrder = 0
       Text = 'https://api.openai.com/v1/completions'
@@ -76,8 +74,9 @@ object Frm_Setting: TFrm_Setting
     object Edt_ApiKey: TEdit
       Left = 79
       Top = 48
-      Width = 328
+      Width = 354
       Height = 23
+      PasswordChar = '*'
       TabOrder = 1
     end
     object Edt_MaxToken: TEdit
