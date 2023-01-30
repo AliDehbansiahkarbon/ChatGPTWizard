@@ -6,7 +6,7 @@
 1. It is compatible with Xe5 and later versions.
 1. Uses XSuperObject library which is included in the project files.
 1. Consider that if you run it in the IDE without opening any project it will raise a message that it cannot load the SSL library
-1. This issue can be fixed if you put SSL libraries besides the bds.exe or in Bpl folder(mine is this ==> C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl)
+1. This issue can be fixed if you put SSL libraries(can be find them in resource folder) besides the bds.exe or in Bpl folder(mine is this ==> C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl)
 or you can use a build event on project's propertises to copy these two class libraries if there is not.
 Another point: You don't have to do that because it will work fine when you open any project in the IDE before using this plugin! I'm not sure that this behavior depends on the installed components or libraries or the IDE will load SSL libraries at the moment you open even a new application, although using the plugin when you are working on a project seems more useful anyway.</h3>
 
