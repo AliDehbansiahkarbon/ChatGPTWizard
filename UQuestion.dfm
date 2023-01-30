@@ -21,8 +21,6 @@ object FrmChatGPT: TFrmChatGPT
     Height = 527
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 559
-    ExplicitHeight = 519
     DesignSize = (
       561
       527)
@@ -61,7 +59,6 @@ object FrmChatGPT: TFrmChatGPT
       Caption = 'Ask'
       TabOrder = 0
       OnClick = Btn_AskClick
-      ExplicitLeft = 472
     end
     object mmoQuestion: TMemo
       Left = 68
@@ -100,8 +97,6 @@ object FrmChatGPT: TFrmChatGPT
       ReadOnly = True
       ScrollBars = ssVertical
       TabOrder = 2
-      ExplicitWidth = 398
-      ExplicitHeight = 363
     end
     object ProgressBar1: TProgressBar
       Left = 4
@@ -112,7 +107,16 @@ object FrmChatGPT: TFrmChatGPT
       Style = pbstMarquee
       TabOrder = 3
       Visible = False
-      ExplicitTop = 500
+    end
+    object Btn_Clipboard: TButton
+      Left = 474
+      Top = 111
+      Width = 75
+      Height = 58
+      Caption = 'Copy to Clipboard'
+      TabOrder = 4
+      WordWrap = True
+      OnClick = Btn_ClipboardClick
     end
   end
   object PopupMenu1: TPopupMenu

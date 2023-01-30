@@ -26,6 +26,7 @@ package ChatGptWizard;
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
 {$IMPLICITBUILD ON}
+{$WARNINGS OFF}
 
 requires
   rtl,
@@ -37,8 +38,10 @@ requires
   RESTComponents;
 
 contains
-  ChatGptMain in 'ChatGptMain.pas',
-  RestClientUnit in 'RestClientUnit.pas',
-  QuestionUnit in 'QuestionUnit.pas' {FrmChatGPT};
+  UChatGptMain in 'UChatGptMain.pas',
+  UThread in 'UThread.pas',
+  UQuestion in 'UQuestion.pas' {FrmChatGPT},
+  UProgress in 'UProgress.pas' {Frm_Progress},
+  UMenuHook in 'UMenuHook.pas';
 
 end.
