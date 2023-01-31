@@ -4,7 +4,8 @@ interface
 uses
   System.Classes, System.SysUtils, Vcl.Controls, Vcl.Menus, Vcl.Dialogs, Winapi.Windows,
   {$IFNDEF NEXTGEN}System.StrUtils{$ELSE}AnsiStrings{$ENDIF !NEXTGEN}, ToolsAPI,
-  DockForm, System.Generics.Collections, UMenuHook, USetting;
+  DockForm, System.Generics.Collections, Vcl.Forms, UChatGPTMenuHook, UChatGPTSetting, UChatGPTQFrame,
+  UChatGPTQuestion;
 
 type
   TTStringListHelper = class helper for TStringList
@@ -20,9 +21,11 @@ type
 {*********************************************************}
   TChatGptMenuWizard = class(TInterfacedObject, IOTAWizard)
   private
-    FRoot, FAskMenu, FSettingMenu: TMenuItem;
+    FRoot, FAskMenu,
+    FSettingMenu, FAskMenuDockable: TMenuItem;
     FSetting: TSingletonSettingObj;
     procedure AskMenuClick(Sender: TObject);
+    procedure ChatGPTDockableClick(Sender: TObject);
     procedure ChatGPTSettingMenuClick(Sender: TObject);
   protected
     { protected declarations }
@@ -69,6 +72,23 @@ type
     function AddMenuItem(AParentMenu: TMenuItem; AName, ACaption: string; AOnClick: TChatGPTOnCliskType; AShortCut: string): TMenuItem;
   end;
 
+{*******************************************************}
+{                                                       }
+{   This is a dockable form of the plugin.              }
+{   It is a singleton class which means there will      }
+{   be just one instance as long as the IDE is alive!   }
+{   Could be activate/deactive in main menu.            }
+{                                                       }
+{*******************************************************}
+  TChatGPTDockForm = class(TDockableForm)
+    procedure Close(Sender: TObject; var Action: TCloseAction);
+  private
+    Fram_Question: TFram_Question;
+  public
+    constructor Create(AOwner: TComponent);
+    destructor Destroy; override;
+  end;
+
   const
     WizardFail = -1;
     LeftIdentifier = DefaultIdentifier + ':';
@@ -78,6 +98,7 @@ type
     FMainMenuIndex: Integer = WizardFail;
     FNotifierIndex: Integer = WizardFail;
     FChatGPTSubMenu: TCpMenuItemDef;
+    FChatGPTDockForm: TChatGPTDockForm;
 
     procedure RemoveAferUnInstall;
     procedure register;
@@ -85,7 +106,7 @@ type
 implementation
 
 uses
-  UQuestion, UProgress;
+  UChatGPTProgress;
 
 procedure register;
 begin
@@ -103,6 +124,22 @@ begin
 end;
 
 { TChatGptMenuWizard }
+procedure TChatGptMenuWizard.ChatGPTDockableClick(Sender: TObject);
+var
+  LvSettingObj: TSingletonSettingObj;
+begin
+  LvSettingObj := TSingletonSettingObj.Instance;
+  LvSettingObj.ReadRegistry;
+  if LvSettingObj.ApiKey = '' then
+  begin
+    if LvSettingObj.GetSetting.Trim.IsEmpty then
+      Exit;
+  end;
+
+  if not Assigned(FChatGPTDockForm) then
+    FChatGPTDockForm := TChatGPTDockForm.Create(Application);
+  FChatGPTDockForm.Show;
+end;
 
 procedure TChatGptMenuWizard.ChatGPTSettingMenuClick(Sender: TObject);
 begin
@@ -147,12 +184,22 @@ begin
     FSettingMenu.ImageIndex := 36;
   end;
 
+  if not Assigned(FAskMenuDockable) then
+  begin
+    FAskMenuDockable := TMenuItem.Create(nil);
+    FAskMenuDockable.Name := 'Mnu_ChatGPTDockable';
+    FAskMenuDockable.Caption := 'ChatGPT Dockabale';
+    FAskMenuDockable.OnClick := ChatGPTDockableClick;
+    FAskMenuDockable.ImageIndex := 1;
+  end;
+
   if not Assigned(FRoot) then
   begin
     FRoot := TMenuItem.Create(nil);
     FRoot.Caption := 'ChatGPT';
     FRoot.Name := 'ChatGPTRootMenu';
     FRoot.Add(FAskMenu);
+    FRoot.Add(FAskMenuDockable);
     FRoot.Add(FSettingMenu);
   end;
 
@@ -201,6 +248,12 @@ procedure TChatGptMenuWizard.Destroyed;
 begin
   if Assigned(FAskMenu) then
     FreeAndNil(FAskMenu);
+
+  if Assigned(FAskMenuDockable) then
+    FreeAndNil(FAskMenuDockable);
+
+  if Assigned(FSettingMenu) then
+    FreeAndNil(FSettingMenu);
 
   if Assigned(FRoot) then
     FreeAndNil(FRoot);
@@ -396,8 +449,45 @@ begin
   Result := Self.Text;
 end;
 
+{ TChatGPTDockForm }
+
+constructor TChatGPTDockForm.Create(AOwner: TComponent);
+begin
+  inherited;
+  DeskSection := 'ChatGPTPlugin';
+  AutoSave := True;
+  SaveStateNecessary := True;
+
+  with Self do
+  begin
+    Caption := 'ChatGPT';
+    ClientHeight := 557;
+    ClientWidth := 420;
+    Position := poMainFormCenter;
+    //OnClose := Close;
+  end;
+  Fram_Question := TFram_Question.Create(Self);
+  Fram_Question.Parent := Self;
+  Fram_Question.Align := alClient;
+  Fram_Question.Show;
+  Fram_Question.BringToFront;
+end;
+
+destructor TChatGPTDockForm.Destroy;
+begin
+  SaveStateNecessary := True;
+  inherited;
+end;
+
+procedure TChatGPTDockForm.Close(Sender: TObject; var Action: TCloseAction);
+begin
+  Action := TCloseAction.caFree;
+end;
+
 initialization
   FChatGPTSubMenu := nil;
+  FChatGPTDockForm := nil;
+  FrmChatGPT := nil;
 
 finalization
   RemoveAferUnInstall;

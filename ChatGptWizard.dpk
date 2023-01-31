@@ -26,7 +26,6 @@ package ChatGptWizard;
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
 {$IMPLICITBUILD ON}
-{$WARNINGS OFF}
 
 requires
   rtl,
@@ -39,10 +38,11 @@ requires
 
 contains
   UChatGptMain in 'UChatGptMain.pas',
-  UThread in 'UThread.pas',
-  UQuestion in 'UQuestion.pas' {FrmChatGPT},
-  UProgress in 'UProgress.pas' {Frm_Progress},
-  UMenuHook in 'UMenuHook.pas',
-  USetting in 'USetting.pas' {Frm_Setting};
+  UChatGPTThread in 'UChatGPTThread.pas',
+  UChatGPTProgress in 'UChatGPTProgress.pas' {Frm_Progress},
+  UChatGPTMenuHook in 'UChatGPTMenuHook.pas',
+  UChatGPTSetting in 'UChatGPTSetting.pas' {Frm_Setting},
+  UChatGPTQFrame in 'UChatGPTQFrame.pas' {Fram_Question: TFrame},
+  UChatGPTQuestion in 'UChatGPTQuestion.pas' {FrmChatGPT};
 
 end.

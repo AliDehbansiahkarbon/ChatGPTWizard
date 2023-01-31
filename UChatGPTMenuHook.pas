@@ -1,4 +1,4 @@
-unit UMenuHook;
+unit UChatGPTMenuHook;
 
 {    This is a refinemented version of the CnMenuHook unit which is
      originally wrriten by Zhou Jinyu (zjy@cnpack.org) in Cnwizard project.

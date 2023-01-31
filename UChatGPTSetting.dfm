@@ -11,7 +11,9 @@ object Frm_Setting: TFrm_Setting
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
+  OldCreateOrder = True
   Position = poMainFormCenter
+  PixelsPerInch = 96
   TextHeight = 15
   object pnl1: TPanel
     AlignWithMargins = True

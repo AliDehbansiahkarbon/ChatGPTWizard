@@ -1,11 +1,11 @@
-unit UProgress;
+unit UChatGPTProgress;
 
 interface
 
 uses
   Winapi.Windows, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls,
-  Winapi.Messages, UThread, Vcl.Buttons, USetting;
+  Winapi.Messages, UChatGPTThread, Vcl.Buttons, UChatGPTSetting;
 
 type
   TFrm_Progress = class(TForm)
@@ -61,13 +61,15 @@ procedure TFrm_Progress.FormShow(Sender: TObject);
 var
   LvApiKey: string;
   LvUrl: string;
+  LvModel: string;
 begin
   Cs.Enter;
   LvApiKey := TSingletonSettingObj.Instance.ApiKey;
   LvUrl := TSingletonSettingObj.Instance.URL;
+  LvModel := TSingletonSettingObj.Instance.Model;
   Cs.Leave;
 
-  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, 'text-davinci-003', SelectedText, LvUrl);
+  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, SelectedText, LvUrl);
   FTrd.Start;
 end;
 

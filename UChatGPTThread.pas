@@ -1,9 +1,9 @@
-unit UThread;
+unit UChatGPTThread;
 
 interface
 uses
   System.Classes, System.SysUtils, IdHTTP, IdSSLOpenSSL, IdComponent, Vcl.Dialogs,
-  XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows, USetting;
+  XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows, UChatGPTSetting;
 
 const
   WM_UPDATE_MESSAGE = WM_USER + 5874;
@@ -161,9 +161,6 @@ begin
 end;
 
 { TExecutorTrd }
-
-{ TExecutorTrd }
-
 constructor TExecutorTrd.Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string);
 begin
   inherited Create(True);
@@ -196,10 +193,10 @@ begin
       LvResult := LvAPI.Query(FModel, FPrompt).Trim;
 
       if not LvResult.IsEmpty then
-        SendMessage(FHandle, WM_UPDATE_MESSAGE, Integer(LvResult), 0);
+        SendMessageW(FHandle, WM_UPDATE_MESSAGE, Integer(LvResult), 0);
     except on E: Exception do
       begin
-        SendMessage(FHandle, WM_UPDATE_MESSAGE, Integer(E.Message), 0);
+        SendMessageW(FHandle, WM_UPDATE_MESSAGE, Integer(E.Message), 0);
         Terminate;
       end;
     end;

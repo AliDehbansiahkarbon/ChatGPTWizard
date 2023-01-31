@@ -1,11 +1,16 @@
-unit UQuestion;
-
+unit UChatGPTQuestion;
+{********************************************}
+{                                            }
+{   This is the main form of the plugin.     }
+{   Could be open/close in main menu.        }
+{                                            }
+{********************************************}
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls, Vcl.ExtCtrls, UThread,
-  Vcl.Menus, USetting, Vcl.Clipbrd;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls, Vcl.ExtCtrls, UChatGPTThread,
+  Vcl.Menus, UChatGPTSetting, Vcl.Clipbrd;
 
 type
   TFrmChatGPT = class(TForm)

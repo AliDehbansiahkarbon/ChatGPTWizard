@@ -1,4 +1,4 @@
-unit USetting;
+unit UChatGPTSetting;
 
 interface
 
