@@ -81,7 +81,6 @@ type
 {                                                       }
 {*******************************************************}
   TChatGPTDockForm = class(TDockableForm)
-    procedure Close(Sender: TObject; var Action: TCloseAction);
   private
     Fram_Question: TFram_Question;
   public
@@ -116,6 +115,12 @@ end;
 
 procedure RemoveAferUnInstall;
 begin
+  if Assigned(FChatGPTDockForm) then
+  begin
+    FChatGPTDockForm.Close;
+    FreeAndNil(FChatGPTDockForm);
+  end;
+
   if FMainMenuIndex <> WizardFail then
     (BorlandIDEServices as IOTAWizardServices).RemoveWizard(FMainMenuIndex);
 
@@ -464,7 +469,6 @@ begin
     ClientHeight := 557;
     ClientWidth := 420;
     Position := poMainFormCenter;
-    //OnClose := Close;
   end;
   Fram_Question := TFram_Question.Create(Self);
   Fram_Question.Parent := Self;
@@ -477,11 +481,6 @@ destructor TChatGPTDockForm.Destroy;
 begin
   SaveStateNecessary := True;
   inherited;
-end;
-
-procedure TChatGPTDockForm.Close(Sender: TObject; var Action: TCloseAction);
-begin
-  Action := TCloseAction.caFree;
 end;
 
 initialization
