@@ -46,14 +46,16 @@ procedure TFrmChatGPT.Btn_AskClick(Sender: TObject);
 var
   LvApiKey: string;
   LvUrl: string;
+  LvModel: string;
 begin
   Cs.Enter;
   LvApiKey := TSingletonSettingObj.Instance.ApiKey;
   LvUrl := TSingletonSettingObj.Instance.URL;
+  LvModel := TSingletonSettingObj.Instance.Model;
   Cs.Leave;
 
   mmoAnswer.Clear;
-  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, 'text-davinci-003', mmoQuestion.Lines.Text, LvUrl);
+  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, mmoQuestion.Lines.Text, LvUrl);
   FTrd.Start;
 end;
 
