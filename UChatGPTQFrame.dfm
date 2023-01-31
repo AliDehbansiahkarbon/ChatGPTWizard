@@ -103,10 +103,6 @@ object Fram_Question: TFram_Question
       Height = 343
       Align = alClient
       TabOrder = 2
-      ExplicitLeft = 97
-      ExplicitTop = 279
-      ExplicitWidth = 185
-      ExplicitHeight = 41
       DesignSize = (
         433
         343)
@@ -139,7 +135,6 @@ object Fram_Question: TFram_Question
         ReadOnly = True
         ScrollBars = ssVertical
         TabOrder = 0
-        ExplicitHeight = 305
       end
     end
     object pnlBottom: TPanel
@@ -155,25 +150,15 @@ object Fram_Question: TFram_Question
       object chk_AutoCopy: TCheckBox
         AlignWithMargins = True
         Left = 271
-        Top = 7
+        Top = 6
         Width = 146
-        Height = 19
+        Height = 20
         Margins.Right = 4
         Anchors = [akRight, akBottom]
         Caption = 'Auto copy to clipboard'
         Checked = True
         State = cbChecked
         TabOrder = 0
-      end
-      object ProgressBar1: TProgressBar
-        Left = 11
-        Top = 10
-        Width = 126
-        Height = 17
-        Anchors = [akLeft, akBottom]
-        Style = pbstMarquee
-        TabOrder = 1
-        Visible = False
       end
     end
   end

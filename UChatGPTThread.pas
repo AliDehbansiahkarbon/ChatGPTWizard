@@ -149,14 +149,14 @@ end;
 constructor TChatGPTResponse.Create;
 begin
   inherited Create;
-  Choices := TObjectList<TChoice>.Create;
-  Usage := Tusage.Create;
+  FChoices := TObjectList<TChoice>.Create;
+  FUsage := Tusage.Create;
 end;
 
 destructor TChatGPTResponse.Destroy;
 begin
-  Choices.Free;
-  Usage.Free;
+  FChoices.Free;
+  FUsage.Free;
   inherited;
 end;
 
@@ -171,13 +171,13 @@ begin
   FPrompt := APrompt;
   FHandle := AHandle;
   FUrl := AUrl;
-  SendMessage(FHandle, WM_PROGRESS_MESSAGE, 1, 0);
+  PostMessage(FHandle, WM_PROGRESS_MESSAGE, 1, 0);
 end;
 
 destructor TExecutorTrd.Destroy;
 begin
   FFormattedResponse.Free;
-  SendMessage(FHandle, WM_PROGRESS_MESSAGE, 0, 0);
+  PostMessage(FHandle, WM_PROGRESS_MESSAGE, 0, 0);
   inherited;
 end;
 
@@ -190,9 +190,10 @@ begin
   LvAPI := TOpenAIAPI.Create(FApiKey, FUrl);
   try
     try
-      LvResult := LvAPI.Query(FModel, FPrompt).Trim;
+      if not Terminated then
+        LvResult := LvAPI.Query(FModel, FPrompt).Trim;
 
-      if not LvResult.IsEmpty then
+      if (not Terminated) and (not LvResult.IsEmpty) then
         SendMessageW(FHandle, WM_UPDATE_MESSAGE, Integer(LvResult), 0);
     except on E: Exception do
       begin

@@ -10,7 +10,6 @@ uses
 type
   TFram_Question = class(TFrame)
     pnlMain: TPanel;
-    ProgressBar1: TProgressBar;
     pnlTop: TPanel;
     Btn_Clipboard: TButton;
     Btn_Ask: TButton;
@@ -32,7 +31,9 @@ type
     procedure Btn_ClearClick(Sender: TObject);
   private
     FTrd: TExecutorTrd;
+    FPrg: TProgressBar;
     procedure CopyToClipBoard;
+    procedure CreateProgressbar;
   public
     procedure OnUpdateMessage(var Msg: TMessage); message WM_UPDATE_MESSAGE;
     procedure OnProgressMessage(var Msg: TMessage); message WM_PROGRESS_MESSAGE;
@@ -47,6 +48,7 @@ var
   LvApiKey: string;
   LvUrl: string;
   LvModel: string;
+  LvQuestion: string;
 begin
   Cs.Enter;
   LvApiKey := TSingletonSettingObj.Instance.ApiKey;
@@ -54,8 +56,8 @@ begin
   LvModel := TSingletonSettingObj.Instance.Model;
   Cs.Leave;
 
-  mmoAnswer.Clear;
-  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, mmoQuestion.Lines.Text, LvUrl);
+  LvQuestion := mmoQuestion.Lines.Text;
+  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, LvQuestion, LvUrl);
   FTrd.Start;
 end;
 
@@ -80,6 +82,25 @@ begin
   CopyToClipBoard;
 end;
 
+//progressbar is not working properly inside the docking form,
+//had to create and destroy each time!
+procedure TFram_Question.CreateProgressbar;
+begin
+  FPrg := TProgressBar.Create(Self);
+  FPrg.Parent := pnlBottom;
+  with FPrg do
+  begin
+    Left := 11;
+    Top := 10;
+    Width := 120;
+    Height := 16;
+    Anchors := [akLeft, akBottom];
+    Style := pbstMarquee;
+    TabOrder := 1;
+    Visible := True;
+  end;
+end;
+
 procedure TFram_Question.mmoQuestionKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if (Shift = [ssCtrl]) and (Ord(Key) = 13) then
@@ -88,7 +109,11 @@ end;
 
 procedure TFram_Question.OnProgressMessage(var Msg: TMessage);
 begin
-  ProgressBar1.Visible := Msg.WParam <> 0;
+  if Msg.WParam <> 0 then
+    CreateProgressbar
+  else
+    FPrg.Visible := False;
+
   Btn_Ask.Enabled := Msg.WParam = 0;
 end;
 
@@ -98,6 +123,8 @@ begin
   mmoAnswer.Lines.Add(string(Msg.WParam));
   if chk_AutoCopy.Checked then
     CopyToClipBoard;
+
+  FPrg.Free;
 end;
 
 end.
