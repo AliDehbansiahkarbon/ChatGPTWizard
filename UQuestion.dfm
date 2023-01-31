@@ -113,6 +113,7 @@ object FrmChatGPT: TFrmChatGPT
       Top = 111
       Width = 75
       Height = 58
+      Anchors = [akTop, akRight]
       Caption = 'Copy to Clipboard'
       TabOrder = 4
       WordWrap = True
