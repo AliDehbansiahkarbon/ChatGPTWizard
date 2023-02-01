@@ -12,6 +12,15 @@ object Fram_Question: TFram_Question
     Align = alClient
     ParentColor = True
     TabOrder = 0
+    object splitter: TSplitter
+      Left = 1
+      Top = 156
+      Width = 433
+      Height = 3
+      Cursor = crVSplit
+      Align = alTop
+      ExplicitLeft = 8
+    end
     object pnlTop: TPanel
       Left = 1
       Top = 1
@@ -80,7 +89,7 @@ object Fram_Question: TFram_Question
         Width = 410
         Height = 89
         Hint = 'Type a question and press Ctrl + Enter'
-        Anchors = [akLeft, akTop, akRight]
+        Anchors = [akLeft, akTop, akRight, akBottom]
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
@@ -98,14 +107,14 @@ object Fram_Question: TFram_Question
     end
     object pnlAnswer: TPanel
       Left = 1
-      Top = 156
+      Top = 159
       Width = 433
-      Height = 343
+      Height = 340
       Align = alClient
       TabOrder = 2
       DesignSize = (
         433
-        343)
+        340)
       object Label2: TLabel
         Left = 2
         Top = 6
@@ -123,7 +132,7 @@ object Fram_Question: TFram_Question
         Left = 11
         Top = 22
         Width = 406
-        Height = 312
+        Height = 309
         Anchors = [akLeft, akTop, akRight, akBottom]
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText

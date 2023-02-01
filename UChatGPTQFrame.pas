@@ -24,6 +24,7 @@ type
     pnlBottom: TPanel;
     Label2: TLabel;
     mmoAnswer: TMemo;
+    splitter: TSplitter;
     procedure Btn_AskClick(Sender: TObject);
     procedure Btn_ClipboardClick(Sender: TObject);
     procedure CopytoClipboard1Click(Sender: TObject);
@@ -50,6 +51,15 @@ var
   LvModel: string;
   LvQuestion: string;
 begin
+  if mmoQuestion.Lines.Text.Trim.IsEmpty then
+  begin
+    ShowMessage('Really?!' + #13 + 'You need to type a question first.');
+    if mmoQuestion.CanFocus then
+      mmoQuestion.SetFocus;
+
+    Exit;
+  end;
+
   Cs.Enter;
   LvApiKey := TSingletonSettingObj.Instance.ApiKey;
   LvUrl := TSingletonSettingObj.Instance.URL;

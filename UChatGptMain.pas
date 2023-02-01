@@ -491,17 +491,17 @@ begin
 end;
 
 class procedure TChatGPTDockForm.RegisterFormClassForTheming(const AFormClass: TCustomFormClass; const Component: TComponent);
-{$IF CompilerVersion >= 24.0}
+{$IF CompilerVersion >= 32.0}
 Var
-  {$IF CompilerVersion > 25.0} // Breaking change to the Open Tools API - They fixed the wrongly defined interface
+  {$IF CompilerVersion > 32.0} // Breaking change to the Open Tools API - They fixed the wrongly defined interface
     ITS : IOTAIDEThemingServices;
   {$ELSE}
     ITS : IOTAIDEThemingServices250;
   {$IFEND}
 {$IFEND}
 begin
-  {$IF CompilerVersion >= 24.0}
-  {$IF CompilerVersion > 25.0}
+  {$IF CompilerVersion >= 32.0}
+  {$IF CompilerVersion > 32.0}
     If Supports(BorlandIDEServices, IOTAIDEThemingServices, ITS) Then
   {$ELSE}
     If Supports(BorlandIDEServices, IOTAIDEThemingServices250, ITS) Then
