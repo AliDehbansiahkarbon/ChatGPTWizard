@@ -25,7 +25,7 @@ object Fram_Question: TFram_Question
         Width = 116
         Height = 28
         Caption = 'Copy to Clipboard'
-        TabOrder = 0
+        TabOrder = 1
         WordWrap = True
         OnClick = Btn_ClipboardClick
       end
@@ -38,7 +38,7 @@ object Fram_Question: TFram_Question
         Caption = 'Ask'
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 1
+        TabOrder = 0
         OnClick = Btn_AskClick
       end
       object Btn_Clear: TButton

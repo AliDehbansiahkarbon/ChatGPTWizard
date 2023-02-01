@@ -84,6 +84,7 @@ type
   private
     Fram_Question: TFram_Question;
   public
+    Class Procedure RegisterFormClassForTheming(Const AFormClass : TCustomFormClass; Const Component : TComponent = Nil);
     constructor Create(AOwner: TComponent);
     destructor Destroy; override;
   end;
@@ -143,6 +144,8 @@ begin
 
   if not Assigned(FChatGPTDockForm) then
     FChatGPTDockForm := TChatGPTDockForm.Create(Application);
+
+  FChatGPTDockForm.RegisterFormClassForTheming(TChatGPTDockForm, FChatGPTDockForm);
   FChatGPTDockForm.Show;
 end;
 
@@ -151,6 +154,7 @@ begin
   FSetting := TSingletonSettingObj.Instance;
   FSetting.ReadRegistry;
   Frm_Setting := TFrm_Setting.Create(nil);
+  TChatGPTDockForm.RegisterFormClassForTheming(TFrm_Setting, Frm_Setting);
   try
     Frm_Setting.Edt_ApiKey.Text := FSetting.ApiKey;
     Frm_Setting.Edt_Url.Text := FSetting.URL;
@@ -236,6 +240,7 @@ begin
   if LvSettingObj.ApiKey <> EmptyStr then
   begin
     FrmChatGPT := TFrmChatGPT.Create(nil);
+    TChatGPTDockForm.RegisterFormClassForTheming(TFrmChatGPT, FrmChatGPT);
     try
       FrmChatGPT.ShowModal;
     finally
@@ -335,6 +340,7 @@ begin
         Frm_Progress := TFrm_Progress.Create(nil);
         frm_Progress.SelectedText := GetQuestion(LvEditBlock.Text);
         try
+          TChatGPTDockForm.RegisterFormClassForTheming(TFrm_Progress, Frm_Progress);
           Frm_Progress.ShowModal;
           LvEditView.Buffer.EditPosition.InsertText(Frm_Progress.Answer.TrimLineText);
           if TSingletonSettingObj.Instance.CodeFormatter then
@@ -481,6 +487,32 @@ destructor TChatGPTDockForm.Destroy;
 begin
   SaveStateNecessary := True;
   inherited;
+  FChatGPTDockForm := nil;
+end;
+
+class procedure TChatGPTDockForm.RegisterFormClassForTheming(const AFormClass: TCustomFormClass; const Component: TComponent);
+{$IF CompilerVersion >= 24.0}
+Var
+  {$IF CompilerVersion > 25.0} // Breaking change to the Open Tools API - They fixed the wrongly defined interface
+    ITS : IOTAIDEThemingServices;
+  {$ELSE}
+    ITS : IOTAIDEThemingServices250;
+  {$IFEND}
+{$IFEND}
+begin
+  {$IF CompilerVersion >= 24.0}
+  {$IF CompilerVersion > 25.0}
+    If Supports(BorlandIDEServices, IOTAIDEThemingServices, ITS) Then
+  {$ELSE}
+    If Supports(BorlandIDEServices, IOTAIDEThemingServices250, ITS) Then
+  {$IFEND}
+    If ITS.IDEThemingEnabled Then
+    begin
+      ITS.RegisterFormClass(AFormClass);
+      If Assigned(Component) Then
+        ITS.ApplyTheme(Component);
+    end;
+  {$IFEND}
 end;
 
 initialization
