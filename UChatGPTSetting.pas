@@ -62,6 +62,7 @@ type
     chk_CodeFormatter: TCheckBox;
     procedure Btn_SaveClick(Sender: TObject);
     procedure Btn_DefaultClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
   public
@@ -93,7 +94,7 @@ end;
 function TSingletonSettingObj.GetSetting: string;
 begin
   Result := EmptyStr;
-  ShowMessage('You need an API key, please fill the setting parameters.');
+  ShowMessage('You need an API key, please fill the setting parameters in setting form.');
   Frm_Setting := TFrm_Setting.Create(nil);
   try
     Frm_Setting.ShowModal;
@@ -212,8 +213,16 @@ begin
   Close;
 end;
 
+procedure TFrm_Setting.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Ord(key) = 27 then
+    Close;
+end;
+
 initialization
   Cs := TCriticalSection.Create;
 finalization
   Cs.Free;
 end.
+
+//cpt:where is tehran:cpt

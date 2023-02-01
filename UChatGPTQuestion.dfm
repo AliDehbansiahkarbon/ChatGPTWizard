@@ -12,7 +12,9 @@ object FrmChatGPT: TFrmChatGPT
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
+  KeyPreview = True
   Position = poMainFormCenter
+  OnKeyDown = FormKeyDown
   TextHeight = 15
   object pnlMain: TPanel
     Left = 0

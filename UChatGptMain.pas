@@ -145,7 +145,7 @@ begin
   if not Assigned(FChatGPTDockForm) then
     FChatGPTDockForm := TChatGPTDockForm.Create(Application);
 
-  FChatGPTDockForm.RegisterFormClassForTheming(TChatGPTDockForm, FChatGPTDockForm);
+  FChatGPTDockForm.RegisterFormClassForTheming(TChatGPTDockForm, FChatGPTDockForm); //Apply Theme
   FChatGPTDockForm.Show;
 end;
 
@@ -154,7 +154,7 @@ begin
   FSetting := TSingletonSettingObj.Instance;
   FSetting.ReadRegistry;
   Frm_Setting := TFrm_Setting.Create(nil);
-  TChatGPTDockForm.RegisterFormClassForTheming(TFrm_Setting, Frm_Setting);
+  TChatGPTDockForm.RegisterFormClassForTheming(TFrm_Setting, Frm_Setting); //Apply Theme
   try
     Frm_Setting.Edt_ApiKey.Text := FSetting.ApiKey;
     Frm_Setting.Edt_Url.Text := FSetting.URL;
@@ -240,7 +240,7 @@ begin
   if LvSettingObj.ApiKey <> EmptyStr then
   begin
     FrmChatGPT := TFrmChatGPT.Create(nil);
-    TChatGPTDockForm.RegisterFormClassForTheming(TFrmChatGPT, FrmChatGPT);
+    TChatGPTDockForm.RegisterFormClassForTheming(TFrmChatGPT, FrmChatGPT);  //Apply Theme
     try
       FrmChatGPT.ShowModal;
     finally
@@ -321,7 +321,6 @@ begin
     if TSingletonSettingObj.Instance.GetSetting.Trim.IsEmpty then
       Exit;
   end;
-
   LvEditView := (BorlandIDEServices as IOTAEditorServices).TopView;
 
   // Get the selected text in the edit view
@@ -340,10 +339,10 @@ begin
         Frm_Progress := TFrm_Progress.Create(nil);
         frm_Progress.SelectedText := GetQuestion(LvEditBlock.Text);
         try
-          TChatGPTDockForm.RegisterFormClassForTheming(TFrm_Progress, Frm_Progress);
+          TChatGPTDockForm.RegisterFormClassForTheming(TFrm_Progress, Frm_Progress); //Apply Theme
           Frm_Progress.ShowModal;
           LvEditView.Buffer.EditPosition.InsertText(Frm_Progress.Answer.TrimLineText);
-          if TSingletonSettingObj.Instance.CodeFormatter then
+          if not (Frm_Progress.HasError) and (TSingletonSettingObj.Instance.CodeFormatter) then
             FormatSource;
         finally
           FreeAndNil(Frm_Progress);

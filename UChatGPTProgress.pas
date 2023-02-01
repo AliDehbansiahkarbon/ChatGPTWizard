@@ -23,6 +23,7 @@ type
     { Private declarations }
   public
     SelectedText: string;
+    HasError: Boolean;
     Answer: TStringList;
     procedure OnUpdateMessage(var Msg: TMessage); message WM_UPDATE_MESSAGE;
     procedure OnProgressMessage(var Msg: TMessage); message WM_PROGRESS_MESSAGE;
@@ -44,6 +45,7 @@ end;
 procedure TFrm_Progress.FormCreate(Sender: TObject);
 begin
   Answer := TStringList.Create;
+  HasError := False;
 end;
 
 procedure TFrm_Progress.FormDestroy(Sender: TObject);
@@ -82,6 +84,7 @@ end;
 procedure TFrm_Progress.OnUpdateMessage(var Msg: TMessage);
 begin
   Answer.Text := string(Msg.WParam);
+  HasError := Msg.LParam = 1;
 end;
 
 end.

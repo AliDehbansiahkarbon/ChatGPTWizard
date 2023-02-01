@@ -3,7 +3,7 @@ object Frm_Progress: TFrm_Progress
   Top = 0
   BorderStyle = bsNone
   Caption = 'Frm_Progress'
-  ClientHeight = 55
+  ClientHeight = 56
   ClientWidth = 301
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -21,14 +21,14 @@ object Frm_Progress: TFrm_Progress
     Left = 0
     Top = 0
     Width = 301
-    Height = 55
+    Height = 56
     Align = alClient
     BorderStyle = bsSingle
     TabOrder = 0
     object Lbl_Top: TLabel
       Left = 1
       Top = 1
-      Width = 71
+      Width = 295
       Height = 15
       Align = alTop
       Caption = 'Please wait...'
@@ -41,12 +41,13 @@ object Frm_Progress: TFrm_Progress
       ParentColor = False
       ParentFont = False
       Transparent = False
+      ExplicitWidth = 71
     end
     object ProgressBar: TProgressBar
       Left = 15
       Top = 24
       Width = 269
-      Height = 17
+      Height = 18
       Style = pbstMarquee
       TabOrder = 0
     end

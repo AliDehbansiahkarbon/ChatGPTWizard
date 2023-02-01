@@ -28,6 +28,7 @@ type
     procedure Btn_AskClick(Sender: TObject);
     procedure CopytoClipboard1Click(Sender: TObject);
     procedure Btn_ClipboardClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     FTrd: TExecutorTrd;
   public
@@ -67,6 +68,12 @@ end;
 procedure TFrmChatGPT.CopytoClipboard1Click(Sender: TObject);
 begin
   Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
+end;
+
+procedure TFrmChatGPT.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Ord(key) = 27 then
+    Close;
 end;
 
 procedure TFrmChatGPT.mmoQuestionKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
