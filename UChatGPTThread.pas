@@ -1,3 +1,9 @@
+{********************************************}
+{                                            }
+{   This unit contains a worker thread to do }
+{   API calls and stuff.                     }
+{                                            }
+{********************************************}
 unit UChatGPTThread;
 
 interface

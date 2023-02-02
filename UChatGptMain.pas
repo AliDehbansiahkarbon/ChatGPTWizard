@@ -55,6 +55,7 @@ type
   private
     FMenuHook: TCpMenuHook;
     function GetQuestion(AStr: string): string;
+    function CreateMsg: string;
     procedure FormatSource;
   public
     constructor Create;
@@ -84,15 +85,12 @@ type
   private
     Fram_Question: TFram_Question;
   public
-    Class Procedure RegisterFormClassForTheming(Const AFormClass : TCustomFormClass; Const Component : TComponent = Nil);
     constructor Create(AOwner: TComponent);
     destructor Destroy; override;
   end;
 
   const
     WizardFail = -1;
-    LeftIdentifier = DefaultIdentifier + ':';
-    RightIdentifier = ':' + DefaultIdentifier;
 
   var
     FMainMenuIndex: Integer = WizardFail;
@@ -145,7 +143,7 @@ begin
   if not Assigned(FChatGPTDockForm) then
     FChatGPTDockForm := TChatGPTDockForm.Create(Application);
 
-  FChatGPTDockForm.RegisterFormClassForTheming(TChatGPTDockForm, FChatGPTDockForm); //Apply Theme
+  TSingletonSettingObj.RegisterFormClassForTheming(TChatGPTDockForm, FChatGPTDockForm); //Apply Theme
   FChatGPTDockForm.Show;
 end;
 
@@ -154,8 +152,8 @@ begin
   FSetting := TSingletonSettingObj.Instance;
   FSetting.ReadRegistry;
   Frm_Setting := TFrm_Setting.Create(nil);
-  TChatGPTDockForm.RegisterFormClassForTheming(TFrm_Setting, Frm_Setting); //Apply Theme
   try
+    TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Setting, Frm_Setting); //Apply Theme
     Frm_Setting.Edt_ApiKey.Text := FSetting.ApiKey;
     Frm_Setting.Edt_Url.Text := FSetting.URL;
     Frm_Setting.Edt_MaxToken.Text := FSetting.MaxToken.ToString;
@@ -240,8 +238,8 @@ begin
   if LvSettingObj.ApiKey <> EmptyStr then
   begin
     FrmChatGPT := TFrmChatGPT.Create(nil);
-    TChatGPTDockForm.RegisterFormClassForTheming(TFrmChatGPT, FrmChatGPT);  //Apply Theme
     try
+      TSingletonSettingObj.RegisterFormClassForTheming(TFrmChatGPT, FrmChatGPT);  //Apply Theme
       FrmChatGPT.ShowModal;
     finally
       FreeAndNil(FrmChatGPT);
@@ -332,14 +330,14 @@ begin
     LvSelectedText := LvEditBlock.Text;
 
     //If it is a ChatGPT question
-    if (SameStr(LeftStr(LvSelectedText, 4).ToLower, LeftIdentifier)) and (SameStr(RightStr(LvSelectedText, 4).ToLower, RightIdentifier)) then
+    if (SameStr(LeftStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.LeftIdentifier)) and (SameStr(RightStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.RightIdentifier)) then
     begin
       if not TSingletonSettingObj.Instance.ApiKey.Trim.IsEmpty then
       begin
         Frm_Progress := TFrm_Progress.Create(nil);
-        frm_Progress.SelectedText := GetQuestion(LvEditBlock.Text);
         try
-          TChatGPTDockForm.RegisterFormClassForTheming(TFrm_Progress, Frm_Progress); //Apply Theme
+          frm_Progress.SelectedText := GetQuestion(LvEditBlock.Text);
+          TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Progress, Frm_Progress); //Apply Theme
           Frm_Progress.ShowModal;
           LvEditView.Buffer.EditPosition.InsertText(Frm_Progress.Answer.TrimLineText);
           if not (Frm_Progress.HasError) and (TSingletonSettingObj.Instance.CodeFormatter) then
@@ -348,13 +346,12 @@ begin
           FreeAndNil(Frm_Progress);
         end;
       end;
-    end;
+    end
+    else
+      ShowMessage(CreateMsg);
   end
   else
-  begin
-    ShowMessage('There is no selected text with the ChatGPT Plug-in''s desired format, check the below sample' + #13
-                + #13 + LeftIdentifier + ' Any Question! ' + RightIdentifier);
-  end;
+    ShowMessage(CreateMsg);
 end;
 
 procedure TEditNotifierHelper.OnChatGPTSubMenuClick(Sender: TObject; MenuItem: TMenuItem);
@@ -381,6 +378,20 @@ constructor TEditNotifierHelper.Create;
 begin
   inherited Create;
   FMenuHook := TCpMenuHook.Create(nil);
+end;
+
+function TEditNotifierHelper.CreateMsg: string;
+var
+  LeftIdentifier: string;
+  RightIdentifier: string;
+begin
+  Cs.Enter;
+  LeftIdentifier := TSingletonSettingObj.Instance.LeftIdentifier;
+  RightIdentifier := TSingletonSettingObj.Instance.RightIdentifier;
+  Cs.Leave;
+
+  Result := 'There is no selected text with the ChatGPT Plug-in''s desired format, follow the below sample, please.' +
+               #13 + LeftIdentifier + ' Any Question... ' + RightIdentifier;
 end;
 
 destructor TEditNotifierHelper.Destroy;
@@ -487,31 +498,6 @@ begin
   SaveStateNecessary := True;
   inherited;
   FChatGPTDockForm := nil;
-end;
-
-class procedure TChatGPTDockForm.RegisterFormClassForTheming(const AFormClass: TCustomFormClass; const Component: TComponent);
-{$IF CompilerVersion >= 32.0}
-Var
-  {$IF CompilerVersion > 32.0} // Breaking change to the Open Tools API - They fixed the wrongly defined interface
-    ITS : IOTAIDEThemingServices;
-  {$ELSE}
-    ITS : IOTAIDEThemingServices250;
-  {$IFEND}
-{$IFEND}
-begin
-  {$IF CompilerVersion >= 32.0}
-  {$IF CompilerVersion > 32.0}
-    If Supports(BorlandIDEServices, IOTAIDEThemingServices, ITS) Then
-  {$ELSE}
-    If Supports(BorlandIDEServices, IOTAIDEThemingServices250, ITS) Then
-  {$IFEND}
-    If ITS.IDEThemingEnabled Then
-    begin
-      ITS.RegisterFormClass(AFormClass);
-      If Assigned(Component) Then
-        ITS.ApplyTheme(Component);
-    end;
-  {$IFEND}
 end;
 
 initialization

@@ -1,10 +1,17 @@
+{********************************************}
+{                                            }
+{   This is the setting form of the plugin.  }
+{   Could be found in the main menu.         }
+{                                            }
+{********************************************}
 unit UChatGPTSetting;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, System.Win.Registry, System.SyncObjs;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, System.Win.Registry, System.SyncObjs,
+  ToolsAPI;
 
 const
   DefaultURL = 'https://api.openai.com/v1/completions';
@@ -28,10 +35,13 @@ type
     class function GetInstance: TSingletonSettingObj; static;
     procedure LoadDefaults;
     constructor Create;
+    function GetLeftIdentifier: string;
+    function GetRightIdentifier: string;
   public
     procedure ReadRegistry;
     procedure WriteToRegistry;
     function GetSetting: string;
+    Class Procedure RegisterFormClassForTheming(Const AFormClass : TCustomFormClass; Const Component : TComponent = Nil);
 
     class property Instance: TSingletonSettingObj read GetInstance;
     property ApiKey: string read FApiKey write FApiKey;
@@ -39,8 +49,10 @@ type
     property Model: string read FModel write FModel;
     property MaxToken: Integer read FMaxToken write FMaxToken;
     property Temperature: Integer read FTemperature write FTemperature;
-    property Identifier: string read FIdentifier write FIdentifier;
     property CodeFormatter: Boolean read FCodeFormatter write FCodeFormatter;
+    property Identifier: string read FIdentifier write FIdentifier;
+    property LeftIdentifier: string read GetLeftIdentifier;
+    property RightIdentifier: string read GetRightIdentifier;
   end;
 
   TFrm_Setting = class(TForm)
@@ -91,12 +103,23 @@ begin
   Result := FInstance;
 end;
 
+function TSingletonSettingObj.GetLeftIdentifier: string;
+begin
+  Result := FIdentifier + ':';
+end;
+
+function TSingletonSettingObj.GetRightIdentifier: string;
+begin
+  Result := ':' + FIdentifier;
+end;
+
 function TSingletonSettingObj.GetSetting: string;
 begin
   Result := EmptyStr;
   ShowMessage('You need an API key, please fill the setting parameters in setting form.');
   Frm_Setting := TFrm_Setting.Create(nil);
   try
+    TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Setting, Frm_Setting); //Apply Theme
     Frm_Setting.ShowModal;
   finally
     FreeAndNil(Frm_Setting);
@@ -163,6 +186,32 @@ begin
   end;
 end;
 
+class procedure TSingletonSettingObj.RegisterFormClassForTheming(const AFormClass: TCustomFormClass; const Component: TComponent);
+{$IF CompilerVersion >= 32.0}
+Var
+  {$IF CompilerVersion > 32.0} // Breaking change to the Open Tools API - They fixed the wrongly defined interface
+    ITS : IOTAIDEThemingServices;
+  {$ELSE}
+    ITS : IOTAIDEThemingServices250;
+  {$IFEND}
+{$IFEND}
+begin
+  {$IF CompilerVersion >= 32.0}
+  {$IF CompilerVersion > 32.0}
+    If Supports(BorlandIDEServices, IOTAIDEThemingServices, ITS) Then
+  {$ELSE}
+    If Supports(BorlandIDEServices, IOTAIDEThemingServices250, ITS) Then
+  {$IFEND}
+    If ITS.IDEThemingEnabled Then
+    begin
+      ITS.RegisterFormClass(AFormClass);
+      If Assigned(Component) Then
+        ITS.ApplyTheme(Component);
+    end;
+  {$IFEND}
+end;
+
+
 procedure TSingletonSettingObj.WriteToRegistry;
 var
   LvRegKey: TRegistry;
@@ -224,5 +273,3 @@ initialization
 finalization
   Cs.Free;
 end.
-
-//cpt:where is tehran:cpt

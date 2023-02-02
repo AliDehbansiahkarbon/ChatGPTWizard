@@ -1,17 +1,18 @@
 unit UChatGPTMenuHook;
 
-{    This is a refinemented version of the CnMenuHook unit which is
+{    This unit is a refinemented version of the CnMenuHook unit which is
      originally wrriten by Zhou Jinyu (zjy@cnpack.org) in Cnwizard project.
      More info: https://github.com/cnpack/cnwizards
 }
 
 {**************************************************************************************************}
-{    Remarks: This unit is used to realize the hooking operation of the PopupMenu inside the IDE,  }
-{    by modifying the OnPopup event, delete the custom menu before popping up,                     }
-{    execute the original OnPopup and then restart, add a new defined menu to                      }
-{    realize the function of custom menu.                                                          }
-{                                                                                                  }
-{    This method is adopted because directly modifying the PopupMenu may cause errors in the IDE.  }
+{    Remarks:                                                                                      }
+{    -This unit is used to realize the hooking operation of the PopupMenu inside the IDE,          }
+{      by modifying the OnPopup event, delete the custom menu before popping up,                   }
+{      execute the original OnPopup and then restart, add a new defined menu to                    }
+{      realize the function of custom menu.                                                        }
+{    -This method is adopted because directly modifying the PopupMenu may cause errors in the IDE. }
+{    -Comments are translated, original comments are in Chinese.                                   }
 {**************************************************************************************************}
 
 interface

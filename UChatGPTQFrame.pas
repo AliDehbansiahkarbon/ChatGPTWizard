@@ -1,3 +1,9 @@
+{********************************************}
+{                                            }
+{   This unit contains a frame that will be  }
+{   used in dockable form.                   }
+{                                            }
+{********************************************}
 unit UChatGPTQFrame;
 
 interface

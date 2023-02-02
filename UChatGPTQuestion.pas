@@ -1,10 +1,11 @@
-unit UChatGPTQuestion;
 {********************************************}
 {                                            }
 {   This is the main form of the plugin.     }
-{   Could be open/close in main menu.        }
+{   Could be open/close in the main menu.    }
 {                                            }
 {********************************************}
+unit UChatGPTQuestion;
+
 interface
 
 uses

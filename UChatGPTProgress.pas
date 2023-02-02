@@ -1,3 +1,9 @@
+{********************************************}
+{                                            }
+{   This unit contains a progressbar that    }
+{    will be used in inline processes.       }
+{                                            }
+{********************************************}
 unit UChatGPTProgress;
 
 interface
