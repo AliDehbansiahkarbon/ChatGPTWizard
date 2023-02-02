@@ -105,16 +105,17 @@ var
   LvHttpClient: TIdHTTP;
   LvSslIOHandler: TIdSSLIOHandlerSocketOpenSSL;
   LvParamStream: TStringStream;
-  Response: string;
 
   LvRequestJSON: TRequestJSON;
   LvChatGPTResponse: TChatGPTResponse;
+
+  LvResponseStream: TStringStream;
 begin
-  Response := '';
   LvHttpClient := TIdHTTP.Create(nil);
   LvSslIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
   LvChatGPTResponse := TChatGPTResponse.Create;
   LvRequestJSON := TRequestJSON.Create;
+
   with LvRequestJSON do
   begin
     model := AModel;
@@ -130,20 +131,27 @@ begin
 
     LvHttpClient.Request.CustomHeaders.AddValue('Authorization', 'Bearer '+ FAccessToken);
     LvHttpClient.Request.ContentType := 'application/json';
+    LvHttpClient.Request.AcceptEncoding := 'deflate, gzip;q=1.0, *;q=0.5';
+
     try
-      Response := LvHttpClient.Post(FUrl , LvParamStream);
-      if not Response.IsEmpty then
-        Result := LvChatGPTResponse.FromJSON(response).Choices[0].Text.Trim;
+      LvResponseStream := TStringStream.Create;
+      LvHttpClient.Post(FUrl , LvParamStream, LvResponseStream);
+
+      if not LvResponseStream.DataString.IsEmpty then
+        Result :=  UTF8ToString(LvChatGPTResponse.FromJSON(LvResponseStream.DataString).Choices[0].Text.Trim);
     except on E: Exception do
       Result := E.Message;
     end;
   finally
+    LvResponseStream.Free;
     LvRequestJSON.Free;
     LvParamStream.Free;
     LvChatGPTResponse.Free;
+    LvSslIOHandler.Free;
     LvHttpClient.Free;
   end;
 end;
+
 { TChatGPTResponse }
 
 constructor TChatGPTResponse.Create;
