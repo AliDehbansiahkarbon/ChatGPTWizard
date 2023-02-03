@@ -1,21 +1,24 @@
-{********************************************}
-{                                            }
-{   This unit contains a frame that will be  }
-{   used in dockable form.                   }
-{                                            }
-{********************************************}
+{ ********************************************}
+{                                             }
+{ This unit contains a frame that will be     }
+{ used in dockable form.                      }
+{                                             }
+{ ********************************************}
 unit UChatGPTQFrame;
 
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, Vcl.StdCtrls,
-  Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.Clipbrd, UChatGPTThread, UChatGPTSetting;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+  Vcl.Menus, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.Clipbrd,
+  UChatGPTThread, UChatGPTSetting;
 
 type
   TFram_Question = class(TFrame)
     pnlMain: TPanel;
+    Lbl_Question: TLabel;
+    Lbl_Answer: TLabel;
     pnlTop: TPanel;
     Btn_Clipboard: TButton;
     Btn_Ask: TButton;
@@ -26,9 +29,7 @@ type
     pnlQuestion: TPanel;
     pnlAnswer: TPanel;
     mmoQuestion: TMemo;
-    Label1: TLabel;
     pnlBottom: TPanel;
-    Label2: TLabel;
     mmoAnswer: TMemo;
     splitter: TSplitter;
     procedure Btn_AskClick(Sender: TObject);
@@ -98,8 +99,8 @@ begin
   CopyToClipBoard;
 end;
 
-//progressbar is not working properly inside the docking form,
-//had to create and destroy each time!
+// progressbar is not working properly inside the docking form,
+// had to create and destroy each time!
 procedure TFram_Question.CreateProgressbar;
 begin
   FPrg := TProgressBar.Create(Self);
