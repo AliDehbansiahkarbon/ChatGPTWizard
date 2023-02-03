@@ -291,6 +291,7 @@ begin
   LvSettingObj.Temperature := StrToInt(Edt_Temperature.Text);
   LvSettingObj.RighToLeft := chk_Rtl.Checked;
   LvSettingObj.CodeFormatter := chk_CodeFormatter.Checked;
+  LvSettingObj.Identifier := Edt_SourceIdentifier.Text;
 
   LvSettingObj.WriteToRegistry;
   Close;
