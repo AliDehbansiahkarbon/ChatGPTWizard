@@ -11,7 +11,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, System.Win.Registry, System.SyncObjs,
-  ToolsAPI;
+  ToolsAPI, System.StrUtils, System.Generics.Collections;
 
 const
   DefaultURL = 'https://api.openai.com/v1/completions';
@@ -19,6 +19,8 @@ const
   DefaultMaxToken = 2048;
   DefaultTemperature = 0;
   DefaultIdentifier = 'cpt';
+  DefaultCodeFormatter = False;
+  DefaultRTL = False;
 
 type
   // Note: This class is thread-safe, since accessing the class variable is done in a critical section!
@@ -31,6 +33,8 @@ type
     FTemperature: Integer;
     FIdentifier: string;
     FCodeFormatter: Boolean;
+    FRightToLeft: Boolean;
+
     class var FInstance: TSingletonSettingObj;
     class function GetInstance: TSingletonSettingObj; static;
     procedure LoadDefaults;
@@ -53,6 +57,7 @@ type
     property Identifier: string read FIdentifier write FIdentifier;
     property LeftIdentifier: string read GetLeftIdentifier;
     property RightIdentifier: string read GetRightIdentifier;
+    property RighToLeft: Boolean read FRightToLeft write FRightToLeft;
   end;
 
   TFrm_Setting = class(TForm)
@@ -72,6 +77,7 @@ type
     Lbl_SourceIdentifier: TLabel;
     Edt_SourceIdentifier: TEdit;
     chk_CodeFormatter: TCheckBox;
+    chk_Rtl: TCheckBox;
     procedure Btn_SaveClick(Sender: TObject);
     procedure Btn_DefaultClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -84,12 +90,12 @@ type
 var
   Frm_Setting: TFrm_Setting;
   Cs: TCriticalSection;
+
 implementation
 
 {$R *.dfm}
 
 { TSingletonSettingObj }
-
 constructor TSingletonSettingObj.Create;
 begin
   inherited;
@@ -135,7 +141,8 @@ begin
   FMaxToken := DefaultMaxToken;
   FTemperature := DefaultTemperature;
   FIdentifier := DefaultIdentifier;
-  FCodeFormatter := True;
+  FCodeFormatter := DefaultCodeFormatter;
+  FRightToLeft := DefaultRTL;
 end;
 
 procedure TSingletonSettingObj.ReadRegistry;
@@ -154,28 +161,51 @@ begin
 
         if OpenKey('\SOFTWARE\ChatGPTWizard', False) then
         begin
-          FApiKey := ReadString('ChatGPTApiKey');
-          FURL := ReadString('ChatGPTURL');
-          if FURL.Trim.IsEmpty then
-            FURL := DefaultURL;
+          if ValueExists('ChatGPTApiKey') then
+            FApiKey := ReadString('ChatGPTApiKey');
+            
+          if ValueExists('ChatGPTURL') then
+            FURL := IfThen(ReadString('ChatGPTURL').IsEmpty, DefaultURL, ReadString('ChatGPTURL'))
+          else
+            FURL := DefaultURL;           
 
-          FModel := ReadString('ChatGPTModel');
-          if FModel.Trim.IsEmpty then
+          if ValueExists('ChatGPTModel') then
+            FModel := IfThen(ReadString('ChatGPTModel').IsEmpty, DefaultModel, ReadString('ChatGPTModel'))
+          else
             FModel := DefaultModel;
 
-          FMaxToken := ReadInteger('ChatGPTMaxToken');
-          if FMaxToken <= 0 then
-            FMaxToken := DefaultMaxToken;
+          if ValueExists('ChatGPTMaxToken') then
+          begin
+            FMaxToken := ReadInteger('ChatGPTMaxToken');
+            if FMaxToken <= 0 then
+              FMaxToken := DefaultMaxToken;
+          end
+          else
+            FMaxToken := DefaultMaxToken;          
 
-          FTemperature := ReadInteger('ChatGPTTemperature');
-          if FTemperature <=-1 then
+          if ValueExists('ChatGPTTemperature') then
+          begin
+            FTemperature := ReadInteger('ChatGPTTemperature');
+            if FTemperature <=-1 then
+              FTemperature := DefaultTemperature;
+          end
+          else
             FTemperature := DefaultTemperature;
 
-          FIdentifier := ReadString('ChatGPTSourceIdentifier');
-          if FIdentifier.Trim.IsEmpty then
-            FIdentifier := DefaultIdentifier;
+          if ValueExists('ChatGPTSourceIdentifier') then
+            FIdentifier := IfThen(ReadString('ChatGPTSourceIdentifier').IsEmpty, DefaultIdentifier, ReadString('ChatGPTSourceIdentifier'))
+          else
+            FIdentifier := DefaultIdentifier;              
 
-          FCodeFormatter := ReadBool('ChatGPTCodeFormatter');
+          if ValueExists('ChatGPTCodeFormatter') then
+            FCodeFormatter := ReadBool('ChatGPTCodeFormatter')
+          else
+            FCodeFormatter := DefaultCodeFormatter;
+
+          if ValueExists('ChatGPTRTL') then
+            FRightToLeft := ReadBool('ChatGPTRTL')
+          else
+            FRightToLeft := DefaultRTL;
         end;
       end;
     except
@@ -211,7 +241,6 @@ begin
   {$IFEND}
 end;
 
-
 procedure TSingletonSettingObj.WriteToRegistry;
 var
   LvRegKey: TRegistry;
@@ -231,6 +260,7 @@ begin
         WriteInteger('ChatGPTTemperature', FTemperature);
         WriteString('ChatGPTSourceIdentifier', FIdentifier);
         WriteBool('ChatGPTCodeFormatter', FCodeFormatter);
+        WriteBool('ChatGPTRTL', FRightToLeft);
       end;
     end;
   finally
@@ -245,7 +275,8 @@ begin
   cbbModel.ItemIndex := 0;
   Edt_MaxToken.Text := IntToStr(DefaultMaxToken);
   Edt_Temperature.Text := IntToStr(DefaultTemperature);
-  chk_CodeFormatter.Checked := True;
+  chk_CodeFormatter.Checked := DefaultCodeFormatter;
+  chk_Rtl.Checked := DefaultRTL;
 end;
 
 procedure TFrm_Setting.Btn_SaveClick(Sender: TObject);
@@ -258,6 +289,9 @@ begin
   LvSettingObj.Model := Trim(cbbModel.Text);
   LvSettingObj.MaxToken := StrToInt(Edt_MaxToken.Text);
   LvSettingObj.Temperature := StrToInt(Edt_Temperature.Text);
+  LvSettingObj.RighToLeft := chk_Rtl.Checked;
+  LvSettingObj.CodeFormatter := chk_CodeFormatter.Checked;
+
   LvSettingObj.WriteToRegistry;
   Close;
 end;

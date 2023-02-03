@@ -70,7 +70,7 @@ object Fram_Question: TFram_Question
       DesignSize = (
         433
         114)
-      object Label1: TLabel
+      object Lbl_Question: TLabel
         Left = 7
         Top = 3
         Width = 53
@@ -115,9 +115,9 @@ object Fram_Question: TFram_Question
       DesignSize = (
         433
         340)
-      object Label2: TLabel
-        Left = 2
-        Top = 6
+      object Lbl_Answer: TLabel
+        Left = 15
+        Top = 5
         Width = 45
         Height = 15
         Caption = 'Answer:'

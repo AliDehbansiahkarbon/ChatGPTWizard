@@ -4,8 +4,8 @@ interface
 uses
   System.Classes, System.SysUtils, Vcl.Controls, Vcl.Menus, Vcl.Dialogs, Winapi.Windows,
   {$IFNDEF NEXTGEN}System.StrUtils{$ELSE}AnsiStrings{$ENDIF !NEXTGEN}, ToolsAPI,
-  DockForm, System.Generics.Collections, Vcl.Forms, UChatGPTMenuHook, UChatGPTSetting, UChatGPTQFrame,
-  UChatGPTQuestion;
+  DockForm, System.Generics.Collections, Vcl.Forms, UChatGPTMenuHook, UChatGPTSetting,
+  UChatGPTQFrame, UChatGPTQuestion;
 
 type
   TTStringListHelper = class helper for TStringList
@@ -27,6 +27,7 @@ type
     procedure AskMenuClick(Sender: TObject);
     procedure ChatGPTDockableClick(Sender: TObject);
     procedure ChatGPTSettingMenuClick(Sender: TObject);
+    procedure RenewUI(AForm: TCustomForm);
   protected
     { protected declarations }
   public
@@ -83,7 +84,7 @@ type
 {*******************************************************}
   TChatGPTDockForm = class(TDockableForm)
   private
-    Fram_Question: TFram_Question;
+    Fram_Question1: TFram_Question;
   public
     constructor Create(AOwner: TComponent);
     destructor Destroy; override;
@@ -144,6 +145,7 @@ begin
     FChatGPTDockForm := TChatGPTDockForm.Create(Application);
 
   TSingletonSettingObj.RegisterFormClassForTheming(TChatGPTDockForm, FChatGPTDockForm); //Apply Theme
+  RenewUI(FChatGPTDockForm);
   FChatGPTDockForm.Show;
 end;
 
@@ -161,7 +163,10 @@ begin
     Frm_Setting.cbbModel.ItemIndex := Frm_Setting.cbbModel.Items.IndexOf(FSetting.Model);
     Frm_Setting.Edt_SourceIdentifier.Text := FSetting.Identifier;
     Frm_Setting.chk_CodeFormatter.Checked := FSetting.CodeFormatter;
+    Frm_Setting.chk_Rtl.Checked := FSetting.RighToLeft;
+
     Frm_Setting.ShowModal;
+    RenewUI(FChatGPTDockForm);
   finally
     Frm_Setting.Free;
     FSetting.ReadRegistry;
@@ -226,9 +231,11 @@ end;
 procedure TChatGptMenuWizard.AskMenuClick(Sender: TObject);
 var
   LvSettingObj: TSingletonSettingObj;
+  FrmChatGPTMain: TFrmChatGPT;
 begin
   LvSettingObj := TSingletonSettingObj.Instance;
   LvSettingObj.ReadRegistry;
+
   if LvSettingObj.ApiKey = '' then
   begin
     if LvSettingObj.GetSetting.Trim.IsEmpty then
@@ -237,12 +244,13 @@ begin
 
   if LvSettingObj.ApiKey <> EmptyStr then
   begin
-    FrmChatGPT := TFrmChatGPT.Create(nil);
+    FrmChatGPTMain := TFrmChatGPT.Create(Application);
     try
-      TSingletonSettingObj.RegisterFormClassForTheming(TFrmChatGPT, FrmChatGPT);  //Apply Theme
-      FrmChatGPT.ShowModal;
+      LvSettingObj.RegisterFormClassForTheming(TFrmChatGPT, FrmChatGPTMain);  //Apply Theme
+      RenewUI(FrmChatGPTMain);
+      FrmChatGPTMain.ShowModal;
     finally
-      FreeAndNil(FrmChatGPT);
+      FreeAndNil(FrmChatGPTMain);
     end;
   end;
 end;
@@ -290,6 +298,36 @@ end;
 procedure TChatGptMenuWizard.Modified;
 begin
 //Do noting yet, its created by interface force!
+end;
+
+procedure TChatGptMenuWizard.RenewUI(AForm: TCustomForm);
+begin
+  if not Assigned(AForm) then
+    Exit;
+
+  if TSingletonSettingObj.Instance.RighToLeft then
+    AForm.BiDiMode := bdRightToLeft
+  else
+    AForm.BiDiMode := bdLeftToRight;
+
+  Cs.Enter;
+  if AForm.FindChildControl('Fram_Question1') <> nil then
+  with AForm.FindComponent('Fram_Question1') as TFram_Question do
+  begin
+    if TSingletonSettingObj.Instance.RighToLeft then
+    begin
+      Btn_Ask.Left := 335;
+      Btn_Clipboard.Left := 213;
+      Btn_Clear.Left := 133;
+    end
+    else
+    begin
+      Btn_Ask.Left := 15;
+      Btn_Clipboard.Left := 96;
+      Btn_Clear.Left := 219;
+    end;
+  end;
+  Cs.Leave;
 end;
 
 { TEditNotifierHelper }
@@ -486,11 +524,13 @@ begin
     ClientWidth := 420;
     Position := poMainFormCenter;
   end;
-  Fram_Question := TFram_Question.Create(Self);
-  Fram_Question.Parent := Self;
-  Fram_Question.Align := alClient;
-  Fram_Question.Show;
-  Fram_Question.BringToFront;
+
+  Fram_Question1 := TFram_Question.Create(Self);
+  Fram_Question1.Name := 'Fram_Question1';
+  Fram_Question1.Parent := Self;
+  Fram_Question1.Align := alClient;
+  Fram_Question1.Show;
+  Fram_Question1.BringToFront;
 end;
 
 destructor TChatGPTDockForm.Destroy;
@@ -503,7 +543,6 @@ end;
 initialization
   FChatGPTSubMenu := nil;
   FChatGPTDockForm := nil;
-  FrmChatGPT := nil;
 
 finalization
   RemoveAferUnInstall;

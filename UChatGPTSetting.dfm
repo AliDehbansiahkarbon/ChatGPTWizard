@@ -104,6 +104,7 @@ object Frm_Setting: TFrm_Setting
       Top = 78
       Width = 122
       Height = 23
+      Style = csDropDownList
       ItemIndex = 0
       TabOrder = 4
       Text = 'text-davinci-003'
@@ -151,6 +152,14 @@ object Frm_Setting: TFrm_Setting
       ParentBiDiMode = False
       State = cbChecked
       TabOrder = 8
+    end
+    object chk_Rtl: TCheckBox
+      Left = 224
+      Top = 80
+      Width = 97
+      Height = 17
+      Caption = 'Righ To Left'
+      TabOrder = 9
     end
   end
 end
