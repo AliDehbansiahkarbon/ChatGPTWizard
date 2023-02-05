@@ -43,6 +43,7 @@ type
     procedure CopyToClipBoard;
     procedure CreateProgressbar;
   public
+    procedure TerminateThred;
     procedure OnUpdateMessage(var Msg: TMessage); message WM_UPDATE_MESSAGE;
     procedure OnProgressMessage(var Msg: TMessage); message WM_PROGRESS_MESSAGE;
   end;
@@ -142,6 +143,12 @@ begin
     CopyToClipBoard;
 
   FPrg.Free;
+end;
+
+procedure TFram_Question.TerminateThred;
+begin
+  if Assigned(FTrd) then
+    FTrd.Terminate;
 end;
 
 end.

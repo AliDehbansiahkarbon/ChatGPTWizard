@@ -3,8 +3,8 @@ object Frm_Setting: TFrm_Setting
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'Setting'
-  ClientHeight = 240
-  ClientWidth = 452
+  ClientHeight = 248
+  ClientWidth = 454
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,10 +19,12 @@ object Frm_Setting: TFrm_Setting
     AlignWithMargins = True
     Left = 3
     Top = 3
-    Width = 446
-    Height = 234
+    Width = 448
+    Height = 242
     Align = alClient
     TabOrder = 0
+    ExplicitWidth = 446
+    ExplicitHeight = 234
     object Label1: TLabel
       Left = 20
       Top = 24

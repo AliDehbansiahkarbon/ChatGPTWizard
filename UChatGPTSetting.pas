@@ -34,6 +34,7 @@ type
     FIdentifier: string;
     FCodeFormatter: Boolean;
     FRightToLeft: Boolean;
+    FRootMenuIndex: Integer;
 
     class var FInstance: TSingletonSettingObj;
     class function GetInstance: TSingletonSettingObj; static;
@@ -58,6 +59,7 @@ type
     property LeftIdentifier: string read GetLeftIdentifier;
     property RightIdentifier: string read GetRightIdentifier;
     property RighToLeft: Boolean read FRightToLeft write FRightToLeft;
+    property RootMenuIndex: Integer read FRootMenuIndex write FRootMenuIndex;
   end;
 
   TFrm_Setting = class(TForm)

@@ -83,6 +83,7 @@ type
 {                                                       }
 {*******************************************************}
   TChatGPTDockForm = class(TDockableForm)
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     Fram_Question1: TFram_Question;
   public
@@ -114,12 +115,17 @@ begin
 end;
 
 procedure RemoveAferUnInstall;
+var
+  LvRootMenu: TMainMenu;
 begin
   if Assigned(FChatGPTDockForm) then
   begin
     FChatGPTDockForm.Close;
     FreeAndNil(FChatGPTDockForm);
   end;
+
+  LvRootMenu := (BorlandIDEServices as INTAServices).MainMenu;
+  LvRootMenu.Items.Delete(TSingletonSettingObj.Instance.RootMenuIndex);
 
   if FMainMenuIndex <> WizardFail then
     (BorlandIDEServices as IOTAWizardServices).RemoveWizard(FMainMenuIndex);
@@ -220,6 +226,7 @@ begin
     LvMainMenu := (BorlandIDEServices as INTAServices).MainMenu;
     LvMainMenu.Items.Insert(LvMainMenu.Items.Count - 1, FRoot);
   end;
+  TSingletonSettingObj.Instance.RootMenuIndex := LvMainMenu.Items.IndexOf(FRoot);
   TSingletonSettingObj.Instance.ReadRegistry;
 end;
 
@@ -314,17 +321,26 @@ begin
   if AForm.FindChildControl('Fram_Question1') <> nil then
   with AForm.FindComponent('Fram_Question1') as TFram_Question do
   begin
+    Align := alClient;
     if TSingletonSettingObj.Instance.RighToLeft then
     begin
-      Btn_Ask.Left := 335;
-      Btn_Clipboard.Left := 213;
-      Btn_Clear.Left := 133;
+      Btn_Ask.Left := pnlTop.Width - Btn_Ask.Width - 5;
+      Btn_Clipboard.Left := Btn_Ask.Left - Btn_Clipboard.Width - 5;
+      Btn_Clear.Left := Btn_Clipboard.Left - Btn_Clear.Width - 5;
+
+      Btn_Ask.Anchors := [TAnchorKind.akTop, TAnchorKind.akRight];
+      Btn_Clipboard.Anchors := [TAnchorKind.akTop, TAnchorKind.akRight];
+      Btn_Clear.Anchors := [TAnchorKind.akTop, TAnchorKind.akRight];
     end
     else
     begin
       Btn_Ask.Left := 15;
-      Btn_Clipboard.Left := 96;
-      Btn_Clear.Left := 219;
+      Btn_Clipboard.Left := Btn_Ask.Left + Btn_Ask.Width + 5;
+      Btn_Clear.Left := Btn_Clipboard.Left + Btn_Clipboard.Width + 5;
+
+      Btn_Ask.Anchors := [TAnchorKind.akTop, TAnchorKind.akLeft];
+      Btn_Clipboard.Anchors := [TAnchorKind.akTop, TAnchorKind.akLeft];
+      Btn_Clear.Anchors := [TAnchorKind.akTop, TAnchorKind.akLeft];
     end;
   end;
   Cs.Leave;
@@ -531,6 +547,8 @@ begin
   Fram_Question1.Align := alClient;
   Fram_Question1.Show;
   Fram_Question1.BringToFront;
+  Self.OnKeyDown := FormKeyDown;
+  self.KeyPreview := True;
 end;
 
 destructor TChatGPTDockForm.Destroy;
@@ -538,6 +556,15 @@ begin
   SaveStateNecessary := True;
   inherited;
   FChatGPTDockForm := nil;
+end;
+
+procedure TChatGPTDockForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Ord(Key) = 27 then
+  begin
+    Fram_Question1.TerminateThred;
+    Close;
+  end;
 end;
 
 initialization

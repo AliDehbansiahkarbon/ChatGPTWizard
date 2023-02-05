@@ -1,37 +1,39 @@
 object Fram_Question: TFram_Question
   Left = 0
   Top = 0
-  Width = 435
-  Height = 534
+  Width = 544
+  Height = 333
   TabOrder = 0
   object pnlMain: TPanel
     Left = 0
     Top = 0
-    Width = 435
-    Height = 534
+    Width = 544
+    Height = 333
     Align = alClient
     ParentColor = True
     TabOrder = 0
     object splitter: TSplitter
       Left = 1
-      Top = 156
-      Width = 433
+      Top = 159
+      Width = 542
       Height = 3
       Cursor = crVSplit
       Align = alTop
       ExplicitLeft = 8
+      ExplicitTop = 156
+      ExplicitWidth = 433
     end
     object pnlTop: TPanel
       Left = 1
       Top = 1
-      Width = 433
-      Height = 41
+      Width = 542
+      Height = 44
       Align = alTop
       TabOrder = 0
       object Btn_Clipboard: TButton
         Left = 96
         Top = 6
-        Width = 116
+        Width = 137
         Height = 28
         Caption = 'Copy to Clipboard'
         TabOrder = 1
@@ -51,7 +53,7 @@ object Fram_Question: TFram_Question
         OnClick = Btn_AskClick
       end
       object Btn_Clear: TButton
-        Left = 219
+        Left = 246
         Top = 6
         Width = 74
         Height = 28
@@ -62,13 +64,13 @@ object Fram_Question: TFram_Question
     end
     object pnlQuestion: TPanel
       Left = 1
-      Top = 42
-      Width = 433
+      Top = 45
+      Width = 542
       Height = 114
       Align = alTop
       TabOrder = 1
       DesignSize = (
-        433
+        542
         114)
       object Lbl_Question: TLabel
         Left = 7
@@ -86,7 +88,7 @@ object Fram_Question: TFram_Question
       object mmoQuestion: TMemo
         Left = 11
         Top = 20
-        Width = 410
+        Width = 519
         Height = 89
         Hint = 'Type a question and press Ctrl + Enter'
         Anchors = [akLeft, akTop, akRight, akBottom]
@@ -107,14 +109,14 @@ object Fram_Question: TFram_Question
     end
     object pnlAnswer: TPanel
       Left = 1
-      Top = 159
-      Width = 433
-      Height = 340
+      Top = 162
+      Width = 542
+      Height = 136
       Align = alClient
       TabOrder = 2
       DesignSize = (
-        433
-        340)
+        542
+        136)
       object Lbl_Answer: TLabel
         Left = 15
         Top = 5
@@ -131,8 +133,8 @@ object Fram_Question: TFram_Question
       object mmoAnswer: TMemo
         Left = 11
         Top = 22
-        Width = 406
-        Height = 309
+        Width = 515
+        Height = 105
         Anchors = [akLeft, akTop, akRight, akBottom]
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -148,17 +150,17 @@ object Fram_Question: TFram_Question
     end
     object pnlBottom: TPanel
       Left = 1
-      Top = 499
-      Width = 433
+      Top = 298
+      Width = 542
       Height = 34
       Align = alBottom
       TabOrder = 3
       DesignSize = (
-        433
+        542
         34)
       object chk_AutoCopy: TCheckBox
         AlignWithMargins = True
-        Left = 271
+        Left = 380
         Top = 6
         Width = 146
         Height = 20
