@@ -114,9 +114,6 @@ object Fram_Question: TFram_Question
       Height = 136
       Align = alClient
       TabOrder = 2
-      DesignSize = (
-        542
-        136)
       object Lbl_Answer: TLabel
         Left = 15
         Top = 5
@@ -131,11 +128,13 @@ object Fram_Question: TFram_Question
         ParentFont = False
       end
       object mmoAnswer: TMemo
-        Left = 11
-        Top = 22
-        Width = 515
-        Height = 105
-        Anchors = [akLeft, akTop, akRight, akBottom]
+        AlignWithMargins = True
+        Left = 4
+        Top = 21
+        Width = 534
+        Height = 111
+        Margins.Top = 20
+        Align = alClient
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -12
@@ -146,6 +145,10 @@ object Fram_Question: TFram_Question
         ReadOnly = True
         ScrollBars = ssVertical
         TabOrder = 0
+        ExplicitLeft = 11
+        ExplicitTop = 22
+        ExplicitWidth = 515
+        ExplicitHeight = 105
       end
     end
     object pnlBottom: TPanel
