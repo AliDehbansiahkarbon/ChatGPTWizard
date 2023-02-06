@@ -58,6 +58,8 @@ var
   LvUrl: string;
   LvModel: string;
   LvQuestion: string;
+  LvMaxToken: Integer;
+  LvTemperature: Integer;
 begin
   if mmoQuestion.Lines.Text.Trim.IsEmpty then
   begin
@@ -72,10 +74,12 @@ begin
   LvApiKey := TSingletonSettingObj.Instance.ApiKey;
   LvUrl := TSingletonSettingObj.Instance.URL;
   LvModel := TSingletonSettingObj.Instance.Model;
+  LvMaxToken := TSingletonSettingObj.Instance.MaxToken;
+  LvTemperature := TSingletonSettingObj.Instance.Temperature;
   Cs.Leave;
 
   LvQuestion := mmoQuestion.Lines.Text;
-  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, LvQuestion, LvUrl);
+  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, LvQuestion, LvUrl, LvMaxToken, LvTemperature);
   FTrd.Start;
 end;
 

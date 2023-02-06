@@ -20,6 +20,8 @@ type
   private
     FHandle: HWND;
     FPrompt: string;
+    FMaxToken: Integer;
+    FTemperature: Integer;
     FModel: string;
     FApiKey: string;
     FFormattedResponse: TStringList;
@@ -27,7 +29,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string);
+    constructor Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer);
     destructor Destroy; override;
   end;
 
@@ -94,7 +96,7 @@ type
     FUrl: string;
   public
     constructor Create(const AAccessToken, AUrl: string);
-    function Query(const AModel: string; const APrompt: string): string;
+    function Query(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
   end;
 
 implementation
@@ -106,7 +108,7 @@ begin
   FUrl := AUrl;
 end;
 
-function TOpenAIAPI.Query(const AModel: string; const APrompt: string): string;
+function TOpenAIAPI.Query(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
 var
   LvHttpClient: TIdHTTP;
   LvSslIOHandler: TIdSSLIOHandlerSocketOpenSSL;
@@ -126,8 +128,8 @@ begin
   begin
     model := AModel;
     prompt := APrompt;
-    max_tokens := 2048;
-    temperature := 0;
+    max_tokens := AMaxToken;
+    temperature := Aemperature;
   end;
 
   try
@@ -175,7 +177,7 @@ begin
 end;
 
 { TExecutorTrd }
-constructor TExecutorTrd.Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string);
+constructor TExecutorTrd.Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer);
 begin
   inherited Create(True);
   FreeOnTerminate := True;
@@ -183,6 +185,8 @@ begin
   FApiKey := AApiKey;
   FModel := AModel;
   FPrompt := APrompt;
+  FMaxToken := AMaxToken;
+  FTemperature := ATemperature;
   FHandle := AHandle;
   FUrl := AUrl;
   PostMessage(FHandle, WM_PROGRESS_MESSAGE, 1, 0);
@@ -205,7 +209,7 @@ begin
   try
     try
       if not Terminated then
-        LvResult := LvAPI.Query(FModel, FPrompt).Trim;
+        LvResult := LvAPI.Query(FModel, FPrompt, FMaxToken, FTemperature).Trim;
 
       if (not Terminated) and (not LvResult.IsEmpty) then
         SendMessageW(FHandle, WM_UPDATE_MESSAGE, Integer(LvResult), 0);

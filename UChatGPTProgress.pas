@@ -70,14 +70,18 @@ var
   LvApiKey: string;
   LvUrl: string;
   LvModel: string;
+  LvMaxToken: Integer;
+  LvTemperature: Integer;
 begin
   Cs.Enter;
   LvApiKey := TSingletonSettingObj.Instance.ApiKey;
   LvUrl := TSingletonSettingObj.Instance.URL;
   LvModel := TSingletonSettingObj.Instance.Model;
+  LvMaxToken := TSingletonSettingObj.Instance.MaxToken;
+  LvTemperature := TSingletonSettingObj.Instance.Temperature;
   Cs.Leave;
 
-  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, SelectedText, LvUrl);
+  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, SelectedText, LvUrl, LvMaxToken, LvTemperature);
   FTrd.Start;
 end;
 
