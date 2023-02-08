@@ -26,10 +26,13 @@ type
     FApiKey: string;
     FFormattedResponse: TStringList;
     FUrl: string;
+    FProxySetting: TProxySetting;
   protected
     procedure Execute; override;
   public
-    constructor Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer);
+    constructor Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer;
+                       AActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string; 
+                       AProxyPassword: string);
     destructor Destroy; override;
   end;
 
@@ -89,23 +92,25 @@ type
     property choices: TObjectList<TChoice> read FChoices write FChoices;
     property usage: Tusage read FUsage write FUsage;
   end;
-
+  
   TOpenAIAPI = class
   private
     FAccessToken: string;
     FUrl: string;
+    FProxySetting: TProxySetting;
   public
-    constructor Create(const AAccessToken, AUrl: string);
+    constructor Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting);
     function Query(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
   end;
 
 implementation
 
-constructor TOpenAIAPI.Create(const AAccessToken, AUrl: string);
+constructor TOpenAIAPI.Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting);
 begin
   inherited Create;
   FAccessToken := AAccessToken;
   FUrl := AUrl;
+  FProxySetting := AProxySetting;
 end;
 
 function TOpenAIAPI.Query(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
@@ -120,6 +125,14 @@ var
   LvResponseStream: TStringStream;
 begin
   LvHttpClient := TIdHTTP.Create(nil);
+  if (FProxySetting.Active) and (not LvHttpClient.ProxyParams.ProxyServer.IsEmpty) then
+  begin  
+    LvHttpClient.ProxyParams.ProxyServer := FProxySetting.ProxyHost;
+    LvHttpClient.ProxyParams.ProxyPort := FProxySetting.ProxyPort;
+    LvHttpClient.ProxyParams.ProxyUsername := FProxySetting.ProxyUsername;
+    LvHttpClient.ProxyParams.ProxyPassword := FProxySetting.ProxyPassword;
+  end;    
+  
   LvSslIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
   LvChatGPTResponse := TChatGPTResponse.Create;
   LvRequestJSON := TRequestJSON.Create;
@@ -177,7 +190,9 @@ begin
 end;
 
 { TExecutorTrd }
-constructor TExecutorTrd.Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer);
+constructor TExecutorTrd.Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer;
+                       AActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string; 
+                       AProxyPassword: string);
 begin
   inherited Create(True);
   FreeOnTerminate := True;
@@ -189,12 +204,14 @@ begin
   FTemperature := ATemperature;
   FHandle := AHandle;
   FUrl := AUrl;
+  FProxySetting := TProxySetting.Create;
   PostMessage(FHandle, WM_PROGRESS_MESSAGE, 1, 0);
 end;
 
 destructor TExecutorTrd.Destroy;
 begin
   FFormattedResponse.Free;
+  FProxySetting.Free;
   PostMessage(FHandle, WM_PROGRESS_MESSAGE, 0, 0);
   inherited;
 end;
@@ -205,7 +222,7 @@ var
   LvResult: string;
 begin
   inherited;
-  LvAPI := TOpenAIAPI.Create(FApiKey, FUrl);
+  LvAPI := TOpenAIAPI.Create(FApiKey, FUrl, FProxySetting);
   try
     try
       if not Terminated then

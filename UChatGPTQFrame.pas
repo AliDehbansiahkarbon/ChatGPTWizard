@@ -60,6 +60,7 @@ var
   LvQuestion: string;
   LvMaxToken: Integer;
   LvTemperature: Integer;
+  LvSetting: TSingletonSettingObj;
 begin
   if mmoQuestion.Lines.Text.Trim.IsEmpty then
   begin
@@ -71,16 +72,18 @@ begin
   end;
 
   Cs.Enter;
-  LvApiKey := TSingletonSettingObj.Instance.ApiKey;
-  LvUrl := TSingletonSettingObj.Instance.URL;
-  LvModel := TSingletonSettingObj.Instance.Model;
-  LvMaxToken := TSingletonSettingObj.Instance.MaxToken;
-  LvTemperature := TSingletonSettingObj.Instance.Temperature;
-  Cs.Leave;
-
+  LvSetting := TSingletonSettingObj.Instance;
+  LvApiKey := LvSetting.ApiKey;
+  LvUrl := LvSetting.URL;
+  LvModel := LvSetting.Model;
+  LvMaxToken := LvSetting.MaxToken;
+  LvTemperature := LvSetting.Temperature;
   LvQuestion := mmoQuestion.Lines.Text;
-  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, LvQuestion, LvUrl, LvMaxToken, LvTemperature);
+  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, LvQuestion, LvUrl, LvMaxToken, LvTemperature,
+                              LvSetting.ProxySetting.Active, LvSetting.ProxySetting.ProxyHost, LvSetting.ProxySetting.ProxyPort,
+                              LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword);
   FTrd.Start;
+  Cs.Leave;
 end;
 
 procedure TFram_Question.Btn_ClearClick(Sender: TObject);

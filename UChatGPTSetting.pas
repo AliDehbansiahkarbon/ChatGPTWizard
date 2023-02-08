@@ -11,7 +11,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, System.Win.Registry, System.SyncObjs,
-  ToolsAPI, System.StrUtils, System.Generics.Collections;
+  ToolsAPI, System.StrUtils, System.Generics.Collections, Vcl.Mask;
 
 const
   DefaultURL = 'https://api.openai.com/v1/completions';
@@ -23,6 +23,22 @@ const
   DefaultRTL = False;
 
 type
+
+  TProxySetting = class
+  private
+    FActive: Boolean;
+    FProxyHost: string;
+    FProxyPort: Integer;
+    FProxyUsername: string;
+    FProxyPassword: string;
+  public
+    property Active: Boolean read FActive write FActive;
+    property ProxyHost: string read FProxyHost write FProxyHost;
+    property ProxyPort: Integer read FProxyPort write FProxyPort;
+    property ProxyUsername: string read FProxyUsername write FProxyUsername;
+    property ProxyPassword: string read FProxyPassword write FProxyPassword;
+  end;
+
   // Note: This class is thread-safe, since accessing the class variable is done in a critical section!
   TSingletonSettingObj = class(TObject)
   private
@@ -35,11 +51,13 @@ type
     FCodeFormatter: Boolean;
     FRightToLeft: Boolean;
     FRootMenuIndex: Integer;
+    FProxySetting: TProxySetting;
 
     class var FInstance: TSingletonSettingObj;
     class function GetInstance: TSingletonSettingObj; static;
     procedure LoadDefaults;
     constructor Create;
+    destructor Destroy; override;
     function GetLeftIdentifier: string;
     function GetRightIdentifier: string;
   public
@@ -60,26 +78,35 @@ type
     property RightIdentifier: string read GetRightIdentifier;
     property RighToLeft: Boolean read FRightToLeft write FRightToLeft;
     property RootMenuIndex: Integer read FRootMenuIndex write FRootMenuIndex;
+    property ProxySetting: TProxySetting read FProxySetting write FProxySetting;
   end;
 
   TFrm_Setting = class(TForm)
     pnl1: TPanel;
-    Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
-    Label4: TLabel;
-    Label5: TLabel;
-    Edt_Url: TEdit;
-    Edt_ApiKey: TEdit;
-    Edt_MaxToken: TEdit;
-    Edt_Temperature: TEdit;
+    grp_OpenAI: TGroupBox;
+    lbl_1: TLabel;
+    lbl_2: TLabel;
+    lbl_3: TLabel;
+    lbl_4: TLabel;
+    lbl_5: TLabel;
+    edt_Url: TEdit;
+    edt_ApiKey: TEdit;
+    edt_MaxToken: TEdit;
+    edt_Temperature: TEdit;
     cbbModel: TComboBox;
-    Btn_Save: TButton;
+    grp_Other: TGroupBox;
     Btn_Default: TButton;
-    Lbl_SourceIdentifier: TLabel;
+    Btn_Save: TButton;
+    lbl_6: TLabel;
     Edt_SourceIdentifier: TEdit;
     chk_CodeFormatter: TCheckBox;
     chk_Rtl: TCheckBox;
+    grp_Proxy: TGroupBox;
+    lbEdt_ProxyHost: TLabeledEdit;
+    lbEdt_ProxyPort: TLabeledEdit;
+    chk_ProxyActive: TCheckBox;
+    lbEdt_ProxyUserName: TLabeledEdit;
+    lbEdt_ProxyPassword: TLabeledEdit;
     procedure Btn_SaveClick(Sender: TObject);
     procedure Btn_DefaultClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -101,7 +128,14 @@ implementation
 constructor TSingletonSettingObj.Create;
 begin
   inherited;
+  FProxySetting := TProxySetting.Create;
   LoadDefaults;
+end;
+
+destructor TSingletonSettingObj.Destroy;
+begin
+  FProxySetting.Free;
+  inherited;
 end;
 
 class function TSingletonSettingObj.GetInstance: TSingletonSettingObj;
@@ -145,6 +179,11 @@ begin
   FIdentifier := DefaultIdentifier;
   FCodeFormatter := DefaultCodeFormatter;
   FRightToLeft := DefaultRTL;
+  FProxySetting.ProxyHost := '';
+  FProxySetting.ProxyPort := 0;
+  FProxySetting.ProxyUsername := '';
+  FProxySetting.ProxyPassword := '';
+  FProxySetting.Active := False;
 end;
 
 procedure TSingletonSettingObj.ReadRegistry;
@@ -165,11 +204,11 @@ begin
         begin
           if ValueExists('ChatGPTApiKey') then
             FApiKey := ReadString('ChatGPTApiKey');
-            
+
           if ValueExists('ChatGPTURL') then
             FURL := IfThen(ReadString('ChatGPTURL').IsEmpty, DefaultURL, ReadString('ChatGPTURL'))
           else
-            FURL := DefaultURL;           
+            FURL := DefaultURL;
 
           if ValueExists('ChatGPTModel') then
             FModel := IfThen(ReadString('ChatGPTModel').IsEmpty, DefaultModel, ReadString('ChatGPTModel'))
@@ -183,7 +222,7 @@ begin
               FMaxToken := DefaultMaxToken;
           end
           else
-            FMaxToken := DefaultMaxToken;          
+            FMaxToken := DefaultMaxToken;
 
           if ValueExists('ChatGPTTemperature') then
           begin
@@ -197,7 +236,7 @@ begin
           if ValueExists('ChatGPTSourceIdentifier') then
             FIdentifier := IfThen(ReadString('ChatGPTSourceIdentifier').IsEmpty, DefaultIdentifier, ReadString('ChatGPTSourceIdentifier'))
           else
-            FIdentifier := DefaultIdentifier;              
+            FIdentifier := DefaultIdentifier;
 
           if ValueExists('ChatGPTCodeFormatter') then
             FCodeFormatter := ReadBool('ChatGPTCodeFormatter')
@@ -208,6 +247,31 @@ begin
             FRightToLeft := ReadBool('ChatGPTRTL')
           else
             FRightToLeft := DefaultRTL;
+
+          if ValueExists('ChatGPTProxyActive') then
+            FProxySetting.Active := ReadBool('ChatGPTProxyActive')
+          else
+            FProxySetting.Active := False;
+
+          if ValueExists('ChatGPTProxyHost') then
+            FProxySetting.ProxyHost := ReadString('ChatGPTProxyHost')
+          else
+            FProxySetting.ProxyHost := '';
+
+          if ValueExists('ChatGPTProxyPort') then
+            FProxySetting.ProxyPort := ReadInteger('ChatGPTProxyPort')
+          else
+            FProxySetting.ProxyPort := 0;
+
+          if ValueExists('ChatGPTProxyUsername') then
+            FProxySetting.ProxyUsername := ReadString('ChatGPTProxyUsername')
+          else
+            FProxySetting.ProxyUsername := '';
+
+          if ValueExists('ChatGPTProxyPassword') then
+            FProxySetting.ProxyPassword := ReadString('ChatGPTProxyPassword')
+          else
+            FProxySetting.ProxyPassword := '';
         end;
       end;
     except
@@ -263,6 +327,11 @@ begin
         WriteString('ChatGPTSourceIdentifier', FIdentifier);
         WriteBool('ChatGPTCodeFormatter', FCodeFormatter);
         WriteBool('ChatGPTRTL', FRightToLeft);
+        WriteBool('ChatGPTProxyActive', FProxySetting.Active);
+        WriteString('ChatGPTProxyHost', FProxySetting.ProxyHost);
+        WriteInteger('ChatGPTProxyPort', FProxySetting.ProxyPort);
+        WriteString('ChatGPTProxyUsername', FProxySetting.ProxyUsername);
+        WriteString('ChatGPTProxyChatGPTProxyPassword', FProxySetting.ProxyPassword);
       end;
     end;
   finally
@@ -279,6 +348,8 @@ begin
   Edt_Temperature.Text := IntToStr(DefaultTemperature);
   chk_CodeFormatter.Checked := DefaultCodeFormatter;
   chk_Rtl.Checked := DefaultRTL;
+  lbEdt_ProxyHost.Text := '';
+  lbEdt_ProxyPort.Text := '';
 end;
 
 procedure TFrm_Setting.Btn_SaveClick(Sender: TObject);
@@ -294,6 +365,11 @@ begin
   LvSettingObj.RighToLeft := chk_Rtl.Checked;
   LvSettingObj.CodeFormatter := chk_CodeFormatter.Checked;
   LvSettingObj.Identifier := Edt_SourceIdentifier.Text;
+  LvSettingObj.ProxySetting.ProxyHost := lbEdt_ProxyHost.Text;
+  LvSettingObj.ProxySetting.ProxyPort := StrToIntDef(lbEdt_ProxyPort.Text, 0);
+  LvSettingObj.ProxySetting.Active := chk_ProxyActive.Checked;
+  LvSettingObj.ProxySetting.ProxyUsername := lbEdt_ProxyUserName.Text;
+  LvSettingObj.ProxySetting.ProxyPassword := lbEdt_ProxyPassword.Text;
 
   LvSettingObj.WriteToRegistry;
   Close;

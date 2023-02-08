@@ -72,17 +72,20 @@ var
   LvModel: string;
   LvMaxToken: Integer;
   LvTemperature: Integer;
+  LvSetting: TSingletonSettingObj;
 begin
   Cs.Enter;
-  LvApiKey := TSingletonSettingObj.Instance.ApiKey;
-  LvUrl := TSingletonSettingObj.Instance.URL;
-  LvModel := TSingletonSettingObj.Instance.Model;
-  LvMaxToken := TSingletonSettingObj.Instance.MaxToken;
-  LvTemperature := TSingletonSettingObj.Instance.Temperature;
-  Cs.Leave;
-
-  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, SelectedText, LvUrl, LvMaxToken, LvTemperature);
+  LvSetting := TSingletonSettingObj.Instance;
+  LvApiKey := LvSetting.ApiKey;
+  LvUrl := LvSetting.URL;
+  LvModel := LvSetting.Model;
+  LvMaxToken := LvSetting.MaxToken;
+  LvTemperature := LvSetting.Temperature;
+  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, SelectedText, LvUrl, LvMaxToken, LvTemperature,
+                              LvSetting.ProxySetting.Active, LvSetting.ProxySetting.ProxyHost, LvSetting.ProxySetting.ProxyPort,
+                              LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword);
   FTrd.Start;
+  Cs.Leave;
 end;
 
 procedure TFrm_Progress.OnProgressMessage(var Msg: TMessage);
