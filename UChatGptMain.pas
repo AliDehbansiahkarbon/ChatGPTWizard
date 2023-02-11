@@ -23,10 +23,12 @@ type
   private
     FRoot, FAskMenu,
     FSettingMenu, FAskMenuDockable: TMenuItem;
+    FAskSubmenuHidden: TMenuItem;
     FSetting: TSingletonSettingObj;
     procedure AskMenuClick(Sender: TObject);
     procedure ChatGPTDockableClick(Sender: TObject);
     procedure ChatGPTSettingMenuClick(Sender: TObject);
+    procedure AskSubmenuHiddenOnClick(Sender: TObject);
     procedure RenewUI(AForm: TCustomForm);
   protected
     { protected declarations }
@@ -55,9 +57,9 @@ type
     procedure OnChatGPTSubMenuClick(Sender: TObject; MenuItem: TMenuItem);
   private
     FMenuHook: TCpMenuHook;
-    function GetQuestion(AStr: string): string;
-    function CreateMsg: string;
-    procedure FormatSource;
+    class function GetQuestion(AStr: string): string;
+    class function CreateMsg: string;
+    class procedure FormatSource;
   public
     constructor Create;
     destructor Destroy;override;
@@ -202,6 +204,14 @@ begin
     FSettingMenu.ImageIndex := 36;
   end;
 
+  if not Assigned(FAskSubmenuHidden) then
+  begin
+    FAskSubmenuHidden := TMenuItem.Create(nil);
+    FAskSubmenuHidden.ShortCut := TextToShortCut('Ctrl+Alt+Shift+A');
+    FAskSubmenuHidden.OnClick := AskSubmenuHiddenOnClick;
+    FAskSubmenuHidden.Visible := False;
+  end;
+
   if not Assigned(FAskMenuDockable) then
   begin
     FAskMenuDockable := TMenuItem.Create(nil);
@@ -219,6 +229,7 @@ begin
     FRoot.Add(FAskMenu);
     FRoot.Add(FAskMenuDockable);
     FRoot.Add(FSettingMenu);
+    FRoot.Add(FAskSubmenuHidden);
   end;
 
   if not Assigned((BorlandIDEServices as INTAServices).MainMenu.Items.Find('ChatGPTRootMenu')) then
@@ -260,6 +271,57 @@ begin
       FreeAndNil(FrmChatGPTMain);
     end;
   end;
+end;
+
+procedure TChatGptMenuWizard.AskSubmenuHiddenOnClick(Sender: TObject);
+var
+  LvEditView: IOTAEditView;
+  LvEditBlock: IOTAEditBlock;
+  LvSelectedText: string;
+begin
+  TSingletonSettingObj.Instance.ReadRegistry;
+  if TSingletonSettingObj.Instance.ApiKey = '' then
+  begin
+    if TSingletonSettingObj.Instance.GetSetting.Trim.IsEmpty then
+      Exit;
+  end;
+
+  LvEditView := (BorlandIDEServices as IOTAEditorServices).TopView;
+
+  if not Assigned(LvEditView) then
+    Exit;
+
+  // Get the selected text in the edit view
+  LvEditBlock := LvEditView.GetBlock;
+
+  // If there is a selection of text, get it via editblock.Text
+  if (LvEditBlock.StartingColumn <> LvEditBlock.EndingColumn) or (LvEditBlock.StartingRow <> LvEditBlock.EndingRow) then
+  begin
+    LvSelectedText := LvEditBlock.Text;
+
+    //If it is a ChatGPT question
+    if (SameStr(LeftStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.LeftIdentifier)) and (SameStr(RightStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.RightIdentifier)) then
+    begin
+      if not TSingletonSettingObj.Instance.ApiKey.Trim.IsEmpty then
+      begin
+        Frm_Progress := TFrm_Progress.Create(nil);
+        try
+          frm_Progress.SelectedText := TEditNotifierHelper.GetQuestion(LvEditBlock.Text);
+          TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Progress, Frm_Progress); //Apply Theme
+          Frm_Progress.ShowModal;
+          LvEditView.Buffer.EditPosition.InsertText(Frm_Progress.Answer.TrimLineText);
+          if not (Frm_Progress.HasError) and (TSingletonSettingObj.Instance.CodeFormatter) then
+            TEditNotifierHelper.FormatSource;
+        finally
+          FreeAndNil(Frm_Progress);
+        end;
+      end;
+    end
+    else
+      ShowMessage(TEditNotifierHelper.CreateMsg);
+  end
+  else
+    ShowMessage(TEditNotifierHelper.CreateMsg);
 end;
 
 procedure TChatGptMenuWizard.BeforeSave;
@@ -354,9 +416,9 @@ var
 begin
   LvItem := TMenuItem.Create(nil);
   LvItem.Name := AName;
-  LvItem.Caption := ACaption;
+  LvItem.Caption := ACaption + '  ' + AShortCut;
   LvItem.OnClick := AOnClick;
-  LvItem.ShortCut := TextToShortCut(AShortCut);
+  //LvItem.ShortCut := TextToShortCut(AShortCut);
   AParentMenu.Add(LvItem);
   Result := LvItem;
 end;
@@ -434,7 +496,7 @@ begin
   FMenuHook := TCpMenuHook.Create(nil);
 end;
 
-function TEditNotifierHelper.CreateMsg: string;
+class function TEditNotifierHelper.CreateMsg: string;
 var
   LeftIdentifier: string;
   RightIdentifier: string;
@@ -476,7 +538,7 @@ procedure TEditNotifierHelper.EditorViewModified(const EditWindow: INTAEditWindo
 begin
 end;
 
-procedure TEditNotifierHelper.FormatSource;
+class procedure TEditNotifierHelper.FormatSource;
 var
   FEditorPopUpMenu: TPopupMenu;
 begin
@@ -484,7 +546,7 @@ begin
   FEditorPopUpMenu.Items.Find('Format Source').Click;
 end;
 
-function TEditNotifierHelper.GetQuestion(AStr: string): string;
+class function TEditNotifierHelper.GetQuestion(AStr: string): string;
 var
   LvTmpStr: string;
 begin
