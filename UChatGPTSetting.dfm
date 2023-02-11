@@ -27,64 +27,66 @@ object Frm_Setting: TFrm_Setting
       Left = 1
       Top = 1
       Width = 391
-      Height = 168
+      Height = 175
       Align = alTop
       Caption = 'OenAI preferences'
       TabOrder = 0
+      ExplicitLeft = -191
+      ExplicitTop = 93
       object lbl_1: TLabel
-        Left = 20
-        Top = 24
+        Left = 21
+        Top = 29
         Width = 51
         Height = 15
         Caption = 'Base URL:'
       end
       object lbl_2: TLabel
-        Left = 10
-        Top = 52
+        Left = 11
+        Top = 57
         Width = 61
         Height = 15
         Caption = 'Access Key:'
       end
       object lbl_3: TLabel
-        Left = 34
-        Top = 81
+        Left = 35
+        Top = 86
         Width = 37
         Height = 15
         Caption = 'Model:'
       end
       object lbl_4: TLabel
-        Left = 9
-        Top = 110
+        Left = 10
+        Top = 115
         Width = 62
         Height = 15
         Caption = 'Max-Token:'
       end
       object lbl_5: TLabel
-        Left = 2
-        Top = 141
+        Left = 3
+        Top = 146
         Width = 69
         Height = 15
         Caption = 'Temperature:'
       end
       object edt_Url: TEdit
-        Left = 77
-        Top = 18
+        Left = 78
+        Top = 23
         Width = 291
         Height = 23
         TabOrder = 0
         Text = 'https://api.openai.com/v1/completions'
       end
       object edt_ApiKey: TEdit
-        Left = 77
-        Top = 48
+        Left = 78
+        Top = 53
         Width = 291
         Height = 23
         PasswordChar = '*'
         TabOrder = 1
       end
       object edt_MaxToken: TEdit
-        Left = 79
-        Top = 107
+        Left = 80
+        Top = 112
         Width = 122
         Height = 23
         NumbersOnly = True
@@ -92,8 +94,8 @@ object Frm_Setting: TFrm_Setting
         Text = '2048'
       end
       object edt_Temperature: TEdit
-        Left = 79
-        Top = 137
+        Left = 80
+        Top = 142
         Width = 122
         Height = 23
         NumbersOnly = True
@@ -101,8 +103,8 @@ object Frm_Setting: TFrm_Setting
         Text = '0'
       end
       object cbbModel: TComboBox
-        Left = 79
-        Top = 78
+        Left = 80
+        Top = 83
         Width = 122
         Height = 23
         Style = csDropDownList
@@ -118,15 +120,15 @@ object Frm_Setting: TFrm_Setting
     end
     object grp_Other: TGroupBox
       Left = 1
-      Top = 169
+      Top = 176
       Width = 391
-      Height = 260
+      Height = 253
       Align = alClient
       Caption = 'IDE && Other'
       TabOrder = 1
       DesignSize = (
         391
-        260)
+        253)
       object lbl_6: TLabel
         Left = 258
         Top = 29
@@ -135,8 +137,8 @@ object Frm_Setting: TFrm_Setting
         Caption = 'Identifier:'
       end
       object Btn_Default: TButton
-        Left = 291
-        Top = 225
+        Left = 200
+        Top = 221
         Width = 89
         Height = 28
         Anchors = [akRight, akBottom]
@@ -145,8 +147,8 @@ object Frm_Setting: TFrm_Setting
         OnClick = Btn_DefaultClick
       end
       object Btn_Save: TButton
-        Left = 196
-        Top = 225
+        Left = 291
+        Top = 221
         Width = 89
         Height = 28
         Anchors = [akRight, akBottom]
@@ -186,12 +188,12 @@ object Frm_Setting: TFrm_Setting
       object grp_Proxy: TGroupBox
         Left = 11
         Top = 71
-        Width = 357
+        Width = 369
         Height = 148
         Caption = 'Proxy Setting'
         TabOrder = 5
         object lbEdt_ProxyHost: TLabeledEdit
-          Left = 68
+          Left = 67
           Top = 27
           Width = 262
           Height = 23
@@ -204,7 +206,7 @@ object Frm_Setting: TFrm_Setting
           Text = ''
         end
         object lbEdt_ProxyPort: TLabeledEdit
-          Left = 68
+          Left = 67
           Top = 56
           Width = 66
           Height = 23
@@ -220,13 +222,13 @@ object Frm_Setting: TFrm_Setting
         object chk_ProxyActive: TCheckBox
           Left = 223
           Top = 120
-          Width = 51
+          Width = 62
           Height = 17
           Caption = 'Active'
           TabOrder = 2
         end
         object lbEdt_ProxyUserName: TLabeledEdit
-          Left = 68
+          Left = 67
           Top = 85
           Width = 138
           Height = 23
@@ -240,7 +242,7 @@ object Frm_Setting: TFrm_Setting
           Text = ''
         end
         object lbEdt_ProxyPassword: TLabeledEdit
-          Left = 68
+          Left = 67
           Top = 114
           Width = 138
           Height = 23
