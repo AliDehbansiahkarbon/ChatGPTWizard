@@ -285,7 +285,7 @@ end;
 class procedure TSingletonSettingObj.RegisterFormClassForTheming(const AFormClass: TCustomFormClass; const Component: TComponent);
 {$IF CompilerVersion >= 32.0}
 Var
-  {$IF CompilerVersion > 32.0} // Breaking change to the Open Tools API - They fixed the wrongly defined interface
+  {$IF CompilerVersion > 33.0} // Breaking change to the Open Tools API - They fixed the wrongly defined interface
     ITS : IOTAIDEThemingServices;
   {$ELSE}
     ITS : IOTAIDEThemingServices250;
@@ -293,7 +293,7 @@ Var
 {$IFEND}
 begin
   {$IF CompilerVersion >= 32.0}
-  {$IF CompilerVersion > 32.0}
+  {$IF CompilerVersion > 33.0}
     If Supports(BorlandIDEServices, IOTAIDEThemingServices, ITS) Then
   {$ELSE}
     If Supports(BorlandIDEServices, IOTAIDEThemingServices250, ITS) Then
