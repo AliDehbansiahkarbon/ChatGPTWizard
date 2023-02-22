@@ -1,9 +1,10 @@
-{********************************************}
-{                                            }
-{   This is the setting form of the plugin.  }
-{   Could be found in the main menu.         }
-{                                            }
-{********************************************}
+{***************************************************}
+{                                                   }
+{   This is the setting form of the plugin.         }
+{   Could be found in the main menu.                }
+{   Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com) }
+{                                                   }
+{***************************************************}
 unit UChatGPTSetting;
 
 interface
@@ -11,7 +12,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, System.Win.Registry, System.SyncObjs,
-  ToolsAPI, System.StrUtils, System.Generics.Collections, Vcl.Mask;
+  ToolsAPI, System.StrUtils, System.Generics.Collections, Vcl.Mask, Vcl.ComCtrls;
 
 const
   DefaultURL = 'https://api.openai.com/v1/completions';
@@ -23,7 +24,6 @@ const
   DefaultRTL = False;
 
 type
-
   TProxySetting = class
   private
     FActive: Boolean;
@@ -52,6 +52,7 @@ type
     FRightToLeft: Boolean;
     FRootMenuIndex: Integer;
     FProxySetting: TProxySetting;
+    FCurrentActiveView: IOTAEditView;
 
     class var FInstance: TSingletonSettingObj;
     class function GetInstance: TSingletonSettingObj; static;
@@ -79,6 +80,7 @@ type
     property RighToLeft: Boolean read FRightToLeft write FRightToLeft;
     property RootMenuIndex: Integer read FRootMenuIndex write FRootMenuIndex;
     property ProxySetting: TProxySetting read FProxySetting write FProxySetting;
+    property CurrentActiveView: IOTAEditView read FCurrentActiveView write FCurrentActiveView;
   end;
 
   TFrm_Setting = class(TForm)
@@ -129,6 +131,7 @@ constructor TSingletonSettingObj.Create;
 begin
   inherited;
   FProxySetting := TProxySetting.Create;
+  CurrentActiveView := nil;
   LoadDefaults;
 end;
 

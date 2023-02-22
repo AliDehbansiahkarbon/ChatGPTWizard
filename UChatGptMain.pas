@@ -1,11 +1,18 @@
+{***************************************************}
+{                                                   }
+{   This unit is the main unit of the package       }
+{   including register function.                    }
+{   Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com) }
+{                                                   }
+{***************************************************}
 unit UChatGptMain;
 
 interface
 uses
   System.Classes, System.SysUtils, Vcl.Controls, Vcl.Menus, Vcl.Dialogs, Winapi.Windows,
-  {$IFNDEF NEXTGEN}System.StrUtils{$ELSE}AnsiStrings{$ENDIF !NEXTGEN}, ToolsAPI,
-  DockForm, System.Generics.Collections, Vcl.Forms, UChatGPTMenuHook, UChatGPTSetting,
-  UChatGPTQFrame, UChatGPTQuestion;
+  {$IFNDEF NEXTGEN}System.StrUtils{$ELSE}AnsiStrings{$ENDIF !NEXTGEN}, ToolsAPI, StructureViewAPI,
+  DockForm, System.Generics.Collections, Vcl.Forms, System.IOUtils,
+  UChatGPTMenuHook, UChatGPTSetting, UChatGPTQFrame, UChatGPTQuestion;
 
 type
   TTStringListHelper = class helper for TStringList
@@ -25,6 +32,7 @@ type
     FSettingMenu, FAskMenuDockable: TMenuItem;
     FAskSubmenuHidden: TMenuItem;
     FSetting: TSingletonSettingObj;
+    
     procedure AskMenuClick(Sender: TObject);
     procedure ChatGPTDockableClick(Sender: TObject);
     procedure ChatGPTSettingMenuClick(Sender: TObject);
@@ -57,6 +65,7 @@ type
     procedure OnChatGPTSubMenuClick(Sender: TObject; MenuItem: TMenuItem);
   private
     FMenuHook: TCpMenuHook;
+    FClassList: TStrings;
     class function GetQuestion(AStr: string): string;
     class function CreateMsg: string;
     class procedure FormatSource;
@@ -87,6 +96,7 @@ type
   TChatGPTDockForm = class(TDockableForm)
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
+    FClassList: TClassList;
     Fram_Question1: TFram_Question;
   public
     constructor Create(AOwner: TComponent);
@@ -154,6 +164,7 @@ begin
 
   TSingletonSettingObj.RegisterFormClassForTheming(TChatGPTDockForm, FChatGPTDockForm); //Apply Theme
   RenewUI(FChatGPTDockForm);
+  FChatGPTDockForm.Fram_Question1.ReloadClassList(FChatGPTDockForm.FClassList);
   FChatGPTDockForm.Show;
 end;
 
@@ -494,6 +505,7 @@ constructor TEditNotifierHelper.Create;
 begin
   inherited Create;
   FMenuHook := TCpMenuHook.Create(nil);
+  FClassList := TStringList.Create;
 end;
 
 class function TEditNotifierHelper.CreateMsg: string;
@@ -513,6 +525,7 @@ end;
 destructor TEditNotifierHelper.Destroy;
 begin
   FMenuHook.Free;
+  FClassList.Free;
   inherited;
 end;
 
@@ -532,6 +545,9 @@ procedure TEditNotifierHelper.EditorViewActivated(const EditWindow: INTAEditWind
 begin
   if not Assigned(FChatGPTSubMenu) then
     AddEditorContextMenu;
+
+  if Assigned(FChatGPTDockForm) and (FChatGPTDockForm.Showing) and (not EditView.SameView(TSingletonSettingObj.Instance.CurrentActiveView)) then
+    FChatGPTDockForm.Fram_Question1.ReloadClassList(FChatGPTDockForm.FClassList);
 end;
 
 procedure TEditNotifierHelper.EditorViewModified(const EditWindow: INTAEditWindow; const EditView: IOTAEditView);
@@ -610,12 +626,15 @@ begin
   Fram_Question1.Show;
   Fram_Question1.BringToFront;
   Self.OnKeyDown := FormKeyDown;
-  self.KeyPreview := True;
+  Self.KeyPreview := True;
+
+  FClassList := TClassList.Create;
 end;
 
 destructor TChatGPTDockForm.Destroy;
 begin
   SaveStateNecessary := True;
+  FClassList.Free;
   inherited;
   FChatGPTDockForm := nil;
 end;

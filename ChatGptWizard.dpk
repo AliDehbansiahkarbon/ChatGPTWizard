@@ -38,11 +38,14 @@ requires
 
 contains
   UChatGptMain in 'UChatGptMain.pas',
-  UChatGPTThread in 'UChatGPTThread.pas',
-  UChatGPTProgress in 'UChatGPTProgress.pas' {Frm_Progress},
-  UChatGPTMenuHook in 'UChatGPTMenuHook.pas',
-  UChatGPTSetting in 'UChatGPTSetting.pas' {Frm_Setting},
-  UChatGPTQFrame in 'UChatGPTQFrame.pas' {Fram_Question: TFrame},
-  UChatGPTQuestion in 'UChatGPTQuestion.pas' {FrmChatGPT};
+  UChatGPTThread in 'Utils\UChatGPTThread.pas',
+  UChatGPTProgress in 'Forms\UChatGPTProgress.pas' {Frm_Progress},
+  UChatGPTMenuHook in 'Utils\UChatGPTMenuHook.pas',
+  UChatGPTSetting in 'Forms\UChatGPTSetting.pas' {Frm_Setting},
+  UChatGPTQFrame in 'Forms\UChatGPTQFrame.pas' {Fram_Question: TFrame},
+  UChatGPTQuestion in 'Forms\UChatGPTQuestion.pas' {FrmChatGPT},
+  UChatGPTLexer in 'Lexer\UChatGPTLexer.pas',
+  UPascalLexer in 'Lexer\UPascalLexer.pas',
+  UPascalLexerTypes in 'Lexer\UPascalLexerTypes.pas';
 
 end.

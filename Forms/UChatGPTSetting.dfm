@@ -31,8 +31,6 @@ object Frm_Setting: TFrm_Setting
       Align = alTop
       Caption = 'OenAI preferences'
       TabOrder = 0
-      ExplicitLeft = -191
-      ExplicitTop = 93
       object lbl_1: TLabel
         Left = 21
         Top = 29

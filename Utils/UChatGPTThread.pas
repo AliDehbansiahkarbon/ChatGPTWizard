@@ -1,9 +1,10 @@
-{********************************************}
-{                                            }
-{   This unit contains a worker thread to do }
-{   API calls and stuff.                     }
-{                                            }
-{********************************************}
+{***************************************************}
+{                                                   }
+{   This unit contains a worker thread to do        }
+{   API calls and some other stuff.                 }
+{   Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com) }
+{                                                   }
+{***************************************************}
 unit UChatGPTThread;
 
 interface

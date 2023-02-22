@@ -55,6 +55,7 @@
         <DCC_Warnings>false</DCC_Warnings>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
+        <DCC_UnitSearchPath>.\Lexer;.\Forms;.\Utils;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
@@ -68,7 +69,6 @@
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -82,7 +82,6 @@
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
         <DCC_Warnings>false</DCC_Warnings>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -102,25 +101,28 @@
         <DCCReference Include="bindcomp.dcp"/>
         <DCCReference Include="RESTComponents.dcp"/>
         <DCCReference Include="UChatGptMain.pas"/>
-        <DCCReference Include="UChatGPTThread.pas"/>
-        <DCCReference Include="UChatGPTProgress.pas">
+        <DCCReference Include="Utils\UChatGPTThread.pas"/>
+        <DCCReference Include="Forms\UChatGPTProgress.pas">
             <Form>Frm_Progress</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="UChatGPTMenuHook.pas"/>
-        <DCCReference Include="UChatGPTSetting.pas">
+        <DCCReference Include="Utils\UChatGPTMenuHook.pas"/>
+        <DCCReference Include="Forms\UChatGPTSetting.pas">
             <Form>Frm_Setting</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="UChatGPTQFrame.pas">
+        <DCCReference Include="Forms\UChatGPTQFrame.pas">
             <Form>Fram_Question</Form>
             <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
-        <DCCReference Include="UChatGPTQuestion.pas">
+        <DCCReference Include="Forms\UChatGPTQuestion.pas">
             <Form>FrmChatGPT</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="Lexer\UChatGPTLexer.pas"/>
+        <DCCReference Include="Lexer\UPascalLexer.pas"/>
+        <DCCReference Include="Lexer\UPascalLexerTypes.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
