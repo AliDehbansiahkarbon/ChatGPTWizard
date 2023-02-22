@@ -18,14 +18,24 @@ Another point: You don't have to do that because it will work fine when you open
 
 1. you can use the ChatGPT menu from the IDE's main menu directly to ask questions and get the answer.
 Click on the newly added ChatGPT menu on the IDE(or press Ctrl+Shidt+Alt+C) to open the wizard, type the question and press the Ask button(or Ctrl+Enter).
-![image](https://user-images.githubusercontent.com/5601608/215458671-a48a4e1d-3b2c-45bd-9da5-603ab82129dc.png)
+![image](https://user-images.githubusercontent.com/5601608/220568742-8ec94dec-ca44-4331-b245-202d64181fa5.png)
+![image](https://user-images.githubusercontent.com/5601608/220568940-7eba2b94-f091-4400-a031-49b35d1f0d5e.png)
+
+
 
 1. If you need to use the ChatGPT inside the editor you need to make(type) a question directly inside the code editor and surround it with "cpt:" at the beginning and ":cpt" at the end of the question then press Ctrl+Shift+Alt+A or simply select "Ask" from the editor's context menu by right-clicking on the selected text.
 
 1. Use the "ChatGPT Dockable" menu from the main menu to show the dockable form and try to dock the form to the left or right side panel of the IDE, and enjoy with your new Google killer assistant!
 
-![image](https://user-images.githubusercontent.com/5601608/215994463-2b24cea1-aea4-4d35-9beb-ea795edbc76d.png)
+![image](https://user-images.githubusercontent.com/5601608/220569266-89df326c-6e8f-4211-8879-464f5068a80e.png)
+![image](https://user-images.githubusercontent.com/5601608/220569393-6518536f-ff9d-4ad0-8f6f-69720920f362.png)
 
+<h3><b>Class View</b></h3>
+Using the class view you have your class list with some functionalitis in a popup menu.
+It is also possible to use your custom command based on the selected class in the TreeView, in this case @Class will represent the selected class
+in your custom command, if you don's use @Class the selected class' source will be attached to the end of your command.<b>
+
+![image](https://user-images.githubusercontent.com/5601608/220570745-1720a8eb-026f-42b0-b6d3-c578874a3c9c.png)
 
 <br><h2>Simple Test scenario</h2>
 Open a new vcl applicatiopn project, add a new unit and remove all the code from it! and type the following line, select all and press Ctrl+Shift+Alt+A.<br>
