@@ -4,7 +4,7 @@
 <br><h2>Remarks</h2>
 
 1. It is compatible with Xe5 and later versions.
-1. Uses XSuperObject library which is included in the project files.
+1. Uses XSuperObject library which is included in the project files(https://github.com/onryldz/x-superobject/blob/master/XSuperObject.pas)
 1. Settings are stored in registry which can be found here: Computer\HKEY_CURRENT_USER\Software\ChatGPTWizard
 1. Consider that if you run it in the IDE without opening any project it will raise a message that it cannot load the SSL library
 1. This issue can be fixed if you put SSL libraries(can find them in the resource folder) besides the bds.exe or in Bpl folder(mine is this ==> C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl)
