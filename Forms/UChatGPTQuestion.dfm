@@ -72,8 +72,6 @@ object FrmChatGPT: TFrmChatGPT
         end
       end
       inherited tsClassView: TTabSheet
-        ExplicitWidth = 421
-        ExplicitHeight = 423
         inherited splClassView: TSplitter
           Width = 421
           ExplicitWidth = 421

@@ -87,6 +87,7 @@ type
     procedure Rust1Click(Sender: TObject);
     procedure CustomCommand1Click(Sender: TObject);
     procedure C3Click(Sender: TObject);
+    procedure pgcMainChange(Sender: TObject);
   private
     FTrd: TExecutorTrd;
     FPrg: TProgressBar;
@@ -310,6 +311,12 @@ begin
   FPrg.Free;
 end;
 
+procedure TFram_Question.pgcMainChange(Sender: TObject);
+begin
+  if pgcMain.ActivePage = tsClassView then
+    ReloadClassList(FClassList);
+end;
+
 procedure TFram_Question.pmClassOperationsPopup(Sender: TObject);
 begin
   FClassTreeView.OnChange(FClassTreeView, FClassTreeView.Selected);
@@ -384,12 +391,18 @@ var
   LvNode: TTreeNode;
   LvKey: string;
 begin
-  LvNode := ATree.Items.Add(nil, 'Classes');
-  for LvKey in Self.Keys do
-    ATree.Items.AddChild(LvNode, LvKey);
+  if Assigned(ATree) and (Self.Count > 0) then
+  begin
+    try
+      LvNode := ATree.Items.Add(nil, 'Classes');
+      for LvKey in Self.Keys do
+        ATree.Items.AddChild(LvNode, LvKey);
+    except
+    end;
 
-  ATree.AutoExpand := True;
-  ATree.FullExpand;
+    ATree.AutoExpand := True;
+    ATree.FullExpand;
+  end;
 end;
 
 end.

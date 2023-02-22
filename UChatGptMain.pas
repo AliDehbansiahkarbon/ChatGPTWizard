@@ -546,7 +546,8 @@ begin
   if not Assigned(FChatGPTSubMenu) then
     AddEditorContextMenu;
 
-  if Assigned(FChatGPTDockForm) and (FChatGPTDockForm.Showing) and (not EditView.SameView(TSingletonSettingObj.Instance.CurrentActiveView)) then
+  if Assigned(FChatGPTDockForm) and (FChatGPTDockForm.Showing) and (FChatGPTDockForm.Fram_Question1.pgcMain.ActivePageIndex = 1) and
+    (not EditView.SameView(TSingletonSettingObj.Instance.CurrentActiveView)) then
     FChatGPTDockForm.Fram_Question1.ReloadClassList(FChatGPTDockForm.FClassList);
 end;
 

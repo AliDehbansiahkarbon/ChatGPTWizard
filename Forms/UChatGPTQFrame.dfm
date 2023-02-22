@@ -12,6 +12,7 @@ object Fram_Question: TFram_Question
     ActivePage = tsChatGPT
     Align = alClient
     TabOrder = 0
+    OnChange = pgcMainChange
     object tsChatGPT: TTabSheet
       Caption = 'ChatGPT'
       object pnlMain: TPanel

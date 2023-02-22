@@ -45,9 +45,6 @@ begin
     pnlMain.Align := alClient;
     pgcMain.Free;
   end;
-
-//  Fram_Question1.pgcMain.ActivePageIndex := 0;
-//  Fram_Question1.pgcMain.Pages[1].Free;
 end;
 
 end.
