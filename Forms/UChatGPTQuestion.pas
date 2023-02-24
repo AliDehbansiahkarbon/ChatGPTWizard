@@ -43,7 +43,7 @@ begin
   begin
     pnlMain.Parent := Fram_Question1;
     pnlMain.Align := alClient;
-    pgcMain.Free;
+    FreeAndNil(pgcMain);
   end;
 end;
 
