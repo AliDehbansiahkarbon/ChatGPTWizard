@@ -548,7 +548,10 @@ begin
 
   if Assigned(FChatGPTDockForm) and (FChatGPTDockForm.Showing) and (FChatGPTDockForm.Fram_Question1.pgcMain.ActivePageIndex = 1) and
     (not EditView.SameView(TSingletonSettingObj.Instance.CurrentActiveView)) then
-    FChatGPTDockForm.Fram_Question1.ReloadClassList(FChatGPTDockForm.FClassList);
+    begin
+      FChatGPTDockForm.Fram_Question1.ReloadClassList(FChatGPTDockForm.FClassList);
+      TSingletonSettingObj.Instance.CurrentActiveView := EditView;
+    end;
 end;
 
 procedure TEditNotifierHelper.EditorViewModified(const EditWindow: INTAEditWindow; const EditView: IOTAEditView);
