@@ -172,6 +172,9 @@ begin
                               LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword);
   FTrd.Start;
   Cs.Leave;
+
+  if Assigned(pgcMain) then
+    pgcMain.Enabled := False;
 end;
 
 procedure TFram_Question.ConverttoGenericType1Click(Sender: TObject);
@@ -295,17 +298,29 @@ end;
 
 procedure TFram_Question.OnUpdateMessage(var Msg: TMessage);
 begin
-  if pgcMain.ActivePage = tsChatGPT then
+  if Assigned(pgcMain) then
+  begin
+    pgcMain.Enabled := True;
+
+    if pgcMain.ActivePage = tsChatGPT then
+    begin
+      mmoAnswer.Lines.Clear;
+      mmoAnswer.Lines.Add(string(Msg.WParam));
+      if chk_AutoCopy.Checked then
+        CopyToClipBoard;
+    end
+    else if pgcMain.ActivePage = tsClassView then
+    begin
+      mmoPredefinedCmdAnswer.Lines.Clear;
+      mmoPredefinedCmdAnswer.Lines.Add(string(Msg.WParam));
+    end;
+  end
+  else
   begin
     mmoAnswer.Lines.Clear;
     mmoAnswer.Lines.Add(string(Msg.WParam));
     if chk_AutoCopy.Checked then
       CopyToClipBoard;
-  end
-  else if pgcMain.ActivePage = tsClassView then
-  begin
-    mmoPredefinedCmdAnswer.Lines.Clear;
-    mmoPredefinedCmdAnswer.Lines.Add(string(Msg.WParam));
   end;
 
   FPrg.Free;
