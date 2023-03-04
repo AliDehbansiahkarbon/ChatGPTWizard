@@ -5,7 +5,7 @@
         <ProjectVersion>19.4</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Package</AppType>
@@ -62,13 +62,14 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName);FileDescription=$(MSBuildProjectName);ProductName=$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <DCC_UsePackage>rtl;IndySystem;IndyProtocols;IndyCore;bindcomp;RESTComponents;$(DCC_UsePackage)</DCC_UsePackage>
+        <DCC_UsePackage>rtl;IndySystem;IndyProtocols;IndyCore;bindcomp;RESTComponents;dsnap;vcldb;vclFireDAC;FireDAC;FireDACCommonDriver;FireDACCommon;FireDACSqliteDriver;$(DCC_UsePackage)</DCC_UsePackage>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <DCC_UsePackage>dsnap;vcldb;vclFireDAC;FireDAC;FireDACCommonDriver;FireDACCommon;FireDACSqliteDriver;$(DCC_UsePackage)</DCC_UsePackage>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -100,6 +101,11 @@
         <DCCReference Include="IndyCore.dcp"/>
         <DCCReference Include="bindcomp.dcp"/>
         <DCCReference Include="RESTComponents.dcp"/>
+        <DCCReference Include="vclFireDAC.dcp"/>
+        <DCCReference Include="FireDAC.dcp"/>
+        <DCCReference Include="FireDACCommonDriver.dcp"/>
+        <DCCReference Include="FireDACCommon.dcp"/>
+        <DCCReference Include="FireDACSqliteDriver.dcp"/>
         <DCCReference Include="UChatGptMain.pas"/>
         <DCCReference Include="Utils\UChatGPTThread.pas"/>
         <DCCReference Include="Forms\UChatGPTProgress.pas">
@@ -123,6 +129,11 @@
         <DCCReference Include="Lexer\UChatGPTLexer.pas"/>
         <DCCReference Include="Lexer\UPascalLexer.pas"/>
         <DCCReference Include="Lexer\UPascalLexerTypes.pas"/>
+        <DCCReference Include="Utils\UHistory.pas"/>
+        <RcItem Include="Resources\CloseBtn.bmp">
+            <ResourceType>BITMAP</ResourceType>
+            <ResourceId>CLOSE</ResourceId>
+        </RcItem>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -215,6 +226,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\ChatGptWizard.bpl" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>ChatGptWizard.bpl</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\ChatGptWizard.bpl" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>ChatGptWizard.bpl</RemoteName>
                         <Overwrite>true</Overwrite>

@@ -28,7 +28,7 @@ object Frm_Progress: TFrm_Progress
     object Lbl_Top: TLabel
       Left = 1
       Top = 1
-      Width = 295
+      Width = 71
       Height = 15
       Align = alTop
       Caption = 'Please wait...'
@@ -41,7 +41,6 @@ object Frm_Progress: TFrm_Progress
       ParentColor = False
       ParentFont = False
       Transparent = False
-      ExplicitWidth = 71
     end
     object ProgressBar: TProgressBar
       Left = 15

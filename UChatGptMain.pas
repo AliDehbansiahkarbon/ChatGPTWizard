@@ -95,9 +95,10 @@ type
 {*******************************************************}
   TChatGPTDockForm = class(TDockableForm)
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-  private
+    procedure FormShow(Sender: TObject);
+   private
     FClassList: TClassList;
-    Fram_Question1: TFram_Question;
+    Fram_Question: TFram_Question;
   public
     constructor Create(AOwner: TComponent);
     destructor Destroy; override;
@@ -164,7 +165,7 @@ begin
 
   TSingletonSettingObj.RegisterFormClassForTheming(TChatGPTDockForm, FChatGPTDockForm); //Apply Theme
   RenewUI(FChatGPTDockForm);
-  FChatGPTDockForm.Fram_Question1.ReloadClassList(FChatGPTDockForm.FClassList);
+  FChatGPTDockForm.Fram_Question.ReloadClassList(FChatGPTDockForm.FClassList);
   FChatGPTDockForm.Show;
 end;
 
@@ -183,6 +184,10 @@ begin
     Frm_Setting.Edt_SourceIdentifier.Text := FSetting.Identifier;
     Frm_Setting.chk_CodeFormatter.Checked := FSetting.CodeFormatter;
     Frm_Setting.chk_Rtl.Checked := FSetting.RighToLeft;
+    Frm_Setting.chk_History.Checked := FSetting.HistoryEnabled;
+    Frm_Setting.lbEdt_History.Text := FSetting.HistoryPath;
+    Frm_Setting.lbEdt_History.Enabled := FSetting.HistoryEnabled;
+    Frm_Setting.Btn_HistoryPathBuilder.Enabled := FSetting.HistoryEnabled;
 
     Frm_Setting.ShowModal;
     RenewUI(FChatGPTDockForm);
@@ -391,10 +396,12 @@ begin
     AForm.BiDiMode := bdLeftToRight;
 
   Cs.Enter;
-  if AForm.FindChildControl('Fram_Question1') <> nil then
-  with AForm.FindComponent('Fram_Question1') as TFram_Question do
+  if AForm.FindChildControl('Fram_Question') <> nil then
+  with AForm.FindComponent('Fram_Question') as TFram_Question do
   begin
+    Btn_Ask.Enabled := True;
     Align := alClient;
+    pgcMain.ActivePageIndex := 0;
     if TSingletonSettingObj.Instance.RighToLeft then
     begin
       Btn_Ask.Left := pnlTop.Width - Btn_Ask.Width - 5;
@@ -546,10 +553,10 @@ begin
   if not Assigned(FChatGPTSubMenu) then
     AddEditorContextMenu;
 
-  if Assigned(FChatGPTDockForm) and (FChatGPTDockForm.Showing) and (FChatGPTDockForm.Fram_Question1.pgcMain.ActivePageIndex = 1) and
+  if Assigned(FChatGPTDockForm) and (FChatGPTDockForm.Showing) and (FChatGPTDockForm.Fram_Question.pgcMain.ActivePageIndex = 1) and
     (not EditView.SameView(TSingletonSettingObj.Instance.CurrentActiveView)) then
     begin
-      FChatGPTDockForm.Fram_Question1.ReloadClassList(FChatGPTDockForm.FClassList);
+      FChatGPTDockForm.Fram_Question.ReloadClassList(FChatGPTDockForm.FClassList);
       TSingletonSettingObj.Instance.CurrentActiveView := EditView;
     end;
 end;
@@ -623,14 +630,19 @@ begin
     Position := poMainFormCenter;
   end;
 
-  Fram_Question1 := TFram_Question.Create(Self);
-  Fram_Question1.Name := 'Fram_Question1';
-  Fram_Question1.Parent := Self;
-  Fram_Question1.Align := alClient;
-  Fram_Question1.Show;
-  Fram_Question1.BringToFront;
+  Fram_Question := TFram_Question.Create(Self);
+  with Fram_Question do
+  begin
+    Name := 'Fram_Question';
+    Parent := Self;
+    InitialFrame;
+    Show;
+    BringToFront;
+  end;
+
   Self.OnKeyDown := FormKeyDown;
   Self.KeyPreview := True;
+  Self.OnShow := FormShow;
 
   FClassList := TClassList.Create;
 end;
@@ -647,9 +659,15 @@ procedure TChatGPTDockForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TS
 begin
   if Ord(Key) = 27 then
   begin
-    Fram_Question1.TerminateThred;
+    Fram_Question.TerminateThred;
     Close;
   end;
+end;
+
+procedure TChatGPTDockForm.FormShow(Sender: TObject);
+begin
+   with TSingletonSettingObj.Instance do
+      ShouldReloadHistory := (not HistoryEnabled) and (not ShouldReloadHistory) and (FileExists(GetHistoryFullPath));
 end;
 
 initialization

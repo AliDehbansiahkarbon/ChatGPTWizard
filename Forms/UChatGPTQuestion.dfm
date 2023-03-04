@@ -17,7 +17,7 @@ object FrmChatGPT: TFrmChatGPT
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   TextHeight = 15
-  inline Fram_Question1: TFram_Question
+  inline Fram_Question: TFram_Question
     Left = 0
     Top = 0
     Width = 429
@@ -73,23 +73,28 @@ object FrmChatGPT: TFrmChatGPT
       end
       inherited tsClassView: TTabSheet
         inherited splClassView: TSplitter
+          ExplicitWidth = 421
+        end
+      end
+      inherited tsHistory: TTabSheet
+        inherited splHistory: TSplitter
           Width = 421
           ExplicitWidth = 421
         end
-        inherited pnlClasses: TPanel
+        inherited pnlHistoryTop: TPanel
           Width = 421
           ExplicitWidth = 421
         end
-        inherited pnlPredefinedCmdAnswer: TPanel
+        inherited pnlHistoryBottom: TPanel
           Width = 421
-          Height = 283
+          Height = 235
           ExplicitWidth = 421
-          ExplicitHeight = 283
-          inherited mmoPredefinedCmdAnswer: TMemo
-            Width = 413
-            Height = 275
-            ExplicitWidth = 413
-            ExplicitHeight = 275
+          ExplicitHeight = 235
+          inherited mmoHistoryDetail: TMemo
+            Width = 419
+            Height = 233
+            ExplicitWidth = 419
+            ExplicitHeight = 233
           end
         end
       end

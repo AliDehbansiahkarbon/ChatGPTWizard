@@ -16,7 +16,7 @@ uses
 
 type
   TFrmChatGPT = class(TForm)
-    Fram_Question1: TFram_Question;
+    Fram_Question: TFram_Question;
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormShow(Sender: TObject);
   end;
@@ -32,16 +32,16 @@ procedure TFrmChatGPT.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftS
 begin
   if Ord(Key) = 27 then
   begin
-    Fram_Question1.TerminateThred;
+    Fram_Question.TerminateThred;
     Close;
   end;
 end;
 
 procedure TFrmChatGPT.FormShow(Sender: TObject);
 begin
-  with Fram_Question1 do
+  with Fram_Question do
   begin
-    pnlMain.Parent := Fram_Question1;
+    pnlMain.Parent := Fram_Question;
     pnlMain.Align := alClient;
     FreeAndNil(pgcMain);
   end;

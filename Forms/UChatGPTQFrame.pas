@@ -1,9 +1,10 @@
-{ **************************************************}
-{                                                   }
-{   This unit contains a frame that will be         }
-{   used in dockable form.                          }
-{   Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com) }
-{ **************************************************}
+{****************************************************}
+{                                                    }
+{    This unit contains a frame that will be         }
+{    used in dockable form.                          }
+{    Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com) }
+{                                                    }
+{****************************************************}
 unit UChatGPTQFrame;
 
 interface
@@ -12,10 +13,17 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.Menus, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.Clipbrd,
-  UChatGPTThread, UChatGPTSetting, UChatGPTLexer, System.Generics.Collections;
+  UChatGPTThread, UChatGPTSetting, UChatGPTLexer, System.Generics.Collections,
+  XSuperObject, Vcl.Grids, Vcl.DBGrids, Vcl.Buttons, Data.DB, System.DateUtils,
+  FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param, UHistory,
+  FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
+  FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool,
+  FireDAC.Phys, FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLite, FireDAC.Comp.Client,
+  FireDAC.Comp.DataSet, FireDAC.VCLUI.Wait, FireDAC.Comp.UI;
 
 type
   TClassList = TObjectDictionary<string, TStringList>;
+
   TObDicHelper = class helper for TClassList
   public
     procedure FillTreeView(var ATree: TTreeView);
@@ -64,6 +72,21 @@ type
     pnlPredefinedCmdAnswer: TPanel;
     splClassView: TSplitter;
     mmoPredefinedCmdAnswer: TMemo;
+    tsHistory: TTabSheet;
+    pnlHistoryTop: TPanel;
+    pnlHistoryBottom: TPanel;
+    splHistory: TSplitter;
+    mmoHistoryDetail: TMemo;
+    FDConnection: TFDConnection;
+    DSHistory: TDataSource;
+    FDQryHistory: TFDQuery;
+    FDQryHistoryHID: TFDAutoIncField;
+    FDQryHistoryQuestion: TWideMemoField;
+    FDQryHistoryAnswer: TWideMemoField;
+    FDQryHistoryDate: TLargeintField;
+    WriteXMLdoc1: TMenuItem;
+    pmGrdHistory: TPopupMenu;
+    ReloadHistory1: TMenuItem;
     procedure Btn_AskClick(Sender: TObject);
     procedure Btn_ClipboardClick(Sender: TObject);
     procedure CopytoClipboard1Click(Sender: TObject);
@@ -88,17 +111,30 @@ type
     procedure CustomCommand1Click(Sender: TObject);
     procedure C3Click(Sender: TObject);
     procedure pgcMainChange(Sender: TObject);
+    procedure FDQryHistoryQuestionGetText(Sender: TField; var Text: string; DisplayText: Boolean);
+    procedure FDQryHistoryAfterScroll(DataSet: TDataSet);
+    procedure FDQryHistoryDateGetText(Sender: TField; var Text: string; DisplayText: Boolean);
+    procedure GridResize(Sender: TObject);
+    procedure DrawColumnCell(Sender: TObject; const Rect: TRect; DataCol: Integer; Column: TColumn; State: TGridDrawState);
+    procedure CloseBtnClick(Sender: TObject);
+    procedure WriteXMLdoc1Click(Sender: TObject);
+    procedure ReloadHistory1Click(Sender: TObject);
   private
     FTrd: TExecutorTrd;
     FPrg: TProgressBar;
     FClassList: TClassList;
     FClassTreeView: TTreeView;
+    FCellCloseBtn: TSpeedButton;
+    FHistoryGrid: THistoryDBGrid;
     procedure CopyToClipBoard;
     procedure CreateProgressbar;
     procedure CallThread(APrompt: string);
   public
+    procedure InitialFrame;
     procedure TerminateThred;
     procedure ReloadClassList(AClassList: TClassList);
+    procedure LoadHistory;
+    procedure AddToHistory(AQuestion, AAnswer: string);
     procedure OnUpdateMessage(var Msg: TMessage); message WM_UPDATE_MESSAGE;
     procedure OnProgressMessage(var Msg: TMessage); message WM_PROGRESS_MESSAGE;
   end;
@@ -106,6 +142,19 @@ type
 implementation
 
 {$R *.dfm}
+
+procedure TFram_Question.AddToHistory(AQuestion, AAnswer: string);
+begin
+  if (TSingletonSettingObj.Instance.HistoryEnabled) and
+     (FDConnection.Connected) and (FDQryHistory.Active) then
+  begin
+    FDQryHistory.Append;
+    FDQryHistoryQuestion.AsString := AQuestion;
+    FDQryHistoryAnswer.AsString := AAnswer;
+    FDQryHistoryDate.AsLargeInt := DateTimeToUnix(Date);
+    FDQryHistory.Post;
+  end;
+end;
 
 procedure TFram_Question.Btn_AskClick(Sender: TObject);
 begin
@@ -167,14 +216,20 @@ begin
   LvMaxToken := LvSetting.MaxToken;
   LvTemperature := LvSetting.Temperature;
   LvQuestion := APrompt;
-  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, LvQuestion, LvUrl, LvMaxToken, LvTemperature,
-                              LvSetting.ProxySetting.Active, LvSetting.ProxySetting.ProxyHost, LvSetting.ProxySetting.ProxyPort,
-                              LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword);
+  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, LvQuestion, LvUrl,
+    LvMaxToken, LvTemperature, LvSetting.ProxySetting.Active,
+    LvSetting.ProxySetting.ProxyHost, LvSetting.ProxySetting.ProxyPort,
+    LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword);
   FTrd.Start;
   Cs.Leave;
 
   if Assigned(pgcMain) then
     pgcMain.Enabled := False;
+end;
+
+procedure TFram_Question.CloseBtnClick(Sender: TObject);
+begin
+  FDQryHistory.Delete;
 end;
 
 procedure TFram_Question.ConverttoGenericType1Click(Sender: TObject);
@@ -191,7 +246,17 @@ end;
 
 procedure TFram_Question.CopyToClipBoard;
 begin
-  Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
+  if Assigned(pgcMain) then
+  begin
+    if pgcMain.ActivePage = tsChatGPT then
+      Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text))
+    else if pgcMain.ActivePage = tsClassView then
+      Clipboard.SetTextBuf(pwidechar(mmoPredefinedCmdAnswer.Lines.Text))
+    else if pgcMain.ActivePage = tsHistory then
+      Clipboard.SetTextBuf(pwidechar(mmoHistoryDetail.Lines.Text));
+  end
+  else
+    Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
 end;
 
 procedure TFram_Question.CopytoClipboard1Click(Sender: TObject);
@@ -241,13 +306,51 @@ begin
 
   if AQuestion.ToLower.Trim.Contains('@class') then
   begin
-    AQuestion := StringReplace(AQuestion, '@class', ' ' + FClassList.Items[FClassTreeView.Selected.Text].Text + ' ',
-                  [rfReplaceAll, rfIgnoreCase]);
+    AQuestion := StringReplace(AQuestion, '@class', ' ' + FClassList.Items[FClassTreeView.Selected.Text].Text + ' ', [rfReplaceAll, rfIgnoreCase]);
   end
   else
     AQuestion := AQuestion + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
 
   CallThread(AQuestion);
+end;
+
+procedure TFram_Question.DrawColumnCell(Sender: TObject; const Rect: TRect; DataCol: Integer; Column: TColumn; State: TGridDrawState);
+Var
+  DataRect: TRect;
+begin
+  if (not FDQryHistoryHID.IsNull) and (Column.Title.Caption = '^_^') Then
+  begin
+    DataRect := FHistoryGrid.CellRect(Column.Index + 1, FHistoryGrid.Row);
+    If FCellCloseBtn.Parent <> FHistoryGrid Then
+      FCellCloseBtn.Parent := FHistoryGrid;
+
+    FCellCloseBtn.Left := DataRect.Left +  (DataRect.Right - DataRect.Left - FCellCloseBtn.Width) div 2;
+
+    If FCellCloseBtn.Top <> DataRect.Top Then
+      FCellCloseBtn.Top := DataRect.Top;
+
+    // Make sure the button's height fits in row.
+    If FCellCloseBtn.Height <> (DataRect.Bottom - DataRect.Top) Then
+      FCellCloseBtn.Height := DataRect.Bottom - DataRect.Top;
+  end;
+end;
+
+procedure TFram_Question.FDQryHistoryAfterScroll(DataSet: TDataSet);
+begin
+  mmoHistoryDetail.Lines.Clear;
+  mmoHistoryDetail.Lines.Add(FDQryHistoryAnswer.AsString);
+end;
+
+procedure TFram_Question.FDQryHistoryDateGetText(Sender: TField; var Text: string; DisplayText: Boolean);
+begin
+  if not Sender.IsNull then
+    Text := DateTimeToStr(UnixToDateTime(Sender.AsLargeInt));
+end;
+
+procedure TFram_Question.FDQryHistoryQuestionGetText(Sender: TField; var Text: string; DisplayText: Boolean);
+begin
+  if not Sender.IsNull then
+    Text := Sender.AsString;
 end;
 
 procedure TFram_Question.Findpossibleproblems1Click(Sender: TObject);
@@ -262,16 +365,70 @@ begin
     CallThread('Convert this Delphi Code to the GO programming language: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text);
 end;
 
+procedure TFram_Question.GridResize(Sender: TObject);
+begin
+  FHistoryGrid.FitGrid;
+end;
+
 procedure TFram_Question.ImproveNaming1Click(Sender: TObject);
 begin
   if FClassTreeView.Selected <> FClassTreeView.TopItem then
     CallThread('Improve naming of the members of this class in Delphi: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text);
 end;
 
+procedure TFram_Question.InitialFrame;
+begin
+  Align := alClient;
+
+  FCellCloseBtn := TSpeedButton.Create(Self);
+  FCellCloseBtn.Glyph.LoadFromResourceName(HInstance, 'CLOSE');
+  FCellCloseBtn.OnClick := CloseBtnClick;
+
+  FHistoryGrid := THistoryDBGrid.Create(Self);
+  with FHistoryGrid do
+  begin
+    Parent := pnlHistoryTop;
+    Align := alClient;
+    DataSource := DSHistory;
+    Options := [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack];
+
+    with Columns.Add do
+    begin
+      Alignment := taCenter;
+      Expanded := False;
+      FieldName := 'Question';
+      Title.Alignment := taCenter;
+      Visible := True;
+    end;
+
+    with Columns.Add do
+    begin
+      Alignment := taCenter;
+      Expanded := False;
+      FieldName := 'Date';
+      Title.Alignment := taCenter;
+      Width := 60;
+      Visible := True;
+    end;
+
+    with Columns.Add do
+    begin
+      Title.Caption := '^_^';
+      Alignment := taCenter;
+      Title.Alignment := taCenter;
+      Width := 25;
+      Visible := True;
+    end;
+
+    OnResize := GridResize;
+    OnDrawColumnCell := DrawColumnCell;
+  end;
+end;
+
 procedure TFram_Question.Java1Click(Sender: TObject);
 begin
   if FClassTreeView.Selected <> FClassTreeView.TopItem then
-    CallThread('Convert this Delphi Code to Java: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text);
+    CallThread('Convert this Delphi Code to Java: ' + #13 + FClassList.Items [FClassTreeView.Selected.Text].Text);
 end;
 
 procedure TFram_Question.Javascript1Click(Sender: TObject);
@@ -280,7 +437,8 @@ begin
     CallThread('Convert this Delphi Code to Javascript: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text);
 end;
 
-procedure TFram_Question.mmoQuestionKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure TFram_Question.mmoQuestionKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
 begin
   if (Shift = [ssCtrl]) and (Ord(Key) = 13) then
     Btn_Ask.Click;
@@ -298,45 +456,55 @@ end;
 
 procedure TFram_Question.OnUpdateMessage(var Msg: TMessage);
 begin
-  if Assigned(pgcMain) then
-  begin
-    pgcMain.Enabled := True;
+  try
+    if Assigned(pgcMain) then
+    begin
+      pgcMain.Enabled := True;
 
-    if pgcMain.ActivePage = tsChatGPT then
+      if pgcMain.ActivePage = tsChatGPT then
+      begin
+        mmoAnswer.Lines.Clear;
+        mmoAnswer.Lines.Add(string(Msg.WParam));
+
+        AddToHistory(mmoQuestion.Lines.Text, mmoAnswer.Lines.Text);
+      end
+      else if pgcMain.ActivePage = tsClassView then
+      begin
+        mmoPredefinedCmdAnswer.Lines.Clear;
+        mmoPredefinedCmdAnswer.Lines.Add(string(Msg.WParam));
+      end;
+    end
+    else
     begin
       mmoAnswer.Lines.Clear;
       mmoAnswer.Lines.Add(string(Msg.WParam));
-      if chk_AutoCopy.Checked then
-        CopyToClipBoard;
-    end
-    else if pgcMain.ActivePage = tsClassView then
-    begin
-      mmoPredefinedCmdAnswer.Lines.Clear;
-      mmoPredefinedCmdAnswer.Lines.Add(string(Msg.WParam));
+      AddToHistory(mmoQuestion.Lines.Text, mmoAnswer.Lines.Text);
     end;
-  end
-  else
-  begin
-    mmoAnswer.Lines.Clear;
-    mmoAnswer.Lines.Add(string(Msg.WParam));
+
     if chk_AutoCopy.Checked then
       CopyToClipBoard;
+  finally
+    FPrg.Free; // remove progressbar
   end;
-
-  FPrg.Free;
 end;
 
 procedure TFram_Question.pgcMainChange(Sender: TObject);
 begin
   if pgcMain.ActivePage = tsClassView then
     ReloadClassList(FClassList);
+
+  if (pgcMain.ActivePage = tsHistory) and (TSingletonSettingObj.Instance.ShouldReloadHistory) then
+  begin
+    LoadHistory;
+    TSingletonSettingObj.Instance.ShouldReloadHistory := False;
+  end;
 end;
 
 procedure TFram_Question.pmClassOperationsPopup(Sender: TObject);
 begin
   FClassTreeView.OnChange(FClassTreeView, FClassTreeView.Selected);
   if FClassTreeView.Selected = FClassTreeView.TopItem then
-    keybd_event(VK_ESCAPE, Mapvirtualkey( VK_ESCAPE, 0 ), 0, 0);
+    keybd_event(VK_ESCAPE, Mapvirtualkey(VK_ESCAPE, 0), 0, 0);
 end;
 
 procedure TFram_Question.Python1Click(Sender: TObject);
@@ -373,6 +541,28 @@ begin
   end;
 end;
 
+procedure TFram_Question.ReloadHistory1Click(Sender: TObject);
+begin
+  LoadHistory;
+end;
+
+procedure TFram_Question.LoadHistory;
+begin
+  if FileExists(TSingletonSettingObj.Instance.GetHistoryFullPath) then
+  begin
+    try
+      FDConnection.Close;
+      FDConnection.Params.Clear;
+      FDConnection.Params.Add('DriverID=SQLite');
+      FDConnection.Params.Add('Database=' + TSingletonSettingObj.Instance.GetHistoryFullPath);
+      FDConnection.Open;
+      FDQryHistory.Open;
+    except on E: Exception do
+      ShowMessage('SQLite Connection didn''t established.' + #13 + 'Error: ' + E.Message);
+    end;
+  end;
+end;
+
 procedure TFram_Question.Rewriteinmoderncodingstyle1Click(Sender: TObject);
 begin
   if FClassTreeView.Selected <> FClassTreeView.TopItem then
@@ -400,6 +590,13 @@ begin
   mmoPredefinedCmdAnswer.ScrollBars := TScrollStyle.ssVertical;
 end;
 
+procedure TFram_Question.WriteXMLdoc1Click(Sender: TObject);
+begin
+  if FClassTreeView.Selected <> FClassTreeView.TopItem then
+    CallThread('Write Documentation using inline XML based comments for this class in Delphi: ' + #13 +
+                FClassList.Items[FClassTreeView.Selected.Text].Text);
+end;
+
 { TObDicHelper }
 procedure TObDicHelper.FillTreeView(var ATree: TTreeView);
 var
@@ -421,4 +618,3 @@ begin
 end;
 
 end.
-
