@@ -41,6 +41,15 @@ some limitations, because at the moment it's not possible to send thousand of li
 
 ![image](https://user-images.githubusercontent.com/5601608/220570745-1720a8eb-026f-42b0-b6d3-c578874a3c9c.png)
 
+<h3><b>History</b></h3>
+History is available if you enable it in the setting form, it's using SQLite as a simple file base database.
+You can find an empty database in Resource\DB that named "History.sdb", copy this file to any place in the disk and address to the folder in the setting.
+
+![image](https://user-images.githubusercontent.com/5601608/222926278-9978259a-9ac4-4ba7-bfbb-9675b123756c.png)
+
+![image](https://user-images.githubusercontent.com/5601608/222926296-3cdaeb05-bfcd-4e5c-8959-e06ee6945c6f.png)
+
+
 <br><h2>Simple Test scenario</h2>
 Open a new vcl applicatiopn project, add a new unit and remove all the code from it! and type the following line, select all and press Ctrl+Shift+Alt+A.<br>
 <b>cpt:Create a full unit in Delphi including a class to create an XML file.:cpt<b>
