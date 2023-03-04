@@ -36,7 +36,8 @@ Use the "ChatGPT Dockable" menu from the main menu to show the dockable form and
 <h3><b>Class View</b></h3>
 Using the class view you have your class list with some functionalitis in a popup menu.
 It is also possible to use your custom command based on the selected class in the TreeView, in this case @Class will represent the selected class
-in your custom command, if you don's use @Class the selected class' source will be attached to the end of your command.<b>
+in your custom command, if you don's use @Class the selected class' source will be attached to the end of your command, just pay attention there will be 
+some limitations, because at the moment it's not possible to send thousand of lines through the API request.<b>
 
 ![image](https://user-images.githubusercontent.com/5601608/220570745-1720a8eb-026f-42b0-b6d3-c578874a3c9c.png)
 
