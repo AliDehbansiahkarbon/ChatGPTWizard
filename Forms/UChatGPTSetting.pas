@@ -311,7 +311,10 @@ begin
             FProxySetting.ProxyPassword := '';
 
           if ValueExists('ChatGPTHistoryEnabled') then
+          begin
             FHistoryEnabled := ReadBool('ChatGPTHistoryEnabled');
+            FShouldReloadHistory := FHistoryEnabled;
+          end;
 
           if ValueExists('ChatGPTHistoryPath') then
             FHistoryPath := ReadString('ChatGPTHistoryPath');
@@ -440,7 +443,9 @@ begin
   LvSettingObj.ProxySetting.Active := chk_ProxyActive.Checked;
   LvSettingObj.ProxySetting.ProxyUsername := lbEdt_ProxyUserName.Text;
   LvSettingObj.ProxySetting.ProxyPassword := lbEdt_ProxyPassword.Text;
-  LvSettingObj.ShouldReloadHistory := (chk_History.Checked) and (not LvSettingObj.HistoryEnabled);
+  if (chk_History.Checked) and (not LvSettingObj.HistoryEnabled) then
+    LvSettingObj.ShouldReloadHistory := True;
+
   LvSettingObj.HistoryEnabled := chk_History.Checked;
   LvSettingObj.HistoryPath := lbEdt_History.Text;
   lbEdt_History.Enabled := chk_History.Checked;

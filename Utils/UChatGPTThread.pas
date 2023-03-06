@@ -233,6 +233,7 @@ begin
         SendMessageW(FHandle, WM_UPDATE_MESSAGE, Integer(LvResult), 0);
     except on E: Exception do
       begin
+        Sleep(10);
         SendMessageW(FHandle, WM_UPDATE_MESSAGE, Integer(E.Message), 1);
         Terminate;
       end;

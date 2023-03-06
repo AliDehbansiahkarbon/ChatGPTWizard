@@ -63,7 +63,7 @@ begin
   Align := alClient;
   Columns[1].Width := 60;
   Columns[2].Width := 25;
-  Columns[0].Width := Width - (Columns[1].Width + Columns[2].Width) - 20;
+  Columns[0].Width := Width - (Columns[1].Width + Columns[2].Width) - 30;
 end;
 
 end.

@@ -95,7 +95,7 @@ type
 {*******************************************************}
   TChatGPTDockForm = class(TDockableForm)
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
    private
     FClassList: TClassList;
     Fram_Question: TFram_Question;
@@ -542,6 +542,8 @@ end;
 
 procedure TEditNotifierHelper.DockFormUpdated(const EditWindow: INTAEditWindow; DockForm: TDockableForm);
 begin
+  if Assigned(FChatGPTDockForm) then
+    TSingletonSettingObj.RegisterFormClassForTheming(TChatGPTDockForm, FChatGPTDockForm); //Apply Theme
 end;
 
 procedure TEditNotifierHelper.DockFormVisibleChanged(const EditWindow: INTAEditWindow; DockForm: TDockableForm);
@@ -640,9 +642,15 @@ begin
     BringToFront;
   end;
 
+  with TSingletonSettingObj.Instance do
+  begin
+    if (not HistoryEnabled) and (not ShouldReloadHistory) and (FileExists(GetHistoryFullPath)) then
+      ShouldReloadHistory := True;
+  end;
+
   Self.OnKeyDown := FormKeyDown;
+  Self.OnClose := FormClose;
   Self.KeyPreview := True;
-  Self.OnShow := FormShow;
 
   FClassList := TClassList.Create;
 end;
@@ -655,19 +663,15 @@ begin
   FChatGPTDockForm := nil;
 end;
 
+procedure TChatGPTDockForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Fram_Question.TerminateThred;
+end;
+
 procedure TChatGPTDockForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if Ord(Key) = 27 then
-  begin
-    Fram_Question.TerminateThred;
     Close;
-  end;
-end;
-
-procedure TChatGPTDockForm.FormShow(Sender: TObject);
-begin
-   with TSingletonSettingObj.Instance do
-      ShouldReloadHistory := (not HistoryEnabled) and (not ShouldReloadHistory) and (FileExists(GetHistoryFullPath));
 end;
 
 initialization
