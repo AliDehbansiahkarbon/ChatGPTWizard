@@ -739,7 +739,7 @@ begin
       mmoAnswer.Lines.Clear;
       mmoAnswer.Lines.Add(String(Msg.WParam));
 
-      if Msg.LParam <> 1 then  // if it's not error
+      if Msg.LParam <> 1 then  // if it's not an error
         AddToHistory(mmoQuestion.Lines.Text, mmoAnswer.Lines.Text);
     end
     else if pgcMain.ActivePage = tsClassView then
@@ -757,14 +757,14 @@ begin
     Btn_Ask.Enabled := True;
     mmoAnswer.Lines.Clear;
     mmoAnswer.Lines.Add(String(Msg.WParam));
-    if Msg.LParam <> 1 then // if it's not error
+    if Msg.LParam <> 1 then // if it's not an error
       AddToHistory(mmoQuestion.Lines.Text, mmoAnswer.Lines.Text);
   end;
 
-  if (Msg.LParam <> 1) and (chk_AutoCopy.Checked) then  // if it's not error
+  if (Msg.LParam <> 1) and (chk_AutoCopy.Checked) then  // if it's not an error
     CopyToClipBoard;
 
-  if Msg.LParam <> 1 then  // if it's not error
+  if Msg.LParam <> 1 then  // if it's not an error
     TSingletonSettingObj.Instance.ShouldReloadHistory := True;
 end;
 
