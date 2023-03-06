@@ -11,6 +11,7 @@ object Fram_Question: TFram_Question
     Height = 399
     ActivePage = tsChatGPT
     Align = alClient
+    MultiLine = True
     TabOrder = 0
     OnChange = pgcMainChange
     object tsChatGPT: TTabSheet
@@ -19,7 +20,7 @@ object Fram_Question: TFram_Question
         Left = 0
         Top = 0
         Width = 427
-        Height = 371
+        Height = 369
         Align = alClient
         ParentColor = True
         TabOrder = 0
@@ -66,7 +67,7 @@ object Fram_Question: TFram_Question
           Left = 1
           Top = 45
           Width = 425
-          Height = 325
+          Height = 323
           Align = alClient
           BevelOuter = bvNone
           TabOrder = 1
@@ -85,7 +86,7 @@ object Fram_Question: TFram_Question
             Left = 0
             Top = 117
             Width = 425
-            Height = 208
+            Height = 206
             Align = alClient
             TabOrder = 0
             object Lbl_Answer: TLabel
@@ -106,7 +107,7 @@ object Fram_Question: TFram_Question
               Left = 4
               Top = 21
               Width = 417
-              Height = 183
+              Height = 181
               Margins.Top = 20
               Align = alClient
               Font.Charset = DEFAULT_CHARSET
@@ -175,7 +176,7 @@ object Fram_Question: TFram_Question
       object splClassView: TSplitter
         Left = 0
         Top = 137
-        Width = 427
+        Width = 404
         Height = 3
         Cursor = crVSplit
         Align = alTop
@@ -185,24 +186,37 @@ object Fram_Question: TFram_Question
       object pnlClasses: TPanel
         Left = 0
         Top = 0
-        Width = 427
+        Width = 404
         Height = 137
         Align = alTop
         TabOrder = 0
+        ExplicitWidth = 427
       end
       object pnlPredefinedCmdAnswer: TPanel
         Left = 0
         Top = 140
-        Width = 427
-        Height = 231
+        Width = 404
+        Height = 251
         Align = alClient
         TabOrder = 1
-        object mmoPredefinedCmdAnswer: TMemo
+        ExplicitWidth = 427
+        ExplicitHeight = 229
+        object splClassViewResult: TSplitter
+          Left = 238
+          Top = 1
+          Height = 227
+          Align = alRight
+          Visible = False
+          ExplicitLeft = 216
+          ExplicitTop = 64
+          ExplicitHeight = 100
+        end
+        object mmoClassViewDetail: TMemo
           AlignWithMargins = True
           Left = 4
           Top = 4
-          Width = 419
-          Height = 223
+          Width = 231
+          Height = 221
           Align = alClient
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
@@ -213,6 +227,15 @@ object Fram_Question: TFram_Question
           ScrollBars = ssVertical
           TabOrder = 0
         end
+        object mmoClassViewResult: TMemo
+          Left = 241
+          Top = 1
+          Width = 185
+          Height = 227
+          Align = alRight
+          TabOrder = 1
+          Visible = False
+        end
       end
     end
     object tsHistory: TTabSheet
@@ -221,7 +244,7 @@ object Fram_Question: TFram_Question
       object splHistory: TSplitter
         Left = 0
         Top = 185
-        Width = 427
+        Width = 404
         Height = 3
         Cursor = crVSplit
         Align = alTop
@@ -230,26 +253,90 @@ object Fram_Question: TFram_Question
       object pnlHistoryTop: TPanel
         Left = 0
         Top = 0
-        Width = 427
+        Width = 404
         Height = 185
         Align = alTop
         PopupMenu = pmGrdHistory
         TabOrder = 0
+        ExplicitWidth = 427
+        object pnlSearchHistory: TPanel
+          Left = 1
+          Top = 1
+          Width = 425
+          Height = 40
+          Align = alTop
+          TabOrder = 0
+          Visible = False
+          DesignSize = (
+            425
+            40)
+          object Chk_CaseSensitive: TCheckBox
+            Left = 330
+            Top = 1
+            Width = 94
+            Height = 38
+            Align = alRight
+            Anchors = [akTop, akRight]
+            Caption = 'Case Sensitive'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentFont = False
+            TabOrder = 0
+            OnClick = Chk_CaseSensitiveClick
+          end
+          object Edt_Search: TEdit
+            AlignWithMargins = True
+            Left = 7
+            Top = 8
+            Width = 202
+            Height = 23
+            Anchors = [akLeft, akTop, akRight]
+            TabOrder = 1
+            OnChange = Edt_SearchChange
+            ExplicitWidth = 225
+          end
+          object Chk_FuzzyMatch: TCheckBox
+            Left = 245
+            Top = 1
+            Width = 85
+            Height = 38
+            Align = alRight
+            Anchors = [akTop, akRight]
+            Caption = 'Fuzzy Match'
+            Color = clLime
+            Ctl3D = True
+            DoubleBuffered = False
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentColor = False
+            ParentCtl3D = False
+            ParentDoubleBuffered = False
+            ParentFont = False
+            TabOrder = 2
+            OnClick = Chk_CaseSensitiveClick
+          end
+        end
       end
       object pnlHistoryBottom: TPanel
         Left = 0
         Top = 188
         Width = 427
-        Height = 183
+        Height = 181
         Align = alClient
         TabOrder = 1
         object mmoHistoryDetail: TMemo
           Left = 1
           Top = 1
           Width = 425
-          Height = 181
+          Height = 179
           Align = alClient
-          PopupMenu = pmMemo
+          ScrollBars = ssBoth
           TabOrder = 0
         end
       end
@@ -321,9 +408,9 @@ object Fram_Question: TFram_Question
     end
     object Convertto1: TMenuItem
       Caption = 'Convert to'
-      object C1: TMenuItem
+      object CSharp: TMenuItem
         Caption = 'C#'
-        OnClick = C1Click
+        OnClick = CSharpClick
       end
       object Java1: TMenuItem
         Caption = 'Java'
@@ -375,6 +462,7 @@ object Fram_Question: TFram_Question
   end
   object FDQryHistory: TFDQuery
     AfterScroll = FDQryHistoryAfterScroll
+    OnFilterRecord = FDQryHistoryFilterRecord
     Connection = FDConnection
     SQL.Strings = (
       'Select * from TbHistory')
@@ -387,6 +475,7 @@ object Fram_Question: TFram_Question
       ReadOnly = True
     end
     object FDQryHistoryQuestion: TWideMemoField
+      Alignment = taCenter
       FieldName = 'Question'
       Origin = 'Question'
       OnGetText = FDQryHistoryQuestionGetText
@@ -409,6 +498,11 @@ object Fram_Question: TFram_Question
     object ReloadHistory1: TMenuItem
       Caption = 'Reload History'
       OnClick = ReloadHistory1Click
+    end
+    object Search1: TMenuItem
+      AutoCheck = True
+      Caption = 'Search'
+      OnClick = Search1Click
     end
   end
 end
