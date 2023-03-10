@@ -16,14 +16,19 @@ object Fram_Question: TFram_Question
     OnChange = pgcMainChange
     object tsChatGPT: TTabSheet
       Caption = 'ChatGPT'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object pnlMain: TPanel
         Left = 0
         Top = 0
         Width = 427
-        Height = 369
+        Height = 371
         Align = alClient
         ParentColor = True
         TabOrder = 0
+        ExplicitHeight = 369
         object pnlTop: TPanel
           Left = 1
           Top = 1
@@ -67,10 +72,11 @@ object Fram_Question: TFram_Question
           Left = 1
           Top = 45
           Width = 425
-          Height = 323
+          Height = 325
           Align = alClient
           BevelOuter = bvNone
           TabOrder = 1
+          ExplicitHeight = 323
           object splitter: TSplitter
             Left = 0
             Top = 114
@@ -86,9 +92,10 @@ object Fram_Question: TFram_Question
             Left = 0
             Top = 117
             Width = 425
-            Height = 206
+            Height = 208
             Align = alClient
             TabOrder = 0
+            ExplicitHeight = 206
             object Lbl_Answer: TLabel
               Left = 7
               Top = 5
@@ -116,7 +123,6 @@ object Fram_Question: TFram_Question
               Font.Name = 'Consolas'
               Font.Style = []
               ParentFont = False
-              PopupMenu = pmMemo
               ReadOnly = True
               ScrollBars = ssVertical
               TabOrder = 0
@@ -173,10 +179,14 @@ object Fram_Question: TFram_Question
     object tsClassView: TTabSheet
       Caption = 'Class View'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object splClassView: TSplitter
         Left = 0
         Top = 137
-        Width = 404
+        Width = 427
         Height = 3
         Cursor = crVSplit
         Align = alTop
@@ -186,21 +196,18 @@ object Fram_Question: TFram_Question
       object pnlClasses: TPanel
         Left = 0
         Top = 0
-        Width = 404
+        Width = 427
         Height = 137
         Align = alTop
         TabOrder = 0
-        ExplicitWidth = 427
       end
       object pnlPredefinedCmdAnswer: TPanel
         Left = 0
         Top = 140
-        Width = 404
-        Height = 251
+        Width = 427
+        Height = 229
         Align = alClient
         TabOrder = 1
-        ExplicitWidth = 427
-        ExplicitHeight = 229
         object splClassViewResult: TSplitter
           Left = 238
           Top = 1
@@ -224,8 +231,10 @@ object Fram_Question: TFram_Question
           Font.Name = 'Consolas'
           Font.Style = []
           ParentFont = False
+          ReadOnly = True
           ScrollBars = ssVertical
           TabOrder = 0
+          OnDblClick = mmoClassViewDetailDblClick
         end
         object mmoClassViewResult: TMemo
           Left = 241
@@ -233,18 +242,24 @@ object Fram_Question: TFram_Question
           Width = 185
           Height = 227
           Align = alRight
+          ReadOnly = True
           TabOrder = 1
           Visible = False
+          OnDblClick = mmoClassViewResultDblClick
         end
       end
     end
     object tsHistory: TTabSheet
       Caption = 'History'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object splHistory: TSplitter
         Left = 0
         Top = 185
-        Width = 404
+        Width = 427
         Height = 3
         Cursor = crVSplit
         Align = alTop
@@ -253,12 +268,11 @@ object Fram_Question: TFram_Question
       object pnlHistoryTop: TPanel
         Left = 0
         Top = 0
-        Width = 404
+        Width = 427
         Height = 185
         Align = alTop
         PopupMenu = pmGrdHistory
         TabOrder = 0
-        ExplicitWidth = 427
         object pnlSearchHistory: TPanel
           Left = 1
           Top = 1
@@ -296,7 +310,6 @@ object Fram_Question: TFram_Question
             Anchors = [akLeft, akTop, akRight]
             TabOrder = 1
             OnChange = Edt_SearchChange
-            ExplicitWidth = 225
           end
           object Chk_FuzzyMatch: TCheckBox
             Left = 245
@@ -327,15 +340,17 @@ object Fram_Question: TFram_Question
         Left = 0
         Top = 188
         Width = 427
-        Height = 181
+        Height = 183
         Align = alClient
         TabOrder = 1
+        ExplicitHeight = 181
         object mmoHistoryDetail: TMemo
           Left = 1
           Top = 1
           Width = 425
           Height = 179
           Align = alClient
+          ReadOnly = True
           ScrollBars = ssBoth
           TabOrder = 0
         end
@@ -378,77 +393,6 @@ object Fram_Question: TFram_Question
     OnPopup = pmClassOperationsPopup
     Left = 56
     Top = 304
-    object CreateTestUnit1: TMenuItem
-      Caption = 'Create Test Unit'
-      OnClick = CreateTestUnit1Click
-    end
-    object ConverttoSingletone1: TMenuItem
-      Caption = 'Convert to Singleton'
-      OnClick = ConverttoSingletone1Click
-    end
-    object Findpossibleproblems1: TMenuItem
-      Caption = 'Find possible problems'
-      OnClick = Findpossibleproblems1Click
-    end
-    object ImproveNaming1: TMenuItem
-      Caption = 'Improve Naming'
-      OnClick = ImproveNaming1Click
-    end
-    object Rewriteinmoderncodingstyle1: TMenuItem
-      Caption = 'Rewrite in modern coding style'
-      OnClick = Rewriteinmoderncodingstyle1Click
-    end
-    object CrreateInterface1: TMenuItem
-      Caption = 'Crreate Interface'
-      OnClick = CrreateInterface1Click
-    end
-    object ConverttoGenericType1: TMenuItem
-      Caption = 'Convert to Generic Type'
-      OnClick = ConverttoGenericType1Click
-    end
-    object Convertto1: TMenuItem
-      Caption = 'Convert to'
-      object CSharp: TMenuItem
-        Caption = 'C#'
-        OnClick = CSharpClick
-      end
-      object Java1: TMenuItem
-        Caption = 'Java'
-        OnClick = Java1Click
-      end
-      object Python1: TMenuItem
-        Caption = 'Python'
-        OnClick = Python1Click
-      end
-      object Javascript1: TMenuItem
-        Caption = 'Javascript'
-        OnClick = Javascript1Click
-      end
-      object C3: TMenuItem
-        Caption = 'C'
-        OnClick = C3Click
-      end
-      object C2: TMenuItem
-        Caption = 'C++'
-        OnClick = C2Click
-      end
-      object Go1: TMenuItem
-        Caption = 'Go'
-        OnClick = Go1Click
-      end
-      object Rust1: TMenuItem
-        Caption = 'Rust'
-        OnClick = Rust1Click
-      end
-    end
-    object WriteXMLdoc1: TMenuItem
-      Caption = 'Write XML doc'
-      OnClick = WriteXMLdoc1Click
-    end
-    object CustomCommand1: TMenuItem
-      Caption = 'Custom Command'
-      OnClick = CustomCommand1Click
-    end
   end
   object FDConnection: TFDConnection
     LoginPrompt = False

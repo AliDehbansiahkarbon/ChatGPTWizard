@@ -15,6 +15,7 @@ uses
 const
   WM_UPDATE_MESSAGE = WM_USER + 5874;
   WM_PROGRESS_MESSAGE = WM_USER + 5875;
+  WM_Animated_MESSAGE = WM_USER + 5876;
 
 type
   TExecutorTrd = class(TThread)
@@ -28,12 +29,13 @@ type
     FFormattedResponse: TStringList;
     FUrl: string;
     FProxySetting: TProxySetting;
+    FAnimated: Boolean;
   protected
     procedure Execute; override;
   public
     constructor Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer;
                        AActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string; 
-                       AProxyPassword: string);
+                       AProxyPassword: string; AAnimated: Boolean);
     destructor Destroy; override;
   end;
 
@@ -192,8 +194,8 @@ end;
 
 { TExecutorTrd }
 constructor TExecutorTrd.Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer;
-                       AActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string; 
-                       AProxyPassword: string);
+                       AActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string;
+                       AProxyPassword: string; AAnimated: Boolean);
 begin
   inherited Create(True);
   FreeOnTerminate := True;
@@ -205,6 +207,7 @@ begin
   FTemperature := ATemperature;
   FHandle := AHandle;
   FUrl := AUrl;
+  FAnimated := AAnimated;
   FProxySetting := TProxySetting.Create;
   PostMessage(FHandle, WM_PROGRESS_MESSAGE, 1, 0);
 end;
@@ -221,6 +224,14 @@ procedure TExecutorTrd.Execute;
 var
   LvAPI: TOpenAIAPI;
   LvResult: string;
+  I: Integer;
+//==================
+//Lparams meaning:
+//       0 = sending whole string in one message
+//       1 = sending character by character(animated)
+//       2 = Finished the task.
+//       3 = Exceptions.
+//==================
 begin
   inherited;
   LvAPI := TOpenAIAPI.Create(FApiKey, FUrl, FProxySetting);
@@ -230,11 +241,30 @@ begin
         LvResult := LvAPI.Query(FModel, FPrompt, FMaxToken, FTemperature).Trim;
 
       if (not Terminated) and (not LvResult.IsEmpty) then
-        SendMessageW(FHandle, WM_UPDATE_MESSAGE, Integer(LvResult), 0);
+      begin
+        if FAnimated then
+        begin
+          for I := 0 to Pred(LvResult.Length) do
+          begin
+            if not Terminated then
+            begin
+              Sleep(1);
+              if not Terminated then
+                SendMessage(FHandle, WM_UPDATE_MESSAGE, Integer(LvResult[I]), 1);
+            end;
+          end;
+          SendMessage(FHandle, WM_UPDATE_MESSAGE, 0, 2);
+        end
+        else
+        begin
+          SendMessageW(FHandle, WM_UPDATE_MESSAGE, Integer(LvResult), 0);
+          SendMessage(FHandle, WM_UPDATE_MESSAGE, 0, 2);
+        end;
+      end;
     except on E: Exception do
       begin
         Sleep(10);
-        SendMessageW(FHandle, WM_UPDATE_MESSAGE, Integer(E.Message), 1);
+        SendMessageW(FHandle, WM_UPDATE_MESSAGE, Integer(E.Message), 3);
         Terminate;
       end;
     end;
@@ -242,4 +272,5 @@ begin
     LvAPI.Free;
   end;
 end;
+
 end.

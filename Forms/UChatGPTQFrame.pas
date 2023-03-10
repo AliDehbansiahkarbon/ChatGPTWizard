@@ -1,4 +1,4 @@
-{****************************************************}
+﻿{****************************************************}
 {                                                    }
 {    This unit contains a frame that will be         }
 {    used in dockable form.                          }
@@ -22,6 +22,7 @@ uses
   FireDAC.Comp.DataSet, FireDAC.VCLUI.Wait, FireDAC.Comp.UI;
 
 type
+  TOnClickProc = procedure(Sender: TObject) of object;
   TClassList = TObjectDictionary<string, TStringList>;
 
   TObDicHelper = class helper for TClassList
@@ -51,23 +52,6 @@ type
     tsChatGPT: TTabSheet;
     tsClassView: TTabSheet;
     pmClassOperations: TPopupMenu;
-    CreateTestUnit1: TMenuItem;
-    ConverttoSingletone1: TMenuItem;
-    Findpossibleproblems1: TMenuItem;
-    ImproveNaming1: TMenuItem;
-    Rewriteinmoderncodingstyle1: TMenuItem;
-    CrreateInterface1: TMenuItem;
-    ConverttoGenericType1: TMenuItem;
-    CustomCommand1: TMenuItem;
-    Convertto1: TMenuItem;
-    CSharp: TMenuItem;
-    Java1: TMenuItem;
-    Python1: TMenuItem;
-    Javascript1: TMenuItem;
-    Go1: TMenuItem;
-    C3: TMenuItem;
-    C2: TMenuItem;
-    Rust1: TMenuItem;
     pnlClasses: TPanel;
     pnlPredefinedCmdAnswer: TPanel;
     splClassView: TSplitter;
@@ -84,7 +68,6 @@ type
     FDQryHistoryQuestion: TWideMemoField;
     FDQryHistoryAnswer: TWideMemoField;
     FDQryHistoryDate: TLargeintField;
-    WriteXMLdoc1: TMenuItem;
     pmGrdHistory: TPopupMenu;
     ReloadHistory1: TMenuItem;
     pnlSearchHistory: TPanel;
@@ -99,24 +82,8 @@ type
     procedure CopytoClipboard1Click(Sender: TObject);
     procedure mmoQuestionKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure Btn_ClearClick(Sender: TObject);
-    procedure CreateTestUnit1Click(Sender: TObject);
     procedure tvOnChange(Sender: TObject; Node: TTreeNode);
     procedure pmClassOperationsPopup(Sender: TObject);
-    procedure ConverttoSingletone1Click(Sender: TObject);
-    procedure Findpossibleproblems1Click(Sender: TObject);
-    procedure ImproveNaming1Click(Sender: TObject);
-    procedure Rewriteinmoderncodingstyle1Click(Sender: TObject);
-    procedure CrreateInterface1Click(Sender: TObject);
-    procedure ConverttoGenericType1Click(Sender: TObject);
-    procedure CSharpClick(Sender: TObject);
-    procedure Java1Click(Sender: TObject);
-    procedure Python1Click(Sender: TObject);
-    procedure Javascript1Click(Sender: TObject);
-    procedure C2Click(Sender: TObject);
-    procedure Go1Click(Sender: TObject);
-    procedure Rust1Click(Sender: TObject);
-    procedure CustomCommand1Click(Sender: TObject);
-    procedure C3Click(Sender: TObject);
     procedure pgcMainChange(Sender: TObject);
     procedure FDQryHistoryQuestionGetText(Sender: TField; var Text: string; DisplayText: Boolean);
     procedure FDQryHistoryAfterScroll(DataSet: TDataSet);
@@ -124,12 +91,29 @@ type
     procedure GridResize(Sender: TObject);
     procedure DrawColumnCell(Sender: TObject; const Rect: TRect; DataCol: Integer; Column: TColumn; State: TGridDrawState);
     procedure CloseBtnClick(Sender: TObject);
-    procedure WriteXMLdoc1Click(Sender: TObject);
     procedure ReloadHistory1Click(Sender: TObject);
     procedure Search1Click(Sender: TObject);
     procedure Edt_SearchChange(Sender: TObject);
     procedure FDQryHistoryFilterRecord(DataSet: TDataSet; var Accept: Boolean);
     procedure Chk_CaseSensitiveClick(Sender: TObject);
+    procedure mmoClassViewDetailDblClick(Sender: TObject);
+    procedure mmoClassViewResultDblClick(Sender: TObject);
+
+    // Convert commands.
+    procedure CSharpClick(Sender: TObject);
+    procedure JavaClick(Sender: TObject);
+    procedure PythonClick(Sender: TObject);
+    procedure JavascriptClick(Sender: TObject);
+    procedure CClick(Sender: TObject);
+    procedure GoClick(Sender: TObject);
+    procedure RustClick(Sender: TObject);
+    procedure CPlusPlusClick(Sender: TObject);
+
+    // Dynamic Commands.
+    procedure ClassViewMenuItemClick(Sender: TObject);
+
+    // Custom Command.
+    procedure CustomCommandClick(Sender: TObject);
   private
     FTrd: TExecutorTrd;
     FPrg: TProgressBar;
@@ -138,6 +122,7 @@ type
     FCellCloseBtn: TSpeedButton;
     FHistoryGrid: THistoryDBGrid;
     FLastQuestion: string;
+
     procedure CopyToClipBoard;
     procedure CreateProgressbar;
     procedure CallThread(APrompt: string);
@@ -145,11 +130,12 @@ type
     function LowChar(AChar: Char): Char; inline;
     function FuzzyMatchStr(const APattern, AStr: string; AMatchedIndexes: TList; ACaseSensitive: Boolean): Boolean;
     procedure HighlightCellTextFull(AGrid: THistoryDBGrid; const ARect: TRect; AField: TField; AFilterText: string; AState: TGridDrawState;
-                                    ACaseSensitive: Boolean; ABkColor: TColor = clRed; ASelectedBkColor: TColor = clGray);
+                                    ACaseSensitive: Boolean; ABkColor: TColor; ASelectedBkColor: TColor);
     procedure HighlightCellTextFuzzy(AGrid: TDbGrid; const ARect: TRect; AField: TField; AMatchedIndexes : TList; AState: TGridDrawState ;
-                                ACaseSensitive: Boolean; ABkColor: TColor = clRed; ASelectedBkColor: TColor = clGray);
+                                ACaseSensitive: Boolean; ABkColor: TColor; ASelectedBkColor: TColor);
   public
     procedure InitialFrame;
+    procedure InitialClassViewMenueItems(AClassList: TClassList);
     procedure TerminateThred;
     procedure ReloadClassList(AClassList: TClassList);
     procedure LoadHistory;
@@ -179,12 +165,13 @@ procedure TFram_Question.Btn_AskClick(Sender: TObject);
 begin
   if mmoQuestion.Lines.Text.Trim.IsEmpty then
   begin
-    ShowMessage('Really?!' + #13 + 'You need to type a question first.');
+    ShowMessage('Really?!😂' + #13 + 'You need to type a question first.');
     if mmoQuestion.CanFocus then
       mmoQuestion.SetFocus;
 
     Exit;
   end;
+  mmoAnswer.Lines.Clear;
   CallThread(mmoQuestion.Lines.Text);
 end;
 
@@ -201,28 +188,30 @@ end;
 
 procedure TFram_Question.CSharpClick(Sender: TObject);
 begin
-  ShowMessage(TMenuItem(Sender).Caption);
   if FClassTreeView.Selected <> FClassTreeView.TopItem then
   begin
-    FLastQuestion := 'Convert this Delphi Code to C#: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to C# code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion);
   end;
 end;
 
-procedure TFram_Question.C2Click(Sender: TObject);
+procedure TFram_Question.CClick(Sender: TObject);
 begin
   if FClassTreeView.Selected <> FClassTreeView.TopItem then
   begin
-    FLastQuestion := 'Convert this Delphi Code to C++: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to C code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion);
   end;
 end;
 
-procedure TFram_Question.C3Click(Sender: TObject);
+procedure TFram_Question.CPlusPlusClick(Sender: TObject);
 begin
   if FClassTreeView.Selected <> FClassTreeView.TopItem then
   begin
-    FLastQuestion := 'Convert this Delphi Code to C: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to C++ code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion);
   end;
 end;
@@ -249,7 +238,7 @@ begin
   FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, LvQuestion, LvUrl,
     LvMaxToken, LvTemperature, LvSetting.ProxySetting.Active,
     LvSetting.ProxySetting.ProxyHost, LvSetting.ProxySetting.ProxyPort,
-    LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword);
+    LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword, LvSetting.AnimatedLetters);
   FTrd.Start;
 
   if Assigned(pgcMain) then
@@ -261,27 +250,30 @@ begin
   Edt_Search.OnChange(Edt_Search);
 end;
 
+procedure TFram_Question.ClassViewMenuItemClick(Sender: TObject);
+var
+  LvSettingObj: TSingletonSettingObj;
+  LvQuestion: string;
+begin
+  if FClassTreeView.Selected <> FClassTreeView.TopItem then // Not applicable to the first node of the TreeView.
+  begin
+    LvSettingObj := TSingletonSettingObj.Instance;
+    if LvSettingObj.TryFindQuestion(TMenuItem(Sender).Caption.Replace('&', '') , LvQuestion) > -1 then
+    begin
+      if not LvQuestion.Trim.IsEmpty then
+      begin
+        FLastQuestion := LvQuestion + #13 + FClassTreeView.Selected.Text; // Shorter string will be logged.
+        LvQuestion  := LvQuestion  + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+        mmoClassViewResult.Lines.Clear;
+        CallThread(LvQuestion );
+      end;
+    end;
+  end;
+end;
+
 procedure TFram_Question.CloseBtnClick(Sender: TObject);
 begin
   FDQryHistory.Delete;
-end;
-
-procedure TFram_Question.ConverttoGenericType1Click(Sender: TObject);
-begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
-  begin
-    FLastQuestion := 'Convert this class to generic class in Delphi: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
-    CallThread(FLastQuestion);
-  end;
-end;
-
-procedure TFram_Question.ConverttoSingletone1Click(Sender: TObject);
-begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
-  begin
-    FLastQuestion := 'Convert this class to singleton in Delphi: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
-    CallThread(FLastQuestion);
-  end;
 end;
 
 procedure TFram_Question.CopyToClipBoard;
@@ -314,7 +306,7 @@ begin
   begin
     Left := 11;
     Top := 10;
-    Width := 120;
+    Width := 80;
     Height := 16;
     Anchors := [akLeft, akBottom];
     Style := pbstMarquee;
@@ -323,38 +315,18 @@ begin
   end;
 end;
 
-procedure TFram_Question.CreateTestUnit1Click(Sender: TObject);
+procedure TFram_Question.CustomCommandClick(Sender: TObject);
 begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
-  begin
-    FLastQuestion := 'Create a Test Unit for the following class in Delphi: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
-    CallThread(FLastQuestion);
-  end;
-end;
-
-procedure TFram_Question.CrreateInterface1Click(Sender: TObject);
-begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
-  begin
-    FLastQuestion := 'Create necessary interfaces for this Class in Delphi: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
-    CallThread(FLastQuestion);
-  end;
-end;
-
-procedure TFram_Question.CustomCommand1Click(Sender: TObject);
-begin
-  FClassTreeView.HideSelection := False;
   InputQuery('Custom Command(use @Class to represent the selected class)', 'Write your command here', FLastQuestion);
   if FLastQuestion.Trim = '' then
     Exit;
 
   if FLastQuestion.ToLower.Trim.Contains('@class') then
-  begin
-    FLastQuestion := StringReplace(FLastQuestion, '@class', ' ' + FClassList.Items[FClassTreeView.Selected.Text].Text + ' ', [rfReplaceAll, rfIgnoreCase]);
-  end
+    FLastQuestion := StringReplace(FLastQuestion, '@class', ' ' + FClassList.Items[FClassTreeView.Selected.Text].Text + ' ', [rfReplaceAll, rfIgnoreCase])
   else
     FLastQuestion := FLastQuestion + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
 
+  mmoClassViewResult.Lines.Clear;
   CallThread(FLastQuestion);
 end;
 
@@ -387,7 +359,7 @@ begin
   if (Assigned(Column.Field)) and (Column.Field.FieldName = 'Question') then
   begin
     if not Chk_FuzzyMatch.Checked then
-      HighlightCellTextFull(THistoryDBGrid(Sender), Rect, Column.Field, Trim(Edt_Search.Text), State, Chk_CaseSensitive.Checked)
+      HighlightCellTextFull(THistoryDBGrid(Sender), Rect, Column.Field, Trim(Edt_Search.Text), State, Chk_CaseSensitive.Checked, TSingletonSettingObj.Instance.HighlightColor, clGray)
     else
     begin
       THistoryDBGrid(Sender).Canvas.Font.Color := clBlack;
@@ -405,7 +377,7 @@ begin
           LvValue := Column.Field.AsString;
 
           if FuzzyMatchStr(LvPattern, LvValue, LvMatchedIndexes, Chk_CaseSensitive.Checked) then
-            HighlightCellTextFuzzy(THistoryDBGrid(Sender),Rect, Column.Field, LvMatchedIndexes, State, Chk_CaseSensitive.Checked);
+            HighlightCellTextFuzzy(THistoryDBGrid(Sender),Rect, Column.Field, LvMatchedIndexes, State, Chk_CaseSensitive.Checked, TSingletonSettingObj.Instance.HighlightColor, clGray);
         end
         else
           THistoryDBGrid(Sender).Canvas.Brush.Color := clWhite;
@@ -465,15 +437,6 @@ begin
     Text := Sender.AsString;
 end;
 
-procedure TFram_Question.Findpossibleproblems1Click(Sender: TObject);
-begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
-  begin
-    FLastQuestion := 'What is wrong with this class in Delphi? : ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
-    CallThread(FLastQuestion);
-  end;
-end;
-
 function TFram_Question.FuzzyMatchStr(const APattern, AStr: string; AMatchedIndexes: TList; ACaseSensitive: Boolean): Boolean;
 var
   PIdx, SIdx: Integer;
@@ -516,11 +479,12 @@ begin
   Result := PIdx > Length(APattern);
 end;
 
-procedure TFram_Question.Go1Click(Sender: TObject);
+procedure TFram_Question.GoClick(Sender: TObject);
 begin
   if FClassTreeView.Selected <> FClassTreeView.TopItem then
   begin
-    FLastQuestion := 'Convert this Delphi Code to the GO programming language: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to the GO programming language code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion);
   end;
 end;
@@ -630,13 +594,60 @@ begin
   end;
 end;
 
-procedure TFram_Question.ImproveNaming1Click(Sender: TObject);
-begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
+procedure TFram_Question.InitialClassViewMenueItems(AClassList: TClassList);
+var
+  LvKey: Integer;
+  LvMenuItem: TMenuItem;
+  LvTempSortingArray : TArray<Integer>;
+
+  procedure AddMenuItem(ACaption: string);
   begin
-    FLastQuestion := 'Improve naming of the members of this class in Delphi: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
-    CallThread(FLastQuestion);
+    LvMenuItem := TMenuItem.Create(Self);
+    LvMenuItem.Caption := ACaption;
+    LvMenuItem.OnClick := ClassViewMenuItemClick;
+    pmClassOperations.Items.Add(LvMenuItem);
   end;
+
+  procedure AddSubMenu(ACaption: string; AParent: TMenuItem; AOnClickProc: TOnClickProc);
+  var
+    LvSubMenu: TMenuItem;
+  begin
+    LvSubMenu := TMenuItem.Create(Self);
+    LvSubMenu.Caption := ACaption;
+    LvSubMenu.OnClick := AOnClickProc;
+    AParent.Add(LvSubMenu);
+  end;
+
+begin
+  //pmClassOperations.Items.Clear;
+  FClassList := AClassList;
+
+  LvTempSortingArray := TSingletonSettingObj.Instance.PredefinedQuestions.Keys.ToArray; // TObjectDictionary is not sorted!
+  TArray.Sort<Integer>(LvTempSortingArray);
+
+  for LvKey in LvTempSortingArray do
+    AddMenuItem(TSingletonSettingObj.Instance.PredefinedQuestions.Items[LvKey].Caption);
+
+  // Add Convert commands
+    LvMenuItem := TMenuItem.Create(Self);
+    LvMenuItem.Caption := 'Convert to';
+    pmClassOperations.Items.Add(LvMenuItem);
+
+    AddSubMenu('C#', LvMenuItem, CSharpClick);
+    AddSubMenu('Java', LvMenuItem, JavaClick);
+    AddSubMenu('Python', LvMenuItem, PythonClick);
+    AddSubMenu('Javascript', LvMenuItem, JavascriptClick);
+    AddSubMenu('C', LvMenuItem, CClick);
+    AddSubMenu('C++', LvMenuItem, CPlusPlusClick);
+    AddSubMenu('Go', LvMenuItem, GoClick);
+    AddSubMenu('Rust', LvMenuItem, RustClick);
+
+
+  // Add Custom Commands
+    LvMenuItem := TMenuItem.Create(Self);
+    LvMenuItem.Caption := 'Custom Command';
+    LvMenuItem.OnClick := CustomCommandClick;
+    pmClassOperations.Items.Add(LvMenuItem);
 end;
 
 procedure TFram_Question.InitialFrame;
@@ -689,22 +700,36 @@ begin
   end;
 end;
 
-procedure TFram_Question.Java1Click(Sender: TObject);
+procedure TFram_Question.JavaClick(Sender: TObject);
 begin
   if FClassTreeView.Selected <> FClassTreeView.TopItem then
   begin
-    FLastQuestion := 'Convert this Delphi Code to Java: ' + #13 + FClassList.Items [FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to Java code: ' + #13 + FClassList.Items [FClassTreeView.Selected.Text].Text;
+    mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion);
   end;
 end;
 
-procedure TFram_Question.Javascript1Click(Sender: TObject);
+procedure TFram_Question.JavascriptClick(Sender: TObject);
 begin
   if FClassTreeView.Selected <> FClassTreeView.TopItem then
   begin
-    FLastQuestion := 'Convert this Delphi Code to Javascript: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to Javascript code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion);
   end;
+end;
+
+procedure TFram_Question.mmoClassViewDetailDblClick(Sender: TObject);
+begin
+  mmoClassViewResult.Visible := True;
+  splClassViewResult.Visible := True;
+end;
+
+procedure TFram_Question.mmoClassViewResultDblClick(Sender: TObject);
+begin
+  mmoClassViewResult.Visible := False;
+  splClassViewResult.Visible := False;
 end;
 
 procedure TFram_Question.mmoQuestionKeyDown(Sender: TObject; var Key: Word;
@@ -731,41 +756,96 @@ procedure TFram_Question.OnUpdateMessage(var Msg: TMessage);
 begin
   if Assigned(pgcMain) then
   begin
-    pgcMain.Enabled := True;
-
     if pgcMain.ActivePage = tsChatGPT then
     begin
-      Btn_Ask.Enabled := True;
-      mmoAnswer.Lines.Clear;
-      mmoAnswer.Lines.Add(String(Msg.WParam));
-
-      if Msg.LParam <> 1 then  // if it's not an error
+      if Msg.LParam = 0 then //whole string in one message.
+      begin
+        mmoAnswer.Lines.Clear;
+        mmoAnswer.Lines.Add(String(Msg.WParam));
+      end
+      else if Msg.LParam = 1 then // Char by Char.
+      begin
+        if Msg.WParam = 13 then
+          mmoAnswer.Lines.Add('')
+        else
+          mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] := mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] + char(Msg.WParam);
+      end
+      else if Msg.LParam = 2 then // Finished.
+      begin
+        pgcMain.Enabled := True;
+        Btn_Ask.Enabled := True;
         AddToHistory(mmoQuestion.Lines.Text, mmoAnswer.Lines.Text);
+      end
+      else if Msg.LParam = 3 then // Exception.
+      begin
+        mmoAnswer.Lines.Clear;
+        mmoAnswer.Lines.Add(String(Msg.WParam));
+        pgcMain.Enabled := True;
+        Btn_Ask.Enabled := True;
+      end;
     end
     else if pgcMain.ActivePage = tsClassView then
     begin
-      mmoClassViewResult.Lines.Clear;
-      mmoClassViewResult.Lines.Add(String(Msg.WParam));
-      mmoClassViewResult.Visible := True;
-      splClassViewResult.Visible := True;
-      if Msg.LParam <> 1 then
+      if Msg.LParam = 0 then //whole string in one message.
+      begin
+        mmoClassViewResult.Lines.Clear;
+        mmoClassViewResult.Lines.Add(String(Msg.WParam));
+      end
+      else if Msg.LParam = 1 then // Char by Char.
+      begin
+        if Msg.WParam = 13 then
+          mmoClassViewResult.Lines.Add('')
+        else
+          mmoClassViewResult.Lines[Pred(mmoClassViewResult.Lines.Count)] := mmoClassViewResult.Lines[Pred(mmoClassViewResult.Lines.Count)] + char(Msg.WParam);
+      end
+      else if Msg.LParam = 2 then //  Finished.
+      begin
+        pgcMain.Enabled := True;
+        Btn_Ask.Enabled := True;
+        mmoClassViewResult.Visible := True;
+        splClassViewResult.Visible := True;
         AddToHistory(FLastQuestion , mmoClassViewResult.Lines.Text);
+      end
+      else if Msg.LParam = 3 then // Exception.
+      begin
+        pgcMain.Enabled := True;
+        Btn_Ask.Enabled := True;
+        mmoClassViewResult.Visible := True;
+        splClassViewResult.Visible := True;
+
+        mmoClassViewResult.Lines.Clear;
+        mmoClassViewResult.Lines.Add(String(Msg.WParam));
+      end;
     end;
   end
   else
   begin
-    Btn_Ask.Enabled := True;
-    mmoAnswer.Lines.Clear;
-    mmoAnswer.Lines.Add(String(Msg.WParam));
-    if Msg.LParam <> 1 then // if it's not an error
+    if Msg.LParam = 0 then //whole string in one message.
+    begin
+      mmoAnswer.Lines.Clear;
+      mmoAnswer.Lines.Add(String(Msg.WParam));
+    end
+    else if Msg.LParam = 1 then // Char by Char.
+    begin
+      if Msg.WParam = 13 then
+        mmoAnswer.Lines.Add('')
+      else
+        mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] := mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] + char(Msg.WParam);
+    end
+    else if Msg.LParam = 2 then // Finished.
+    begin
+      Btn_Ask.Enabled := True;
       AddToHistory(mmoQuestion.Lines.Text, mmoAnswer.Lines.Text);
+    end;
   end;
 
-  if (Msg.LParam <> 1) and (chk_AutoCopy.Checked) then  // if it's not an error
-    CopyToClipBoard;
+  if Msg.LParam = 2 then
+  begin
+    if chk_AutoCopy.Checked then
+      CopyToClipBoard;
 
-  if Msg.LParam <> 1 then  // if it's not an error
     TSingletonSettingObj.Instance.ShouldReloadHistory := True;
+  end;
 end;
 
 procedure TFram_Question.pgcMainChange(Sender: TObject);
@@ -794,11 +874,12 @@ begin
     keybd_event(VK_ESCAPE, Mapvirtualkey(VK_ESCAPE, 0), 0, 0);
 end;
 
-procedure TFram_Question.Python1Click(Sender: TObject);
+procedure TFram_Question.PythonClick(Sender: TObject);
 begin
   if FClassTreeView.Selected <> FClassTreeView.TopItem then
   begin
-    FLastQuestion := 'Convert this Delphi Code to Pyhton: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to Pyhton code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion);
   end;
 end;
@@ -807,7 +888,6 @@ procedure TFram_Question.ReloadClassList(AClassList: TClassList);
 var
   LvLexer: TcpLexer;
 begin
-  FClassList := AClassList;
   FClassTreeView := TTreeView.Create(tsClassView);
   with FClassTreeView do
   begin
@@ -817,6 +897,7 @@ begin
     Indent := 19;
     TabOrder := 0;
     RightClickSelect := True;
+    HideSelection := False;
     PopupMenu := pmClassOperations;
     OnChange := tvOnChange;
   end;
@@ -861,20 +942,12 @@ begin
     Result := AChar;
 end;
 
-procedure TFram_Question.Rewriteinmoderncodingstyle1Click(Sender: TObject);
+procedure TFram_Question.RustClick(Sender: TObject);
 begin
   if FClassTreeView.Selected <> FClassTreeView.TopItem then
   begin
-    FLastQuestion := 'Rewrite this class with modern coding style in Delphi: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
-    CallThread(FLastQuestion);
-  end;
-end;
-
-procedure TFram_Question.Rust1Click(Sender: TObject);
-begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
-  begin
-    FLastQuestion := 'Convert this Delphi Code to Rust programming language: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to Rust code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion);
   end;
 end;
@@ -905,15 +978,6 @@ begin
   if Node <> FClassTreeView.TopItem then
     mmoClassViewDetail.Lines.Add(FClassList.Items[Node.Text].Text);
   mmoClassViewDetail.ScrollBars := TScrollStyle.ssVertical;
-end;
-
-procedure TFram_Question.WriteXMLdoc1Click(Sender: TObject);
-begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
-  begin
-    FLastQuestion := 'Write Documentation using inline XML based comments for this class in Delphi: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
-    CallThread(FLastQuestion);
-  end;
 end;
 
 function TFram_Question.XPos(APattern, AStr: string; ACaseSensitive: Boolean): Integer;

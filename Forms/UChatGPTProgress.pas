@@ -83,7 +83,7 @@ begin
   LvTemperature := LvSetting.Temperature;
   FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, SelectedText, LvUrl, LvMaxToken, LvTemperature,
                               LvSetting.ProxySetting.Active, LvSetting.ProxySetting.ProxyHost, LvSetting.ProxySetting.ProxyPort,
-                              LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword);
+                              LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword, LvSetting.AnimatedLetters);
   FTrd.Start;
   Cs.Leave;
 end;
