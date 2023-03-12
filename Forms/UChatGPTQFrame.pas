@@ -136,7 +136,7 @@ type
   public
     procedure InitialFrame;
     procedure InitialClassViewMenueItems(AClassList: TClassList);
-    procedure TerminateThred;
+    procedure TerminateAll;
     procedure ReloadClassList(AClassList: TClassList);
     procedure LoadHistory;
     procedure AddToHistory(AQuestion, AAnswer: string);
@@ -317,8 +317,13 @@ end;
 
 procedure TFram_Question.CustomCommandClick(Sender: TObject);
 begin
-  InputQuery('Custom Command(use @Class to represent the selected class)', 'Write your command here', FLastQuestion);
-  if FLastQuestion.Trim = '' then
+  FLastQuestion := '';
+  if InputQuery('Custom Command(use @Class to represent the selected class)', 'Write your command here', FLastQuestion) then
+  begin
+    if FLastQuestion.Trim = '' then
+      Exit;
+  end
+  else
     Exit;
 
   if FLastQuestion.ToLower.Trim.Contains('@class') then
@@ -642,7 +647,6 @@ begin
     AddSubMenu('Go', LvMenuItem, GoClick);
     AddSubMenu('Rust', LvMenuItem, RustClick);
 
-
   // Add Custom Commands
     LvMenuItem := TMenuItem.Create(Self);
     LvMenuItem.Caption := 'Custom Command';
@@ -957,7 +961,7 @@ begin
   pnlSearchHistory.Visible := Search1.Checked;
 end;
 
-procedure TFram_Question.TerminateThred;
+procedure TFram_Question.TerminateAll;
 begin
   try
     if Assigned(FTrd) then FTrd.Terminate;
@@ -967,7 +971,9 @@ begin
   if Assigned(FPrg) then
     FreeAndNil(FPrg);
 
-  pgcMain.Enabled := True;
+  if Assigned(pgcMain) then
+    pgcMain.Enabled := True;
+
   Btn_Ask.Enabled := True;
 end;
 

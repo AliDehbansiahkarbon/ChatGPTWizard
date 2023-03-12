@@ -16,19 +16,14 @@ object Fram_Question: TFram_Question
     OnChange = pgcMainChange
     object tsChatGPT: TTabSheet
       Caption = 'ChatGPT'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object pnlMain: TPanel
         Left = 0
         Top = 0
         Width = 427
-        Height = 371
+        Height = 369
         Align = alClient
         ParentColor = True
         TabOrder = 0
-        ExplicitHeight = 369
         object pnlTop: TPanel
           Left = 1
           Top = 1
@@ -72,11 +67,10 @@ object Fram_Question: TFram_Question
           Left = 1
           Top = 45
           Width = 425
-          Height = 325
+          Height = 323
           Align = alClient
           BevelOuter = bvNone
           TabOrder = 1
-          ExplicitHeight = 323
           object splitter: TSplitter
             Left = 0
             Top = 114
@@ -92,10 +86,9 @@ object Fram_Question: TFram_Question
             Left = 0
             Top = 117
             Width = 425
-            Height = 208
+            Height = 206
             Align = alClient
             TabOrder = 0
-            ExplicitHeight = 206
             object Lbl_Answer: TLabel
               Left = 7
               Top = 5
@@ -179,10 +172,6 @@ object Fram_Question: TFram_Question
     object tsClassView: TTabSheet
       Caption = 'Class View'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object splClassView: TSplitter
         Left = 0
         Top = 137
@@ -252,10 +241,6 @@ object Fram_Question: TFram_Question
     object tsHistory: TTabSheet
       Caption = 'History'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object splHistory: TSplitter
         Left = 0
         Top = 185
@@ -340,10 +325,9 @@ object Fram_Question: TFram_Question
         Left = 0
         Top = 188
         Width = 427
-        Height = 183
+        Height = 181
         Align = alClient
         TabOrder = 1
-        ExplicitHeight = 181
         object mmoHistoryDetail: TMemo
           Left = 1
           Top = 1

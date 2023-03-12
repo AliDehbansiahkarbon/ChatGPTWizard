@@ -110,7 +110,6 @@ function TcpLexer.GetCurrentUnitPath: string;
 var
   ModuleServices: IOTAModuleServices;
   CurrentModule: IOTAModule;
-  SourceModule: IOTASourceEditor;
 begin
   Result := '';
   ModuleServices := BorlandIDEServices as IOTAModuleServices;

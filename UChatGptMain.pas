@@ -328,9 +328,13 @@ begin
           frm_Progress.SelectedText := TEditNotifierHelper.GetQuestion(LvEditBlock.Text);
           TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Progress, Frm_Progress); //Apply Theme
           Frm_Progress.ShowModal;
-          LvEditView.Buffer.EditPosition.InsertText(Frm_Progress.Answer.TrimLineText);
-          if not (Frm_Progress.HasError) and (TSingletonSettingObj.Instance.CodeFormatter) then
-            TEditNotifierHelper.FormatSource;
+          if not Frm_Progress.Answer.Text.Trim.IsEmpty then
+          begin
+            LvEditView.Buffer.EditPosition.InsertText(Frm_Progress.Answer.TrimLineText);
+
+            if not (Frm_Progress.HasError) and (TSingletonSettingObj.Instance.CodeFormatter) then
+              TEditNotifierHelper.FormatSource;
+          end;
         finally
           FreeAndNil(Frm_Progress);
         end;
@@ -476,9 +480,12 @@ begin
           frm_Progress.SelectedText := GetQuestion(LvEditBlock.Text);
           TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Progress, Frm_Progress); //Apply Theme
           Frm_Progress.ShowModal;
-          LvEditView.Buffer.EditPosition.InsertText(Frm_Progress.Answer.TrimLineText);
-          if not (Frm_Progress.HasError) and (TSingletonSettingObj.Instance.CodeFormatter) then
-            FormatSource;
+          if not Frm_Progress.Answer.Text.Trim.IsEmpty then
+          begin
+            LvEditView.Buffer.EditPosition.InsertText(Frm_Progress.Answer.TrimLineText);
+            if not (Frm_Progress.HasError) and (TSingletonSettingObj.Instance.CodeFormatter) then
+              TEditNotifierHelper.FormatSource;
+          end;
         finally
           FreeAndNil(Frm_Progress);
         end;
@@ -553,7 +560,6 @@ function TEditNotifierHelper.GetCurrentUnitPath: string;
 var
   ModuleServices: IOTAModuleServices;
   CurrentModule: IOTAModule;
-  SourceModule: IOTASourceEditor;
 begin
   Result := '';
   ModuleServices := BorlandIDEServices as IOTAModuleServices;
@@ -683,7 +689,7 @@ end;
 procedure TChatGPTDockForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Fram_Question.Edt_Search.Clear;
-  Fram_Question.TerminateThred;
+  Fram_Question.TerminateAll;
 end;
 
 procedure TChatGPTDockForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);

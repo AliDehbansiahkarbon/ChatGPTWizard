@@ -24,6 +24,7 @@ object Frm_Setting: TFrm_Setting
     ActivePage = tsMainSetting
     Align = alClient
     TabOrder = 0
+    OnChange = pgcSettingChange
     object tsMainSetting: TTabSheet
       Caption = 'Main Setting'
       object pnl1: TPanel
@@ -139,13 +140,28 @@ object Frm_Setting: TFrm_Setting
                 'text-ada-001')
             end
             object chk_AnimatedLetters: TCheckBox
-              Left = 224
-              Top = 86
+              Left = 225
+              Top = 87
               Width = 113
               Height = 17
               Caption = 'Animated Letters'
               TabOrder = 5
               OnClick = chk_AnimatedLettersClick
+            end
+            object lbEdt_Timeout: TLabeledEdit
+              Left = 288
+              Top = 110
+              Width = 28
+              Height = 23
+              Alignment = taCenter
+              EditLabel.Width = 57
+              EditLabel.Height = 15
+              EditLabel.Caption = 'Timeout(s)'
+              LabelPosition = lpLeft
+              LabelSpacing = 5
+              NumbersOnly = True
+              TabOrder = 6
+              Text = '20'
             end
           end
         end

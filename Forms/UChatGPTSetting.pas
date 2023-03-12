@@ -159,6 +159,7 @@ type
     GridPanelPredefinedQs: TGridPanel;
     Btn_RemoveQuestion: TButton;
     chk_AnimatedLetters: TCheckBox;
+    lbEdt_Timeout: TLabeledEdit;
     procedure Btn_SaveClick(Sender: TObject);
     procedure Btn_DefaultClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -172,6 +173,7 @@ type
     procedure chk_AnimatedLettersClick(Sender: TObject);
     procedure ColorBox_HighlightChange(Sender: TObject);
     procedure chk_ProxyActiveClick(Sender: TObject);
+    procedure pgcSettingChange(Sender: TObject);
   private
     procedure AddQuestion(AQuestionpair: TQuestionPair = nil);
     procedure RemoveLatestQuestion;
@@ -676,6 +678,11 @@ procedure TFrm_Setting.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShift
 begin
   if Ord(Key) = 27 then
     Close;
+end;
+
+procedure TFrm_Setting.pgcSettingChange(Sender: TObject);
+begin
+  Btn_Default.Visible := pgcSetting.ActivePage = tsMainSetting;
 end;
 
 procedure TFrm_Setting.AddAllDefinedQuestions;

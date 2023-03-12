@@ -83,7 +83,7 @@ begin
   LvTemperature := LvSetting.Temperature;
   FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, SelectedText, LvUrl, LvMaxToken, LvTemperature,
                               LvSetting.ProxySetting.Active, LvSetting.ProxySetting.ProxyHost, LvSetting.ProxySetting.ProxyPort,
-                              LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword, LvSetting.AnimatedLetters);
+                              LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword, False);
   FTrd.Start;
   Cs.Leave;
 end;
@@ -96,8 +96,8 @@ end;
 
 procedure TFrm_Progress.OnUpdateMessage(var Msg: TMessage);
 begin
-  Answer.Text := string(Msg.WParam);
-  HasError := Msg.LParam = 1;
+  Answer.Add(string(Msg.WParam));
+  HasError := Msg.LParam = 3;
 end;
 
 end.

@@ -32,7 +32,7 @@ procedure TFrmChatGPT.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftS
 begin
   if Ord(Key) = 27 then
   begin
-    Fram_Question.TerminateThred;
+    Fram_Question.TerminateAll;
     Close;
   end;
 end;
