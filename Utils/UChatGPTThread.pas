@@ -30,12 +30,13 @@ type
     FUrl: string;
     FProxySetting: TProxySetting;
     FAnimated: Boolean;
+    FTimeOut: Integer;
   protected
     procedure Execute; override;
   public
     constructor Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer;
-                       AActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string; 
-                       AProxyPassword: string; AAnimated: Boolean);
+                       AActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string;
+                       AProxyPassword: string; AAnimated: Boolean; ATimeOut: Integer);
     destructor Destroy; override;
   end;
 
@@ -101,19 +102,21 @@ type
     FAccessToken: string;
     FUrl: string;
     FProxySetting: TProxySetting;
+    FTimeOut: Integer;
   public
-    constructor Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting);
+    constructor Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting; ATimeOut: Integer);
     function Query(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
   end;
 
 implementation
 
-constructor TOpenAIAPI.Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting);
+constructor TOpenAIAPI.Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting; ATimeOut: Integer);
 begin
   inherited Create;
   FAccessToken := AAccessToken;
   FUrl := AUrl;
   FProxySetting := AProxySetting;
+  FTimeOut := ATimeOut;
 end;
 
 function TOpenAIAPI.Query(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
@@ -128,6 +131,9 @@ var
   LvResponseStream: TStringStream;
 begin
   LvHttpClient := TIdHTTP.Create(nil);
+  LvHttpClient.ConnectTimeout := FTimeOut * 1000;
+  LvHttpClient.ReadTimeout := (FTimeOut * 1000) * 2;
+
   if (FProxySetting.Active) and (not LvHttpClient.ProxyParams.ProxyServer.IsEmpty) then
   begin  
     LvHttpClient.ProxyParams.ProxyServer := FProxySetting.ProxyHost;
@@ -195,7 +201,7 @@ end;
 { TExecutorTrd }
 constructor TExecutorTrd.Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer;
                        AActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string;
-                       AProxyPassword: string; AAnimated: Boolean);
+                       AProxyPassword: string; AAnimated: Boolean; ATimeOut: Integer);
 begin
   inherited Create(True);
   FreeOnTerminate := True;
@@ -208,7 +214,16 @@ begin
   FHandle := AHandle;
   FUrl := AUrl;
   FAnimated := AAnimated;
+  FTimeOut := ATimeOut;
   FProxySetting := TProxySetting.Create;
+  with FProxySetting do
+  begin
+    Active := AActive;
+    ProxyHost := AProxyHost;
+    ProxyPort := AProxyPort;
+    ProxyUsername := AProxyUsername;
+    ProxyPassword := AProxyPassword;
+  end;
   PostMessage(FHandle, WM_PROGRESS_MESSAGE, 1, 0);
 end;
 
@@ -234,7 +249,7 @@ var
 //==================
 begin
   inherited;
-  LvAPI := TOpenAIAPI.Create(FApiKey, FUrl, FProxySetting);
+  LvAPI := TOpenAIAPI.Create(FApiKey, FUrl, FProxySetting, FTimeOut);
   try
     try
       if not Terminated then

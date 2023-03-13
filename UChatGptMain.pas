@@ -189,6 +189,7 @@ begin
     Frm_Setting.Btn_HistoryPathBuilder.Enabled := FSetting.HistoryEnabled;
     Frm_Setting.ColorBox_Highlight.Selected := FSetting.HighlightColor;
     Frm_Setting.chk_AnimatedLetters.Checked := FSetting.AnimatedLetters;
+    Frm_Setting.lbEdt_Timeout.Text := FSetting.TimeOut.ToString;
     Frm_Setting.AddAllDefinedQuestions;
 
     Frm_Setting.ShowModal;

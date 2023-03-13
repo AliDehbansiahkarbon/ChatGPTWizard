@@ -238,7 +238,7 @@ begin
   FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, LvQuestion, LvUrl,
     LvMaxToken, LvTemperature, LvSetting.ProxySetting.Active,
     LvSetting.ProxySetting.ProxyHost, LvSetting.ProxySetting.ProxyPort,
-    LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword, LvSetting.AnimatedLetters);
+    LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword, LvSetting.AnimatedLetters, LvSetting.TimeOut);
   FTrd.Start;
 
   if Assigned(pgcMain) then

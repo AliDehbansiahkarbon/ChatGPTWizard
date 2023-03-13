@@ -73,6 +73,7 @@ type
     FHighlightColor: TColor;
     FPredefinedQuestions: TQuestionPairs;
     FAnimatedLetters: Boolean;
+    FTimeOut: Integer;
 
     class var FInstance: TSingletonSettingObj;
     class function GetInstance: TSingletonSettingObj; static;
@@ -111,6 +112,7 @@ type
     property HighlightColor: TColor read FHighlightColor write FHighlightColor;
     property PredefinedQuestions: TQuestionPairs read FPredefinedQuestions write FPredefinedQuestions;
     property AnimatedLetters: Boolean read FAnimatedLetters write FAnimatedLetters;
+    property TimeOut: Integer read FTimeOut write FTimeOut;
   end;
 
   TFrm_Setting = class(TForm)
@@ -281,6 +283,7 @@ begin
   FHistoryPath := '';
   FHighlightColor := clRed;
   FAnimatedLetters := True;
+  FTimeOut := 20;
   LoadDefaultQuestions;
 end;
 
@@ -393,6 +396,11 @@ begin
             FAnimatedLetters := ReadBool('ChatGPTAnimatedLetters')
           else
             FAnimatedLetters := True;
+
+          if ValueExists('ChatGPTTimeOut') then
+            FTimeOut := ReadInteger('ChatGPTTimeOut')
+          else
+            FTimeOut := 20;
         end;
 
         if OpenKey('\SOFTWARE\ChatGPTWizard\PredefinedQuestions', False) then
@@ -492,6 +500,7 @@ begin
         WriteString('ChatGPTHistoryPath', FHistoryPath);
         WriteInteger('ChatGPTHighlightColor', FHighlightColor);
         WriteBool('ChatGPTAnimatedLetters', FAnimatedLetters);
+        WriteInteger('ChatGPTTimeOut', FTimeOut);
 
         if OpenKey('\SOFTWARE\ChatGPTWizard\PredefinedQuestions', True) then
         begin
@@ -594,6 +603,7 @@ begin
   LvSettingObj.HistoryPath := lbEdt_History.Text;
   LvSettingObj.HighlightColor := ColorBox_Highlight.Selected;
   LvSettingObj.AnimatedLetters := chk_AnimatedLetters.Checked;
+  LvSettingObj.TimeOut := StrToInt(Frm_Setting.lbEdt_Timeout.Text);
 
   lbEdt_History.Enabled := chk_History.Checked;
   Btn_HistoryPathBuilder.Enabled := chk_History.Checked;
