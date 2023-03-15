@@ -1,4 +1,5 @@
 # ChatGPTWizard           
+![ChatGpt](https://user-images.githubusercontent.com/5601608/225441290-2fd28e57-de9c-4377-9235-3417aa7e41e2.png)
 
 <b><h2>This is an OpenAI (ChatGPT) plug-in for Embarcadero RAD Studio IDE.</h2>
 <h2>First, you need an API key that you can generate here: (https://beta.openai.com/account/api-keys)<h2>
