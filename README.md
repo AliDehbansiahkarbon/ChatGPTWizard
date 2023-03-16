@@ -1,6 +1,5 @@
 # ChatGPTWizard           
-![What-is-ChatGPT-Beginners-Guide-to-Using-the-AI-Chatbot](https://user-images.githubusercontent.com/5601608/225542328-440c0e7f-4e31-46fd-b1eb-db011c15682b.png)
-
+![ChatGptlast](https://user-images.githubusercontent.com/5601608/225608017-be60c550-0413-49db-b4b6-3664da20e82f.png)
 
 
 <b><h2>This is an OpenAI (ChatGPT) plug-in for Embarcadero RAD Studio IDE.</h2>
