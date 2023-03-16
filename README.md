@@ -68,8 +68,8 @@ Open a new vcl applicatiopn project, add a new unit and remove all the code from
 <b>cpt:Create a full unit in Delphi including a class to create an XML file.:cpt<b>
  ![image](https://user-images.githubusercontent.com/5601608/215461813-7ecf4555-b3a2-4c0e-b85e-6069ead6a3d9.png)
 
-Demo video 1 : https://youtu.be/vUgHg3ZPvXI
-<br>Demo video 2(full demo): https://youtu.be/rQgh63DXGoE <br>
+Short demo video ver.1 : https://youtu.be/vUgHg3ZPvXI
+<br>Full demo ver.2 : https://youtu.be/qHqEGfxAhIM <br>
 
 Presentation: [CHAtGPT wizard.pptx](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/files/10612086/CHAtGPT.wizard.pptx)
 
