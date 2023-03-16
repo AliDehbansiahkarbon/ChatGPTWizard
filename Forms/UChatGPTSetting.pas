@@ -75,6 +75,19 @@ type
     FAnimatedLetters: Boolean;
     FTimeOut: Integer;
 
+    FEnableWriteSonic: Boolean;
+    FWriteSonicAPIKey: string;
+    FWriteSonicBaseURL: string;
+
+    FEnableYouDotCom: Boolean;
+    FYouDotComAPIKey: string;
+    FYouDotComBaseURL: string;
+
+    FEnableCharacterAI: Boolean;
+    FCharacterAIAPIKey: string;
+    FCharacterAIBaseURL: string;
+    FCharacterAICharacterID: string;
+
     class var FInstance: TSingletonSettingObj;
     class function GetInstance: TSingletonSettingObj; static;
     constructor Create;
@@ -113,6 +126,19 @@ type
     property PredefinedQuestions: TQuestionPairs read FPredefinedQuestions write FPredefinedQuestions;
     property AnimatedLetters: Boolean read FAnimatedLetters write FAnimatedLetters;
     property TimeOut: Integer read FTimeOut write FTimeOut;
+
+    property EnableWriteSonic: Boolean read FEnableWriteSonic write FEnableWriteSonic;
+    property WriteSonicAPIKey: string read FWriteSonicAPIKey write FWriteSonicAPIKey;
+    property WriteSonicBaseURL: string read FWriteSonicBaseURL write FWriteSonicBaseURL;
+
+    property EnableYouDotCom: Boolean read FEnableYouDotCom write FEnableYouDotCom;
+    property YouDotComAPIKey: string read FYouDotComAPIKey write FYouDotComAPIKey;
+    property YouDotComBaseURL: string read FYouDotComBaseURL write FYouDotComBaseURL;
+
+    property EnableCharacterAI: Boolean read FEnableCharacterAI write FEnableCharacterAI;
+    property CharacterAIAPIKey: string read FCharacterAIAPIKey write FCharacterAIAPIKey;
+    property CharacterAIBaseURL: string read FCharacterAIBaseURL write FCharacterAIBaseURL;
+    property CharacterAICharacterID: string read FCharacterAICharacterID write FCharacterAICharacterID;
   end;
 
   TFrm_Setting = class(TForm)
@@ -162,6 +188,23 @@ type
     Btn_RemoveQuestion: TButton;
     chk_AnimatedLetters: TCheckBox;
     lbEdt_Timeout: TLabeledEdit;
+    tsOtherAiServices: TTabSheet;
+    grp_CharacterAI: TGroupBox;
+    chk_CharacterAI: TCheckBox;
+    lbEdt_CharacterAIAPIKey: TLabeledEdit;
+    lbEdt_CharacterAIBaseUrl: TLabeledEdit;
+    grp_WriteSonic: TGroupBox;
+    chk_WriteSonic: TCheckBox;
+    lbEdt_WriteSonicAPIKey: TLabeledEdit;
+    lbEdt_WriteSonicBaseURL: TLabeledEdit;
+    grp_YouDotCom: TGroupBox;
+    chk_YouDotCom: TCheckBox;
+    lbEdt_YouDotComAPIKey: TLabeledEdit;
+    lbEdt_YouDotComBaseURL: TLabeledEdit;
+    lbEdt_CharacterAICharacterID: TLabeledEdit;
+    pnlWriteSonic: TPanel;
+    pnlYouDotCom: TPanel;
+    pnlCharacterAI: TPanel;
     procedure Btn_SaveClick(Sender: TObject);
     procedure Btn_DefaultClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -284,6 +327,20 @@ begin
   FHighlightColor := clRed;
   FAnimatedLetters := True;
   FTimeOut := 20;
+
+  FEnableWriteSonic := False;
+  FWriteSonicAPIKey := '';
+  FWriteSonicBaseURL := '';
+
+  FEnableYouDotCom := False;
+  FYouDotComAPIKey := '';
+  FYouDotComBaseURL := '';
+
+  FEnableCharacterAI := False;
+  FCharacterAIAPIKey := '';
+  FCharacterAIBaseURL := '';
+  FCharacterAICharacterID := '';
+
   LoadDefaultQuestions;
 end;
 
@@ -385,7 +442,9 @@ begin
           end;
 
           if ValueExists('ChatGPTHistoryPath') then
-            FHistoryPath := ReadString('ChatGPTHistoryPath');
+            FHistoryPath := ReadString('ChatGPTHistoryPath')
+          else
+            FHistoryPath := '';
 
           if ValueExists('ChatGPTHistoryPath') then
             FHighlightColor := ReadInteger('ChatGPTHighlightColor')
@@ -401,6 +460,62 @@ begin
             FTimeOut := ReadInteger('ChatGPTTimeOut')
           else
             FTimeOut := 20;
+
+          //==============================WriteSonic=======================begin
+          if ValueExists('ChatGPTEnableWriteSonic') then
+            FEnableWriteSonic := ReadBool('ChatGPTEnableWriteSonic')
+          else
+            FEnableWriteSonic := False;
+
+          if ValueExists('ChatGPTWriteSonicAPIKey') then
+            FWriteSonicAPIKey := ReadString('ChatGPTWriteSonicAPIKey')
+          else
+            FWriteSonicAPIKey := '';
+
+          if ValueExists('ChatGPTWriteSonicBaseURL') then
+            FWriteSonicBaseURL := ReadString('ChatGPTWriteSonicBaseURL')
+          else
+            FWriteSonicBaseURL := '';
+          //==============================WriteSonic=========================end
+
+          //==============================YouDotCom========================begin
+          if ValueExists('ChatGPTEnableYouDotCom') then
+            FEnableYouDotCom := ReadBool('ChatGPTEnableYouDotCom')
+          else
+            FEnableYouDotCom := False;
+
+          if ValueExists('ChatGPTYouDotComAPIKey') then
+            FYouDotComAPIKey := ReadString('ChatGPTYouDotComAPIKey')
+          else
+            FYouDotComAPIKey := '';
+
+          if ValueExists('ChatGPTYouDotComBaseURL') then
+            FYouDotComBaseURL := ReadString('ChatGPTYouDotComBaseURL')
+          else
+            FYouDotComBaseURL := '';
+          //==============================YouDotCom==========================end
+
+          //==============================CharacterAI======================begin
+          if ValueExists('ChatGPTEnableCharacterAI') then
+            FEnableCharacterAI := ReadBool('ChatGPTEnableCharacterAI')
+          else
+            FEnableCharacterAI := False;
+
+          if ValueExists('ChatGPTCharacterAIAPIKey') then
+            FCharacterAIAPIKey := ReadString('ChatGPTCharacterAIAPIKey')
+          else
+            FCharacterAIAPIKey := '';
+
+          if ValueExists('ChatGPTCharacterAIBaseURL') then
+            FCharacterAIBaseURL := ReadString('ChatGPTCharacterAIBaseURL')
+          else
+            FCharacterAIBaseURL := '';
+
+          if ValueExists('ChatGPTCharacterAICharacterID') then
+            FCharacterAICharacterID := ReadString('ChatGPTCharacterAICharacterID')
+          else
+            FCharacterAICharacterID := '';
+          //==============================CharacterAI========================end
         end;
 
         if OpenKey('\SOFTWARE\ChatGPTWizard\PredefinedQuestions', False) then
@@ -501,6 +616,19 @@ begin
         WriteInteger('ChatGPTHighlightColor', FHighlightColor);
         WriteBool('ChatGPTAnimatedLetters', FAnimatedLetters);
         WriteInteger('ChatGPTTimeOut', FTimeOut);
+
+        WriteBool('ChatGPTEnableWriteSonic', FEnableWriteSonic);
+        WriteString('ChatGPTWriteSonicAPIKey', FWriteSonicAPIKey);
+        WriteString('ChatGPTWriteSonicBaseURL', FWriteSonicBaseURL);
+
+        WriteBool('ChatGPTEnableYouDotCom', FEnableYouDotCom);
+        WriteString('ChatGPTYouDotComAPIKey', FYouDotComAPIKey);
+        WriteString('ChatGPTYouDotComBaseURL', FYouDotComBaseURL);
+
+        WriteBool('ChatGPTEnableCharacterAI', FEnableCharacterAI);
+        WriteString('ChatGPTCharacterAIAPIKey', FCharacterAIAPIKey);
+        WriteString('ChatGPTCharacterAIBaseURL', FCharacterAIBaseURL);
+        WriteString('ChatGPTCharacterAICharacterID', FCharacterAICharacterID);
 
         if OpenKey('\SOFTWARE\ChatGPTWizard\PredefinedQuestions', True) then
         begin

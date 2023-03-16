@@ -192,6 +192,19 @@ begin
     Frm_Setting.lbEdt_Timeout.Text := FSetting.TimeOut.ToString;
     Frm_Setting.AddAllDefinedQuestions;
 
+    Frm_Setting.chk_WriteSonic.Checked := FSetting.EnableWriteSonic;
+    Frm_Setting.lbEdt_WriteSonicAPIKey.Text := FSetting.WriteSonicAPIKey;
+    Frm_Setting.lbEdt_WriteSonicBaseURL.Text := FSetting.WriteSonicBaseURL;
+
+    Frm_Setting.chk_YouDotCom.Checked := FSetting.EnableYouDotCom;
+    Frm_Setting.lbEdt_YouDotComAPIKey.Text := FSetting.YouDotComAPIKey;
+    Frm_Setting.lbEdt_YouDotComBaseURL.Text := FSetting.YouDotComBaseURL;
+
+    Frm_Setting.chk_CharacterAI.Checked := FSetting.EnableCharacterAI;
+    Frm_Setting.lbEdt_CharacterAIAPIKey.Text := FSetting.CharacterAIAPIKey;
+    Frm_Setting.lbEdt_CharacterAIBaseUrl.Text := FSetting.CharacterAIBaseURL;
+    Frm_Setting.lbEdt_CharacterAICharacterID.Text := FSetting.CharacterAICharacterID;
+
     Frm_Setting.ShowModal;
     if Frm_Setting.HasChanges then
       RenewUI(FChatGPTDockForm);
