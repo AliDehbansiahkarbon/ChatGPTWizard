@@ -79,9 +79,9 @@ type
     FWriteSonicAPIKey: string;
     FWriteSonicBaseURL: string;
 
-    FEnableYouDotCom: Boolean;
-    FYouDotComAPIKey: string;
-    FYouDotComBaseURL: string;
+    FEnableYouChat: Boolean;
+    FYouChatAPIKey: string;
+    FYouChatBaseURL: string;
 
     FEnableCharacterAI: Boolean;
     FCharacterAIAPIKey: string;
@@ -97,6 +97,7 @@ type
     function GetRightIdentifier: string;
     procedure LoadDefaults;
     procedure LoadDefaultQuestions;
+    function GetMuliAI: Boolean;
   public
     procedure ReadRegistry;
     procedure WriteToRegistry;
@@ -131,14 +132,15 @@ type
     property WriteSonicAPIKey: string read FWriteSonicAPIKey write FWriteSonicAPIKey;
     property WriteSonicBaseURL: string read FWriteSonicBaseURL write FWriteSonicBaseURL;
 
-    property EnableYouDotCom: Boolean read FEnableYouDotCom write FEnableYouDotCom;
-    property YouDotComAPIKey: string read FYouDotComAPIKey write FYouDotComAPIKey;
-    property YouDotComBaseURL: string read FYouDotComBaseURL write FYouDotComBaseURL;
+    property EnableYouChat: Boolean read FEnableYouChat write FEnableYouChat;
+    property YouChatAPIKey: string read FYouChatAPIKey write FYouChatAPIKey;
+    property YouChatBaseURL: string read FYouChatBaseURL write FYouChatBaseURL;
 
     property EnableCharacterAI: Boolean read FEnableCharacterAI write FEnableCharacterAI;
     property CharacterAIAPIKey: string read FCharacterAIAPIKey write FCharacterAIAPIKey;
     property CharacterAIBaseURL: string read FCharacterAIBaseURL write FCharacterAIBaseURL;
     property CharacterAICharacterID: string read FCharacterAICharacterID write FCharacterAICharacterID;
+    property MultiAI: Boolean read GetMuliAI;
   end;
 
   TFrm_Setting = class(TForm)
@@ -223,6 +225,7 @@ type
     procedure AddQuestion(AQuestionpair: TQuestionPair = nil);
     procedure RemoveLatestQuestion;
     procedure ClearGridPanel;
+    function ValidateInputs: Boolean;
   public
     HasChanges: Boolean;
     procedure AddAllDefinedQuestions;
@@ -268,6 +271,11 @@ end;
 function TSingletonSettingObj.GetLeftIdentifier: string;
 begin
   Result := FIdentifier + ':';
+end;
+
+function TSingletonSettingObj.GetMuliAI: Boolean;
+begin
+  Result := FEnableWriteSonic or FEnableYouChat or FEnableCharacterAI;
 end;
 
 function TSingletonSettingObj.GetRightIdentifier: string;
@@ -332,9 +340,9 @@ begin
   FWriteSonicAPIKey := '';
   FWriteSonicBaseURL := '';
 
-  FEnableYouDotCom := False;
-  FYouDotComAPIKey := '';
-  FYouDotComBaseURL := '';
+  FEnableYouChat := False;
+  FYouChatAPIKey := '';
+  FYouChatBaseURL := '';
 
   FEnableCharacterAI := False;
   FCharacterAIAPIKey := '';
@@ -478,22 +486,22 @@ begin
             FWriteSonicBaseURL := '';
           //==============================WriteSonic=========================end
 
-          //==============================YouDotCom========================begin
-          if ValueExists('ChatGPTEnableYouDotCom') then
-            FEnableYouDotCom := ReadBool('ChatGPTEnableYouDotCom')
+          //==============================YouChat==========================begin
+          if ValueExists('ChatGPTEnableYouChat') then
+            FEnableYouChat := ReadBool('ChatGPTEnableYouChat')
           else
-            FEnableYouDotCom := False;
+            FEnableYouChat := False;
 
-          if ValueExists('ChatGPTYouDotComAPIKey') then
-            FYouDotComAPIKey := ReadString('ChatGPTYouDotComAPIKey')
+          if ValueExists('ChatGPTYouChatAPIKey') then
+            FYouChatAPIKey := ReadString('ChatGPTYouChatAPIKey')
           else
-            FYouDotComAPIKey := '';
+            FYouChatAPIKey := '';
 
-          if ValueExists('ChatGPTYouDotComBaseURL') then
-            FYouDotComBaseURL := ReadString('ChatGPTYouDotComBaseURL')
+          if ValueExists('ChatGPTYouChatBaseURL') then
+            FYouChatBaseURL := ReadString('ChatGPTYouChatBaseURL')
           else
-            FYouDotComBaseURL := '';
-          //==============================YouDotCom==========================end
+            FYouChatBaseURL := '';
+          //==============================YouChat============================end
 
           //==============================CharacterAI======================begin
           if ValueExists('ChatGPTEnableCharacterAI') then
@@ -621,9 +629,9 @@ begin
         WriteString('ChatGPTWriteSonicAPIKey', FWriteSonicAPIKey);
         WriteString('ChatGPTWriteSonicBaseURL', FWriteSonicBaseURL);
 
-        WriteBool('ChatGPTEnableYouDotCom', FEnableYouDotCom);
-        WriteString('ChatGPTYouDotComAPIKey', FYouDotComAPIKey);
-        WriteString('ChatGPTYouDotComBaseURL', FYouDotComBaseURL);
+        WriteBool('ChatGPTEnableYouChat', FEnableYouChat);
+        WriteString('ChatGPTYouChatAPIKey', FYouChatAPIKey);
+        WriteString('ChatGPTYouChatBaseURL', FYouChatBaseURL);
 
         WriteBool('ChatGPTEnableCharacterAI', FEnableCharacterAI);
         WriteString('ChatGPTCharacterAIAPIKey', FCharacterAIAPIKey);
@@ -701,14 +709,8 @@ var
   LvLabeledEdit: TControl;
   Lvpanel: TControl;
 begin
-  if chk_History.Checked then
-  begin
-    if Trim(lbEdt_History.Text).IsEmpty then
-    begin
-      ShowMessage('Please indicate the history folder path.');
-      Exit;
-    end;
-  end;
+  if not ValidateInputs then
+    Exit;
 
   LvSettingObj := TSingletonSettingObj.Instance;
   LvSettingObj.ApiKey := Trim(edt_ApiKey.Text);
@@ -732,6 +734,19 @@ begin
   LvSettingObj.HighlightColor := ColorBox_Highlight.Selected;
   LvSettingObj.AnimatedLetters := chk_AnimatedLetters.Checked;
   LvSettingObj.TimeOut := StrToInt(Frm_Setting.lbEdt_Timeout.Text);
+
+  LvSettingObj.EnableWriteSonic := chk_WriteSonic.Checked;
+  LvSettingObj.WriteSonicAPIKey := lbEdt_WriteSonicAPIKey.Text;
+  LvSettingObj.WriteSonicBaseURL := lbEdt_WriteSonicBaseURL.Text;
+
+  LvSettingObj.EnableYouChat := chk_YouDotCom.Checked;
+  LvSettingObj.YouChatAPIKey := lbEdt_YouDotComAPIKey.Text;
+  LvSettingObj.YouChatBaseURL := lbEdt_YouDotComBaseURL.Text;
+
+  LvSettingObj.EnableCharacterAI := chk_CharacterAI.Checked;
+  LvSettingObj.CharacterAIAPIKey := lbEdt_CharacterAIAPIKey.Text;
+  LvSettingObj.CharacterAIBaseURL := lbEdt_CharacterAIBaseUrl.Text;
+  LvSettingObj.CharacterAICharacterID := lbEdt_CharacterAICharacterID.Text;
 
   lbEdt_History.Enabled := chk_History.Checked;
   Btn_HistoryPathBuilder.Enabled := chk_History.Checked;
@@ -921,6 +936,48 @@ begin
       RowCollection.Items[Pred(GridPanelPredefinedQs.RowCollection.Count)].Free;
     end;
   end;
+end;
+
+function TFrm_Setting.ValidateInputs: Boolean;
+begin
+  Result := False;
+  if chk_History.Checked then
+  begin
+    if Trim(lbEdt_History.Text).IsEmpty then
+    begin
+      ShowMessage('Please indicate the history folder path.');
+      Exit;
+    end;
+  end;
+
+  if chk_WriteSonic.Checked then
+  begin
+    if (Trim(lbEdt_WriteSonicAPIKey.Text).IsEmpty) or (Trim(lbEdt_WriteSonicBaseURL.Text).IsEmpty) then
+    begin
+      ShowMessage('Please complete the WriteSonic section.');
+      Exit;
+    end;
+  end;
+
+  if chk_YouDotCom.Checked then
+  begin
+    if (Trim(lbEdt_YouDotComAPIKey.Text).IsEmpty) or (Trim(lbEdt_YouDotComBaseURL.Text).IsEmpty) then
+    begin
+      ShowMessage('Please complete the WriteSonic section.');
+      Exit;
+    end;
+  end;
+
+  if chk_CharacterAI.Checked then
+  begin
+    if (Trim(lbEdt_CharacterAIAPIKey.Text).IsEmpty) or (Trim(lbEdt_CharacterAIBaseUrl.Text).IsEmpty) or (Trim(lbEdt_CharacterAICharacterID.Text).IsEmpty) then
+    begin
+      ShowMessage('Please complete the WriteSonic section.');
+      Exit;
+    end;
+  end;
+
+  Result := True;
 end;
 
 { TQuestionPair }

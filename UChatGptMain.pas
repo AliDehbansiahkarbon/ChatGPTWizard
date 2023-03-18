@@ -196,9 +196,9 @@ begin
     Frm_Setting.lbEdt_WriteSonicAPIKey.Text := FSetting.WriteSonicAPIKey;
     Frm_Setting.lbEdt_WriteSonicBaseURL.Text := FSetting.WriteSonicBaseURL;
 
-    Frm_Setting.chk_YouDotCom.Checked := FSetting.EnableYouDotCom;
-    Frm_Setting.lbEdt_YouDotComAPIKey.Text := FSetting.YouDotComAPIKey;
-    Frm_Setting.lbEdt_YouDotComBaseURL.Text := FSetting.YouDotComBaseURL;
+    Frm_Setting.chk_YouDotCom.Checked := FSetting.EnableYouChat;
+    Frm_Setting.lbEdt_YouDotComAPIKey.Text := FSetting.YouChatAPIKey;
+    Frm_Setting.lbEdt_YouDotComBaseURL.Text := FSetting.YouChatBaseURL;
 
     Frm_Setting.chk_CharacterAI.Checked := FSetting.EnableCharacterAI;
     Frm_Setting.lbEdt_CharacterAIAPIKey.Text := FSetting.CharacterAIAPIKey;

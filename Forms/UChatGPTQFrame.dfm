@@ -89,36 +89,96 @@ object Fram_Question: TFram_Question
             Height = 206
             Align = alClient
             TabOrder = 0
-            object Lbl_Answer: TLabel
-              Left = 7
-              Top = 5
-              Width = 45
-              Height = 15
-              Caption = 'Answer:'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -12
-              Font.Name = 'Segoe UI'
-              Font.Style = [fsBold]
-              ParentFont = False
-            end
-            object mmoAnswer: TMemo
-              AlignWithMargins = True
-              Left = 4
-              Top = 21
-              Width = 417
-              Height = 181
-              Margins.Top = 20
+            object pgcAnswers: TPageControl
+              Left = 1
+              Top = 1
+              Width = 423
+              Height = 204
+              ActivePage = tsChatGPTAnswer
               Align = alClient
               Font.Charset = DEFAULT_CHARSET
               Font.Color = clWindowText
-              Font.Height = -12
-              Font.Name = 'Consolas'
+              Font.Height = -11
+              Font.Name = 'Segoe UI'
               Font.Style = []
+              HotTrack = True
               ParentFont = False
-              ReadOnly = True
-              ScrollBars = ssVertical
               TabOrder = 0
+              StyleElements = [seClient, seBorder]
+              object tsChatGPTAnswer: TTabSheet
+                Caption = 'ChatGPT'
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -8
+                Font.Name = 'Segoe UI'
+                Font.Style = []
+                ParentFont = False
+                object mmoAnswer: TMemo
+                  Left = 0
+                  Top = 0
+                  Width = 415
+                  Height = 176
+                  Align = alClient
+                  Font.Charset = DEFAULT_CHARSET
+                  Font.Color = clWindowText
+                  Font.Height = -12
+                  Font.Name = 'Consolas'
+                  Font.Style = []
+                  ParentFont = False
+                  ReadOnly = True
+                  ScrollBars = ssVertical
+                  TabOrder = 0
+                  ExplicitHeight = 177
+                end
+              end
+              object tsOtherAIServicesAnswer: TTabSheet
+                Caption = 'WriteSonic'
+                ImageIndex = 1
+                object mmoWriteSonicAnswer: TMemo
+                  Left = 0
+                  Top = 0
+                  Width = 415
+                  Height = 176
+                  Align = alClient
+                  TabOrder = 0
+                  ExplicitLeft = 112
+                  ExplicitTop = 48
+                  ExplicitWidth = 185
+                  ExplicitHeight = 89
+                end
+              end
+              object tsYouChat: TTabSheet
+                Caption = 'YouChat'
+                ImageIndex = 2
+                object mmoYouChatAnswer: TMemo
+                  Left = 0
+                  Top = 0
+                  Width = 415
+                  Height = 176
+                  Align = alClient
+                  TabOrder = 0
+                  ExplicitLeft = 112
+                  ExplicitTop = 48
+                  ExplicitWidth = 185
+                  ExplicitHeight = 89
+                end
+              end
+              object tsCharacterAI: TTabSheet
+                Caption = 'Character.ai'
+                ImageIndex = 3
+                object mmoCharacterAI: TMemo
+                  Left = 0
+                  Top = 0
+                  Width = 415
+                  Height = 176
+                  Align = alClient
+                  TabOrder = 0
+                  ExplicitLeft = 112
+                  ExplicitTop = 48
+                  ExplicitWidth = 185
+                  ExplicitHeight = 89
+                end
+              end
             end
           end
           object pnlQuestion: TPanel

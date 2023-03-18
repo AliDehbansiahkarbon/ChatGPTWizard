@@ -19,7 +19,7 @@ uses
   FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
   FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool,
   FireDAC.Phys, FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLite, FireDAC.Comp.Client,
-  FireDAC.Comp.DataSet, FireDAC.VCLUI.Wait, FireDAC.Comp.UI;
+  FireDAC.Comp.DataSet, FireDAC.VCLUI.Wait, FireDAC.Comp.UI, UWriteSonicThread;
 
 type
   TOnClickProc = procedure(Sender: TObject) of object;
@@ -33,7 +33,6 @@ type
   TFram_Question = class(TFrame)
     pnlMain: TPanel;
     Lbl_Question: TLabel;
-    Lbl_Answer: TLabel;
     pnlTop: TPanel;
     Btn_Clipboard: TButton;
     Btn_Ask: TButton;
@@ -77,6 +76,14 @@ type
     Chk_FuzzyMatch: TCheckBox;
     mmoClassViewResult: TMemo;
     splClassViewResult: TSplitter;
+    pgcAnswers: TPageControl;
+    tsChatGPTAnswer: TTabSheet;
+    tsOtherAIServicesAnswer: TTabSheet;
+    mmoWriteSonicAnswer: TMemo;
+    tsYouChat: TTabSheet;
+    tsCharacterAI: TTabSheet;
+    mmoYouChatAnswer: TMemo;
+    mmoCharacterAI: TMemo;
     procedure Btn_AskClick(Sender: TObject);
     procedure Btn_ClipboardClick(Sender: TObject);
     procedure CopytoClipboard1Click(Sender: TObject);
@@ -115,7 +122,8 @@ type
     // Custom Command.
     procedure CustomCommandClick(Sender: TObject);
   private
-    FTrd: TExecutorTrd;
+    FChatGPTTrd: TExecutorTrd;
+    FWriteSonicTrd: TWriteSonicTrd;
     FPrg: TProgressBar;
     FClassList: TClassList;
     FClassTreeView: TTreeView;
@@ -136,12 +144,14 @@ type
   public
     procedure InitialFrame;
     procedure InitialClassViewMenueItems(AClassList: TClassList);
-    procedure TerminateAll;
     procedure ReloadClassList(AClassList: TClassList);
+    procedure TerminateAll;
     procedure LoadHistory;
     procedure AddToHistory(AQuestion, AAnswer: string);
+
     procedure OnUpdateMessage(var Msg: TMessage); message WM_UPDATE_MESSAGE;
     procedure OnProgressMessage(var Msg: TMessage); message WM_PROGRESS_MESSAGE;
+    procedure OnWriteSonicUpdateMessage(var Msg: TMessage); message WM_WRITESONIC_UPDATE_MESSAGE;
   end;
 
 implementation
@@ -218,31 +228,97 @@ end;
 
 procedure TFram_Question.CallThread(APrompt: string);
 var
-  LvApiKey: string;
-  LvUrl: string;
+  LvChatGPTApiKey: string;
+  LvChatGPTBaseUrl: string;
+
+  LvEnableWriteSonic: Boolean;
+  LvWriteSonicAPIKey: string;
+  LvWriteSonicBaseUrl: string;
+    
+  LvEnableYouChat: Boolean;
+  LvYouChatAPIKey: string;
+  LvYouChatBaseURL: string;
+    
+  LvEnableCharacterAI: Boolean;
+  LvCharacterAIAPIKey: string;
+  LvCharacterAIBaseURL: string;
+  LvCharacterAICharacterID: string;
+      
   LvModel: string;
   LvQuestion: string;
   LvMaxToken: Integer;
   LvTemperature: Integer;
+
+  LvIsProxyActive: Boolean;
+  LvProxyHost: string;
+  LvProxyPort: Integer;
+  LvProxyUsername: string;
+  LvProxyPassword: string;
+  LvAnimatedLetters: Boolean;
+  LvTimeOut: Integer;
+
+  MultiAI: Boolean;
   LvSetting: TSingletonSettingObj;
 begin
   Cs.Enter;
   LvSetting := TSingletonSettingObj.Instance;
-  LvApiKey := LvSetting.ApiKey;
-  LvUrl := LvSetting.URL;
+  LvChatGPTApiKey := LvSetting.ApiKey;
+  LvChatGPTBaseUrl := LvSetting.URL;
   LvModel := LvSetting.Model;
   LvMaxToken := LvSetting.MaxToken;
   LvTemperature := LvSetting.Temperature;
   LvQuestion := APrompt;
+
+  LvIsProxyActive :=  LvSetting.ProxySetting.Active;
+  LvProxyHost := LvSetting.ProxySetting.ProxyHost;
+  LvProxyPort := LvSetting.ProxySetting.ProxyPort;
+  LvProxyUsername := LvSetting.ProxySetting.ProxyUsername;
+  LvProxyPassword := LvSetting.ProxySetting.ProxyPassword;
+  LvAnimatedLetters := LvSetting.AnimatedLetters;
+  LvTimeOut := LvSetting.TimeOut;
+
+  LvEnableWriteSonic := LvSetting.EnableWriteSonic;
+  LvWriteSonicAPIKey := LvSetting.WriteSonicAPIKey;
+  LvWriteSonicBaseUrl := LvSetting.WriteSonicBaseURL;
+    
+  LvEnableYouChat := LvSetting.EnableYouChat;
+  LvYouChatAPIKey := LvSetting.YouChatAPIKey;
+  LvYouChatBaseURL := LvSetting.YouChatBaseURL;
+    
+  LvEnableCharacterAI := LvSetting.EnableCharacterAI;
+  LvCharacterAIAPIKey := LvSetting.CharacterAIAPIKey;
+  LvCharacterAIBaseURL := LvSetting.CharacterAIBaseURL;
+  LvCharacterAICharacterID := LvSetting.CharacterAICharacterID;
+  MultiAI := LvSetting.MultiAI;
+  
   Cs.Leave;
-  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, LvQuestion, LvUrl,
-    LvMaxToken, LvTemperature, LvSetting.ProxySetting.Active,
-    LvSetting.ProxySetting.ProxyHost, LvSetting.ProxySetting.ProxyPort,
-    LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword, LvSetting.AnimatedLetters, LvSetting.TimeOut);
-  FTrd.Start;
+  
+  FChatGPTTrd := TExecutorTrd.Create(Self.Handle, LvChatGPTApiKey, LvModel, LvQuestion, LvChatGPTBaseUrl,
+    LvMaxToken, LvTemperature, LvIsProxyActive, LvProxyHost, LvProxyPort, LvProxyUsername,
+    LvProxyPassword, LvAnimatedLetters, LvTimeOut);
+  FChatGPTTrd.Start;
 
   if Assigned(pgcMain) then
     pgcMain.Enabled := False;
+
+  if MultiAI then
+  begin
+    if LvEnableWriteSonic then
+    begin  
+      FWriteSonicTrd := TWriteSonicTrd.Create(Self.Handle, LvWriteSonicAPIKey, LvWriteSonicBaseUrl, LvQuestion, LvIsProxyActive,
+        LvProxyHost, LvProxyPort, LvProxyUsername, LvProxyPassword, LvAnimatedLetters, LvTimeOut);
+
+      FWriteSonicTrd.Start;    
+    end;
+
+    if LvEnableYouChat then
+    begin  
+    end;
+
+    if LvEnableCharacterAI then
+    begin  
+    end;
+  end;
 end;
 
 procedure TFram_Question.Chk_CaseSensitiveClick(Sender: TObject);
@@ -797,12 +873,12 @@ begin
       end
       else if Msg.LParam = 1 then // Char by Char.
       begin
-        if Msg.WParam = 13 then
+        if Msg.WParam = 13 then // (Equals to the Enter key or CRLF)
           mmoClassViewResult.Lines.Add('')
         else
           mmoClassViewResult.Lines[Pred(mmoClassViewResult.Lines.Count)] := mmoClassViewResult.Lines[Pred(mmoClassViewResult.Lines.Count)] + char(Msg.WParam);
       end
-      else if Msg.LParam = 2 then //  Finished.
+      else if Msg.LParam = 2 then // Finished.
       begin
         pgcMain.Enabled := True;
         Btn_Ask.Enabled := True;
@@ -850,6 +926,30 @@ begin
 
     TSingletonSettingObj.Instance.ShouldReloadHistory := True;
   end;
+end;
+
+procedure TFram_Question.OnWriteSonicUpdateMessage(var Msg: TMessage);
+begin
+  if Msg.LParam = 0 then //whole string in one message.
+  begin
+    mmoWriteSonicAnswer.Lines.Clear;
+    mmoWriteSonicAnswer.Lines.Add(String(Msg.WParam));
+  end
+  else if Msg.LParam = 1 then // Char by Char.
+  begin
+    if Msg.WParam = 13 then
+      mmoWriteSonicAnswer.Lines.Add('')
+    else
+      mmoWriteSonicAnswer.Lines[Pred(mmoWriteSonicAnswer.Lines.Count)] := mmoWriteSonicAnswer.Lines[Pred(mmoWriteSonicAnswer.Lines.Count)] + char(Msg.WParam);
+  end
+  else if Msg.LParam = 2 then // Finished.
+  begin
+    Btn_Ask.Enabled := True;
+    AddToHistory(mmoQuestion.Lines.Text, '***** WriteSonic *****' + #13 + mmoWriteSonicAnswer.Lines.Text);
+  end;
+
+  if Msg.LParam = 2 then // Finished.
+    TSingletonSettingObj.Instance.ShouldReloadHistory := True;
 end;
 
 procedure TFram_Question.pgcMainChange(Sender: TObject);
@@ -964,7 +1064,11 @@ end;
 procedure TFram_Question.TerminateAll;
 begin
   try
-    if Assigned(FTrd) then FTrd.Terminate;
+    if Assigned(FChatGPTTrd) then FChatGPTTrd.Terminate;
+  except
+  end;
+  try
+    if Assigned(FWriteSonicTrd) then FWriteSonicTrd.Terminate;
   except
   end;
 

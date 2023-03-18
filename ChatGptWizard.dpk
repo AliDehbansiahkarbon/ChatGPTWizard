@@ -53,6 +53,7 @@ contains
   UChatGPTLexer in 'Lexer\UChatGPTLexer.pas',
   UPascalLexer in 'Lexer\UPascalLexer.pas',
   UPascalLexerTypes in 'Lexer\UPascalLexerTypes.pas',
-  UHistory in 'Utils\UHistory.pas';
+  UHistory in 'Utils\UHistory.pas',
+  UWriteSonicThread in 'Utils\UWriteSonicThread.pas';
 
 end.

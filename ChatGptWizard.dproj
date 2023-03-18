@@ -129,6 +129,7 @@
         <DCCReference Include="Lexer\UPascalLexer.pas"/>
         <DCCReference Include="Lexer\UPascalLexerTypes.pas"/>
         <DCCReference Include="Utils\UHistory.pas"/>
+        <DCCReference Include="Utils\UWriteSonicThread.pas"/>
         <RcItem Include="Resources\CloseBtn.bmp">
             <ResourceType>BITMAP</ResourceType>
             <ResourceId>CLOSE</ResourceId>
