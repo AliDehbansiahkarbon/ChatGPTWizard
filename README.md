@@ -73,4 +73,4 @@ Short demo video ver.1 : https://youtu.be/vUgHg3ZPvXI
 
 Presentation: [CHAtGPT wizard.pptx](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/files/10612086/CHAtGPT.wizard.pptx)
 
-<br>Goud luck.
+<br>Good luck.
