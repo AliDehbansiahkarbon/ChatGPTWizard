@@ -21,7 +21,7 @@ object Frm_Setting: TFrm_Setting
     Top = 0
     Width = 461
     Height = 538
-    ActivePage = tsOtherAiServices
+    ActivePage = tsMainSetting
     Align = alClient
     TabOrder = 0
     OnChange = pgcSettingChange
@@ -450,73 +450,6 @@ object Frm_Setting: TFrm_Setting
     object tsOtherAiServices: TTabSheet
       Caption = 'Other AI Services'
       ImageIndex = 2
-      object grp_CharacterAI: TGroupBox
-        AlignWithMargins = True
-        Left = 3
-        Top = 266
-        Width = 447
-        Height = 151
-        Align = alTop
-        Caption = 'Character.ai'
-        TabOrder = 0
-        object pnlCharacterAI: TPanel
-          AlignWithMargins = True
-          Left = 5
-          Top = 20
-          Width = 437
-          Height = 126
-          Align = alClient
-          BevelOuter = bvLowered
-          TabOrder = 0
-          object chk_CharacterAI: TCheckBox
-            Left = 8
-            Top = 5
-            Width = 121
-            Height = 17
-            Caption = 'Enable Character.ai'
-            TabOrder = 0
-          end
-          object lbEdt_CharacterAICharacterID: TLabeledEdit
-            Left = 80
-            Top = 86
-            Width = 321
-            Height = 23
-            EditLabel.Width = 65
-            EditLabel.Height = 15
-            EditLabel.Caption = 'CharacterID:'
-            LabelPosition = lpLeft
-            LabelSpacing = 5
-            TabOrder = 1
-            Text = ''
-          end
-          object lbEdt_CharacterAIAPIKey: TLabeledEdit
-            Left = 80
-            Top = 32
-            Width = 321
-            Height = 23
-            EditLabel.Width = 43
-            EditLabel.Height = 15
-            EditLabel.Caption = 'API Key:'
-            LabelPosition = lpLeft
-            LabelSpacing = 5
-            TabOrder = 2
-            Text = ''
-          end
-          object lbEdt_CharacterAIBaseUrl: TLabeledEdit
-            Left = 80
-            Top = 61
-            Width = 321
-            Height = 23
-            EditLabel.Width = 51
-            EditLabel.Height = 15
-            EditLabel.Caption = 'Base URL:'
-            LabelPosition = lpLeft
-            LabelSpacing = 5
-            TabOrder = 3
-            Text = ''
-          end
-        end
-      end
       object grp_WriteSonic: TGroupBox
         AlignWithMargins = True
         Left = 3
@@ -525,7 +458,7 @@ object Frm_Setting: TFrm_Setting
         Height = 126
         Align = alTop
         Caption = 'Writesonic'
-        TabOrder = 1
+        TabOrder = 0
         object pnlWriteSonic: TPanel
           AlignWithMargins = True
           Left = 5
@@ -542,6 +475,7 @@ object Frm_Setting: TFrm_Setting
             Height = 17
             Caption = 'Enable WriteSonic'
             TabOrder = 0
+            OnClick = chk_WriteSonicClick
           end
           object lbEdt_WriteSonicAPIKey: TLabeledEdit
             Left = 74
@@ -553,6 +487,7 @@ object Frm_Setting: TFrm_Setting
             EditLabel.Caption = 'API Key:'
             LabelPosition = lpLeft
             LabelSpacing = 5
+            PasswordChar = '*'
             TabOrder = 1
             Text = ''
           end
@@ -560,60 +495,6 @@ object Frm_Setting: TFrm_Setting
             Left = 74
             Top = 60
             Width = 330
-            Height = 23
-            EditLabel.Width = 51
-            EditLabel.Height = 15
-            EditLabel.Caption = 'Base URL:'
-            LabelPosition = lpLeft
-            LabelSpacing = 5
-            TabOrder = 2
-            Text = ''
-          end
-        end
-      end
-      object grp_YouDotCom: TGroupBox
-        AlignWithMargins = True
-        Left = 3
-        Top = 135
-        Width = 447
-        Height = 125
-        Align = alTop
-        Caption = 'You.COM(YouChat)'
-        TabOrder = 2
-        object pnlYouDotCom: TPanel
-          AlignWithMargins = True
-          Left = 5
-          Top = 20
-          Width = 437
-          Height = 100
-          Align = alClient
-          BevelOuter = bvLowered
-          TabOrder = 0
-          object chk_YouDotCom: TCheckBox
-            Left = 8
-            Top = 5
-            Width = 121
-            Height = 17
-            Caption = 'Enable You.COM'
-            TabOrder = 0
-          end
-          object lbEdt_YouDotComAPIKey: TLabeledEdit
-            Left = 72
-            Top = 32
-            Width = 321
-            Height = 23
-            EditLabel.Width = 43
-            EditLabel.Height = 15
-            EditLabel.Caption = 'API Key:'
-            LabelPosition = lpLeft
-            LabelSpacing = 5
-            TabOrder = 1
-            Text = ''
-          end
-          object lbEdt_YouDotComBaseURL: TLabeledEdit
-            Left = 72
-            Top = 61
-            Width = 321
             Height = 23
             EditLabel.Width = 51
             EditLabel.Height = 15

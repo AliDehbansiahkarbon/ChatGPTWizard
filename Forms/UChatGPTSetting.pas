@@ -14,7 +14,7 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.StdCtrls, Vcl.ExtCtrls, System.Win.Registry, System.SyncObjs,
   ToolsAPI, System.StrUtils, System.Generics.Collections, Vcl.Mask,
-  Vcl.ComCtrls;
+  Vcl.ComCtrls, DockForm;
 
 const
   DefaultURL = 'https://api.openai.com/v1/completions';
@@ -78,15 +78,8 @@ type
     FEnableWriteSonic: Boolean;
     FWriteSonicAPIKey: string;
     FWriteSonicBaseURL: string;
-
-    FEnableYouChat: Boolean;
-    FYouChatAPIKey: string;
-    FYouChatBaseURL: string;
-
-    FEnableCharacterAI: Boolean;
-    FCharacterAIAPIKey: string;
-    FCharacterAIBaseURL: string;
-    FCharacterAICharacterID: string;
+    FTaskList: TList<string>;
+    FDockableFormPointer: TDockableForm;
 
     class var FInstance: TSingletonSettingObj;
     class function GetInstance: TSingletonSettingObj; static;
@@ -131,16 +124,9 @@ type
     property EnableWriteSonic: Boolean read FEnableWriteSonic write FEnableWriteSonic;
     property WriteSonicAPIKey: string read FWriteSonicAPIKey write FWriteSonicAPIKey;
     property WriteSonicBaseURL: string read FWriteSonicBaseURL write FWriteSonicBaseURL;
-
-    property EnableYouChat: Boolean read FEnableYouChat write FEnableYouChat;
-    property YouChatAPIKey: string read FYouChatAPIKey write FYouChatAPIKey;
-    property YouChatBaseURL: string read FYouChatBaseURL write FYouChatBaseURL;
-
-    property EnableCharacterAI: Boolean read FEnableCharacterAI write FEnableCharacterAI;
-    property CharacterAIAPIKey: string read FCharacterAIAPIKey write FCharacterAIAPIKey;
-    property CharacterAIBaseURL: string read FCharacterAIBaseURL write FCharacterAIBaseURL;
-    property CharacterAICharacterID: string read FCharacterAICharacterID write FCharacterAICharacterID;
     property MultiAI: Boolean read GetMuliAI;
+    property TaskList: TList<string> read FTaskList write FTaskList;
+    property DockableFormPointer: TDockableForm read FDockableFormPointer write FDockableFormPointer;
   end;
 
   TFrm_Setting = class(TForm)
@@ -191,22 +177,11 @@ type
     chk_AnimatedLetters: TCheckBox;
     lbEdt_Timeout: TLabeledEdit;
     tsOtherAiServices: TTabSheet;
-    grp_CharacterAI: TGroupBox;
-    chk_CharacterAI: TCheckBox;
-    lbEdt_CharacterAIAPIKey: TLabeledEdit;
-    lbEdt_CharacterAIBaseUrl: TLabeledEdit;
     grp_WriteSonic: TGroupBox;
     chk_WriteSonic: TCheckBox;
     lbEdt_WriteSonicAPIKey: TLabeledEdit;
     lbEdt_WriteSonicBaseURL: TLabeledEdit;
-    grp_YouDotCom: TGroupBox;
-    chk_YouDotCom: TCheckBox;
-    lbEdt_YouDotComAPIKey: TLabeledEdit;
-    lbEdt_YouDotComBaseURL: TLabeledEdit;
-    lbEdt_CharacterAICharacterID: TLabeledEdit;
     pnlWriteSonic: TPanel;
-    pnlYouDotCom: TPanel;
-    pnlCharacterAI: TPanel;
     procedure Btn_SaveClick(Sender: TObject);
     procedure Btn_DefaultClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -221,6 +196,7 @@ type
     procedure ColorBox_HighlightChange(Sender: TObject);
     procedure chk_ProxyActiveClick(Sender: TObject);
     procedure pgcSettingChange(Sender: TObject);
+    procedure chk_WriteSonicClick(Sender: TObject);
   private
     procedure AddQuestion(AQuestionpair: TQuestionPair = nil);
     procedure RemoveLatestQuestion;
@@ -236,6 +212,8 @@ var
   Cs: TCriticalSection;
 
 implementation
+uses
+  UChatGptMain;
 
 {$R *.dfm}
 
@@ -246,6 +224,8 @@ begin
   FProxySetting := TProxySetting.Create;
   FPredefinedQuestions := TObjectDictionary<Integer, TQuestionPair>.Create;
   CurrentActiveViewName := '';
+  FTaskList := TList<string>.Create;
+  DockableFormPointer := nil;
   LoadDefaults;
 end;
 
@@ -253,6 +233,7 @@ destructor TSingletonSettingObj.Destroy;
 begin
   FProxySetting.Free;
   FPredefinedQuestions.Free;
+  FTaskList.Free;
   inherited;
 end;
 
@@ -275,7 +256,7 @@ end;
 
 function TSingletonSettingObj.GetMuliAI: Boolean;
 begin
-  Result := FEnableWriteSonic or FEnableYouChat or FEnableCharacterAI;
+  Result := FEnableWriteSonic;
 end;
 
 function TSingletonSettingObj.GetRightIdentifier: string;
@@ -339,15 +320,6 @@ begin
   FEnableWriteSonic := False;
   FWriteSonicAPIKey := '';
   FWriteSonicBaseURL := '';
-
-  FEnableYouChat := False;
-  FYouChatAPIKey := '';
-  FYouChatBaseURL := '';
-
-  FEnableCharacterAI := False;
-  FCharacterAIAPIKey := '';
-  FCharacterAIBaseURL := '';
-  FCharacterAICharacterID := '';
 
   LoadDefaultQuestions;
 end;
@@ -485,45 +457,6 @@ begin
           else
             FWriteSonicBaseURL := '';
           //==============================WriteSonic=========================end
-
-          //==============================YouChat==========================begin
-          if ValueExists('ChatGPTEnableYouChat') then
-            FEnableYouChat := ReadBool('ChatGPTEnableYouChat')
-          else
-            FEnableYouChat := False;
-
-          if ValueExists('ChatGPTYouChatAPIKey') then
-            FYouChatAPIKey := ReadString('ChatGPTYouChatAPIKey')
-          else
-            FYouChatAPIKey := '';
-
-          if ValueExists('ChatGPTYouChatBaseURL') then
-            FYouChatBaseURL := ReadString('ChatGPTYouChatBaseURL')
-          else
-            FYouChatBaseURL := '';
-          //==============================YouChat============================end
-
-          //==============================CharacterAI======================begin
-          if ValueExists('ChatGPTEnableCharacterAI') then
-            FEnableCharacterAI := ReadBool('ChatGPTEnableCharacterAI')
-          else
-            FEnableCharacterAI := False;
-
-          if ValueExists('ChatGPTCharacterAIAPIKey') then
-            FCharacterAIAPIKey := ReadString('ChatGPTCharacterAIAPIKey')
-          else
-            FCharacterAIAPIKey := '';
-
-          if ValueExists('ChatGPTCharacterAIBaseURL') then
-            FCharacterAIBaseURL := ReadString('ChatGPTCharacterAIBaseURL')
-          else
-            FCharacterAIBaseURL := '';
-
-          if ValueExists('ChatGPTCharacterAICharacterID') then
-            FCharacterAICharacterID := ReadString('ChatGPTCharacterAICharacterID')
-          else
-            FCharacterAICharacterID := '';
-          //==============================CharacterAI========================end
         end;
 
         if OpenKey('\SOFTWARE\ChatGPTWizard\PredefinedQuestions', False) then
@@ -629,15 +562,6 @@ begin
         WriteString('ChatGPTWriteSonicAPIKey', FWriteSonicAPIKey);
         WriteString('ChatGPTWriteSonicBaseURL', FWriteSonicBaseURL);
 
-        WriteBool('ChatGPTEnableYouChat', FEnableYouChat);
-        WriteString('ChatGPTYouChatAPIKey', FYouChatAPIKey);
-        WriteString('ChatGPTYouChatBaseURL', FYouChatBaseURL);
-
-        WriteBool('ChatGPTEnableCharacterAI', FEnableCharacterAI);
-        WriteString('ChatGPTCharacterAIAPIKey', FCharacterAIAPIKey);
-        WriteString('ChatGPTCharacterAIBaseURL', FCharacterAIBaseURL);
-        WriteString('ChatGPTCharacterAICharacterID', FCharacterAICharacterID);
-
         if OpenKey('\SOFTWARE\ChatGPTWizard\PredefinedQuestions', True) then
         begin
           for I:= 0  to 100 do // Limited to maximum 100 menuitems.
@@ -739,15 +663,6 @@ begin
   LvSettingObj.WriteSonicAPIKey := lbEdt_WriteSonicAPIKey.Text;
   LvSettingObj.WriteSonicBaseURL := lbEdt_WriteSonicBaseURL.Text;
 
-  LvSettingObj.EnableYouChat := chk_YouDotCom.Checked;
-  LvSettingObj.YouChatAPIKey := lbEdt_YouDotComAPIKey.Text;
-  LvSettingObj.YouChatBaseURL := lbEdt_YouDotComBaseURL.Text;
-
-  LvSettingObj.EnableCharacterAI := chk_CharacterAI.Checked;
-  LvSettingObj.CharacterAIAPIKey := lbEdt_CharacterAIAPIKey.Text;
-  LvSettingObj.CharacterAIBaseURL := lbEdt_CharacterAIBaseUrl.Text;
-  LvSettingObj.CharacterAICharacterID := lbEdt_CharacterAICharacterID.Text;
-
   lbEdt_History.Enabled := chk_History.Checked;
   Btn_HistoryPathBuilder.Enabled := chk_History.Checked;
 
@@ -771,6 +686,8 @@ begin
     end;      
   end;
   LvSettingObj.WriteToRegistry;
+  if Assigned(LvSettingObj.DockableFormPointer) then
+    TChatGPTDockForm(LvSettingObj.DockableFormPointer).Fram_Question.tsWriteSonicAnswer.TabVisible := LvSettingObj.EnableWriteSonic;
   Close;
 end;
 
@@ -800,6 +717,12 @@ end;
 procedure TFrm_Setting.chk_ProxyActiveClick(Sender: TObject);
 begin
   HasChanges := True;
+end;
+
+procedure TFrm_Setting.chk_WriteSonicClick(Sender: TObject);
+begin
+  lbEdt_WriteSonicAPIKey.Enabled := chk_WriteSonic.Checked;
+  lbEdt_WriteSonicBaseURL.Enabled := chk_WriteSonic.Checked;
 end;
 
 procedure TFrm_Setting.ClearGridPanel;
@@ -953,24 +876,6 @@ begin
   if chk_WriteSonic.Checked then
   begin
     if (Trim(lbEdt_WriteSonicAPIKey.Text).IsEmpty) or (Trim(lbEdt_WriteSonicBaseURL.Text).IsEmpty) then
-    begin
-      ShowMessage('Please complete the WriteSonic section.');
-      Exit;
-    end;
-  end;
-
-  if chk_YouDotCom.Checked then
-  begin
-    if (Trim(lbEdt_YouDotComAPIKey.Text).IsEmpty) or (Trim(lbEdt_YouDotComBaseURL.Text).IsEmpty) then
-    begin
-      ShowMessage('Please complete the WriteSonic section.');
-      Exit;
-    end;
-  end;
-
-  if chk_CharacterAI.Checked then
-  begin
-    if (Trim(lbEdt_CharacterAIAPIKey.Text).IsEmpty) or (Trim(lbEdt_CharacterAIBaseUrl.Text).IsEmpty) or (Trim(lbEdt_CharacterAICharacterID.Text).IsEmpty) then
     begin
       ShowMessage('Please complete the WriteSonic section.');
       Exit;

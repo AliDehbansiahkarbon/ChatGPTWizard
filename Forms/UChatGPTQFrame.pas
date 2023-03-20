@@ -78,12 +78,8 @@ type
     splClassViewResult: TSplitter;
     pgcAnswers: TPageControl;
     tsChatGPTAnswer: TTabSheet;
-    tsOtherAIServicesAnswer: TTabSheet;
+    tsWriteSonicAnswer: TTabSheet;
     mmoWriteSonicAnswer: TMemo;
-    tsYouChat: TTabSheet;
-    tsCharacterAI: TTabSheet;
-    mmoYouChatAnswer: TMemo;
-    mmoCharacterAI: TMemo;
     procedure Btn_AskClick(Sender: TObject);
     procedure Btn_ClipboardClick(Sender: TObject);
     procedure CopytoClipboard1Click(Sender: TObject);
@@ -121,6 +117,8 @@ type
 
     // Custom Command.
     procedure CustomCommandClick(Sender: TObject);
+    procedure pgcMainChanging(Sender: TObject; var AllowChange: Boolean);
+    procedure pgcAnswersChange(Sender: TObject);
   private
     FChatGPTTrd: TExecutorTrd;
     FWriteSonicTrd: TWriteSonicTrd;
@@ -133,7 +131,7 @@ type
 
     procedure CopyToClipBoard;
     procedure CreateProgressbar;
-    procedure CallThread(APrompt: string);
+    procedure CallThread(APrompt: string; AIsClassView: Boolean = False);
     function XPos(APattern, AStr: string; ACaseSensitive: Boolean): Integer;
     function LowChar(AChar: Char): Char; inline;
     function FuzzyMatchStr(const APattern, AStr: string; AMatchedIndexes: TList; ACaseSensitive: Boolean): Boolean;
@@ -141,6 +139,7 @@ type
                                     ACaseSensitive: Boolean; ABkColor: TColor; ASelectedBkColor: TColor);
     procedure HighlightCellTextFuzzy(AGrid: TDbGrid; const ARect: TRect; AField: TField; AMatchedIndexes : TList; AState: TGridDrawState ;
                                 ACaseSensitive: Boolean; ABkColor: TColor; ASelectedBkColor: TColor);
+    procedure EnableUI(ATaskName: string);
   public
     procedure InitialFrame;
     procedure InitialClassViewMenueItems(AClassList: TClassList);
@@ -202,7 +201,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to C# code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -212,7 +211,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to C code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -222,11 +221,11 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to C++ code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
-procedure TFram_Question.CallThread(APrompt: string);
+procedure TFram_Question.CallThread(APrompt: string; AIsClassView: Boolean);
 var
   LvChatGPTApiKey: string;
   LvChatGPTBaseUrl: string;
@@ -234,16 +233,7 @@ var
   LvEnableWriteSonic: Boolean;
   LvWriteSonicAPIKey: string;
   LvWriteSonicBaseUrl: string;
-    
-  LvEnableYouChat: Boolean;
-  LvYouChatAPIKey: string;
-  LvYouChatBaseURL: string;
-    
-  LvEnableCharacterAI: Boolean;
-  LvCharacterAIAPIKey: string;
-  LvCharacterAIBaseURL: string;
-  LvCharacterAICharacterID: string;
-      
+
   LvModel: string;
   LvQuestion: string;
   LvMaxToken: Integer;
@@ -280,43 +270,33 @@ begin
   LvEnableWriteSonic := LvSetting.EnableWriteSonic;
   LvWriteSonicAPIKey := LvSetting.WriteSonicAPIKey;
   LvWriteSonicBaseUrl := LvSetting.WriteSonicBaseURL;
-    
-  LvEnableYouChat := LvSetting.EnableYouChat;
-  LvYouChatAPIKey := LvSetting.YouChatAPIKey;
-  LvYouChatBaseURL := LvSetting.YouChatBaseURL;
-    
-  LvEnableCharacterAI := LvSetting.EnableCharacterAI;
-  LvCharacterAIAPIKey := LvSetting.CharacterAIAPIKey;
-  LvCharacterAIBaseURL := LvSetting.CharacterAIBaseURL;
-  LvCharacterAICharacterID := LvSetting.CharacterAICharacterID;
   MultiAI := LvSetting.MultiAI;
-  
+
+  LvSetting.TaskList.Clear;
+  if not AIsClassView then
+  begin
+    LvSetting.TaskList.Add('GPT');
+    if LvEnableWriteSonic then
+      LvSetting.TaskList.Add('WS');
+  end
+  else
+    LvSetting.TaskList.Add('CLS');
   Cs.Leave;
-  
+
   FChatGPTTrd := TExecutorTrd.Create(Self.Handle, LvChatGPTApiKey, LvModel, LvQuestion, LvChatGPTBaseUrl,
     LvMaxToken, LvTemperature, LvIsProxyActive, LvProxyHost, LvProxyPort, LvProxyUsername,
     LvProxyPassword, LvAnimatedLetters, LvTimeOut);
   FChatGPTTrd.Start;
 
-  if Assigned(pgcMain) then
-    pgcMain.Enabled := False;
-
   if MultiAI then
   begin
     if LvEnableWriteSonic then
-    begin  
+    begin
+      mmoWriteSonicAnswer.Lines.Clear;
       FWriteSonicTrd := TWriteSonicTrd.Create(Self.Handle, LvWriteSonicAPIKey, LvWriteSonicBaseUrl, LvQuestion, LvIsProxyActive,
         LvProxyHost, LvProxyPort, LvProxyUsername, LvProxyPassword, LvAnimatedLetters, LvTimeOut);
 
-      FWriteSonicTrd.Start;    
-    end;
-
-    if LvEnableYouChat then
-    begin  
-    end;
-
-    if LvEnableCharacterAI then
-    begin  
+      FWriteSonicTrd.Start;
     end;
   end;
 end;
@@ -341,7 +321,7 @@ begin
         FLastQuestion := LvQuestion + #13 + FClassTreeView.Selected.Text; // Shorter string will be logged.
         LvQuestion  := LvQuestion  + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
         mmoClassViewResult.Lines.Clear;
-        CallThread(LvQuestion );
+        CallThread(LvQuestion, True);
       end;
     end;
   end;
@@ -408,7 +388,7 @@ begin
     FLastQuestion := FLastQuestion + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
 
   mmoClassViewResult.Lines.Clear;
-  CallThread(FLastQuestion);
+  CallThread(FLastQuestion, True);
 end;
 
 procedure TFram_Question.DrawColumnCell(Sender: TObject; const Rect: TRect; DataCol: Integer; Column: TColumn; State: TGridDrawState);
@@ -492,6 +472,22 @@ begin
   FHistoryGrid.Repaint;
 end;
 
+procedure TFram_Question.EnableUI(ATaskName: string);
+begin
+  Cs.Enter;
+  TSingletonSettingObj.Instance.TaskList.Remove(ATaskName);
+  if TSingletonSettingObj.Instance.TaskList.Count = 0 then
+  begin
+    Btn_Ask.Enabled := True;
+    if ATaskName = 'CLS' then
+    begin
+      mmoClassViewResult.Visible := True;
+      splClassViewResult.Visible := True;
+    end;
+  end;
+  Cs.Leave;
+end;
+
 procedure TFram_Question.FDQryHistoryAfterScroll(DataSet: TDataSet);
 begin
   mmoHistoryDetail.Lines.Clear;
@@ -566,7 +562,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to the GO programming language code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -786,7 +782,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to Java code: ' + #13 + FClassList.Items [FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -796,7 +792,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to Javascript code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -852,16 +848,14 @@ begin
       end
       else if Msg.LParam = 2 then // Finished.
       begin
-        pgcMain.Enabled := True;
-        Btn_Ask.Enabled := True;
+        EnableUI('GPT');
         AddToHistory(mmoQuestion.Lines.Text, mmoAnswer.Lines.Text);
       end
       else if Msg.LParam = 3 then // Exception.
       begin
         mmoAnswer.Lines.Clear;
         mmoAnswer.Lines.Add(String(Msg.WParam));
-        pgcMain.Enabled := True;
-        Btn_Ask.Enabled := True;
+        EnableUI('GPT');
       end;
     end
     else if pgcMain.ActivePage = tsClassView then
@@ -880,19 +874,12 @@ begin
       end
       else if Msg.LParam = 2 then // Finished.
       begin
-        pgcMain.Enabled := True;
-        Btn_Ask.Enabled := True;
-        mmoClassViewResult.Visible := True;
-        splClassViewResult.Visible := True;
+        EnableUI('CLS');
         AddToHistory(FLastQuestion , mmoClassViewResult.Lines.Text);
       end
       else if Msg.LParam = 3 then // Exception.
       begin
-        pgcMain.Enabled := True;
-        Btn_Ask.Enabled := True;
-        mmoClassViewResult.Visible := True;
-        splClassViewResult.Visible := True;
-
+        EnableUI('CLS');
         mmoClassViewResult.Lines.Clear;
         mmoClassViewResult.Lines.Add(String(Msg.WParam));
       end;
@@ -914,7 +901,7 @@ begin
     end
     else if Msg.LParam = 2 then // Finished.
     begin
-      Btn_Ask.Enabled := True;
+      EnableUI('GPT');
       AddToHistory(mmoQuestion.Lines.Text, mmoAnswer.Lines.Text);
     end;
   end;
@@ -924,7 +911,9 @@ begin
     if chk_AutoCopy.Checked then
       CopyToClipBoard;
 
+    Cs.Enter;
     TSingletonSettingObj.Instance.ShouldReloadHistory := True;
+    Cs.Leave;
   end;
 end;
 
@@ -944,31 +933,60 @@ begin
   end
   else if Msg.LParam = 2 then // Finished.
   begin
-    Btn_Ask.Enabled := True;
-    AddToHistory(mmoQuestion.Lines.Text, '***** WriteSonic *****' + #13 + mmoWriteSonicAnswer.Lines.Text);
-  end;
-
-  if Msg.LParam = 2 then // Finished.
+    EnableUI('WS');
+    AddToHistory(mmoWriteSonicAnswer.Lines.Text, '***** WriteSonic *****' + #13 + mmoWriteSonicAnswer.Lines.Text);
+    Cs.Enter;
     TSingletonSettingObj.Instance.ShouldReloadHistory := True;
+    Cs.Leave;
+  end
+  else if Msg.LParam = 3 then // Exception
+  begin
+    mmoWriteSonicAnswer.Lines.Clear;
+    mmoWriteSonicAnswer.Lines.Add(String(Msg.WParam));
+    EnableUI('WS');
+  end;
+end;
+
+procedure TFram_Question.pgcAnswersChange(Sender: TObject);
+begin
+  case pgcAnswers.ActivePageIndex of
+    0: Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
+    1: Clipboard.SetTextBuf(pwidechar(mmoWriteSonicAnswer.Lines.Text));
+  end;
 end;
 
 procedure TFram_Question.pgcMainChange(Sender: TObject);
+var
+  LvShouldReloadHistory: Boolean;
 begin
+  Cs.Enter;
+  LvShouldReloadHistory := TSingletonSettingObj.Instance.ShouldReloadHistory;
+  Cs.Leave;
+
   if pgcMain.ActivePage = tsClassView then
     ReloadClassList(FClassList);
 
   if pgcMain.ActivePage = tsHistory then
   begin
-    if TSingletonSettingObj.Instance.ShouldReloadHistory then
+    if LvShouldReloadHistory then
     begin
       LoadHistory;
+      Width := Width + 1; // Do not remove!
+                          // Doesn't really change the width, it's a trick to force the grid to fit columns!
+
+      Cs.Enter;
       TSingletonSettingObj.Instance.ShouldReloadHistory := False;
-      Width := Width + 1; // Doesn't really change the width, it's a trick to force the grid to fit columns!
+      Cs.Leave;
     end;
 
     if FDQryHistory.RecordCount > 0  then
       FDQryHistory.AfterScroll(FDQryHistory);
   end;
+end;
+
+procedure TFram_Question.pgcMainChanging(Sender: TObject; var AllowChange: Boolean);
+begin
+  AllowChange := TSingletonSettingObj.Instance.TaskList.Count = 0;
 end;
 
 procedure TFram_Question.pmClassOperationsPopup(Sender: TObject);
@@ -984,7 +1002,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to Pyhton code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -1052,7 +1070,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to Rust code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -1074,9 +1092,6 @@ begin
 
   if Assigned(FPrg) then
     FreeAndNil(FPrg);
-
-  if Assigned(pgcMain) then
-    pgcMain.Enabled := True;
 
   Btn_Ask.Enabled := True;
 end;

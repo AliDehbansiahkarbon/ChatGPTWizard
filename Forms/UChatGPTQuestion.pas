@@ -43,6 +43,7 @@ begin
   begin
     pnlMain.Parent := Fram_Question;
     pnlMain.Align := alClient;
+    tsWriteSonicAnswer.TabVisible := TSingletonSettingObj.Instance.EnableWriteSonic;
     FreeAndNil(pgcMain);
   end;
 end;

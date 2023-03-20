@@ -14,6 +14,7 @@ object Fram_Question: TFram_Question
     MultiLine = True
     TabOrder = 0
     OnChange = pgcMainChange
+    OnChanging = pgcMainChanging
     object tsChatGPT: TTabSheet
       Caption = 'ChatGPT'
       object pnlMain: TPanel
@@ -32,20 +33,20 @@ object Fram_Question: TFram_Question
           Align = alTop
           TabOrder = 0
           object Btn_Clipboard: TButton
-            Left = 96
-            Top = 6
+            Left = 121
+            Top = 8
             Width = 137
-            Height = 28
+            Height = 27
             Caption = 'Copy to Clipboard'
             TabOrder = 1
             WordWrap = True
             OnClick = Btn_ClipboardClick
           end
           object Btn_Ask: TButton
-            Left = 15
-            Top = 6
+            Left = 40
+            Top = 8
             Width = 74
-            Height = 28
+            Height = 27
             Hint = 'Ctrl + Enter'
             Caption = 'Ask'
             ParentShowHint = False
@@ -54,10 +55,10 @@ object Fram_Question: TFram_Question
             OnClick = Btn_AskClick
           end
           object Btn_Clear: TButton
-            Left = 246
-            Top = 6
+            Left = 271
+            Top = 8
             Width = 74
-            Height = 28
+            Height = 27
             Caption = 'Clear All'
             TabOrder = 2
             OnClick = Btn_ClearClick
@@ -97,14 +98,14 @@ object Fram_Question: TFram_Question
               ActivePage = tsChatGPTAnswer
               Align = alClient
               Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
+              Font.Color = clWindow
               Font.Height = -11
               Font.Name = 'Segoe UI'
               Font.Style = []
               HotTrack = True
               ParentFont = False
               TabOrder = 0
-              StyleElements = [seClient, seBorder]
+              OnChange = pgcAnswersChange
               object tsChatGPTAnswer: TTabSheet
                 Caption = 'ChatGPT'
                 Font.Charset = DEFAULT_CHARSET
@@ -128,10 +129,9 @@ object Fram_Question: TFram_Question
                   ReadOnly = True
                   ScrollBars = ssVertical
                   TabOrder = 0
-                  ExplicitHeight = 177
                 end
               end
-              object tsOtherAIServicesAnswer: TTabSheet
+              object tsWriteSonicAnswer: TTabSheet
                 Caption = 'WriteSonic'
                 ImageIndex = 1
                 object mmoWriteSonicAnswer: TMemo
@@ -140,43 +140,8 @@ object Fram_Question: TFram_Question
                   Width = 415
                   Height = 176
                   Align = alClient
+                  ScrollBars = ssVertical
                   TabOrder = 0
-                  ExplicitLeft = 112
-                  ExplicitTop = 48
-                  ExplicitWidth = 185
-                  ExplicitHeight = 89
-                end
-              end
-              object tsYouChat: TTabSheet
-                Caption = 'YouChat'
-                ImageIndex = 2
-                object mmoYouChatAnswer: TMemo
-                  Left = 0
-                  Top = 0
-                  Width = 415
-                  Height = 176
-                  Align = alClient
-                  TabOrder = 0
-                  ExplicitLeft = 112
-                  ExplicitTop = 48
-                  ExplicitWidth = 185
-                  ExplicitHeight = 89
-                end
-              end
-              object tsCharacterAI: TTabSheet
-                Caption = 'Character.ai'
-                ImageIndex = 3
-                object mmoCharacterAI: TMemo
-                  Left = 0
-                  Top = 0
-                  Width = 415
-                  Height = 176
-                  Align = alClient
-                  TabOrder = 0
-                  ExplicitLeft = 112
-                  ExplicitTop = 48
-                  ExplicitWidth = 185
-                  ExplicitHeight = 89
                 end
               end
             end
@@ -205,9 +170,9 @@ object Fram_Question: TFram_Question
               ParentFont = False
             end
             object mmoQuestion: TMemo
-              Left = 11
+              Left = 5
               Top = 20
-              Width = 402
+              Width = 415
               Height = 89
               Hint = 'Type a question and press Ctrl + Enter'
               Anchors = [akLeft, akTop, akRight, akBottom]
