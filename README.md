@@ -5,7 +5,7 @@
 <br />
 <br />
 
-<h2>An OpenAI (ChatGPT) plug-in for Embarcadero RAD Studio IDE.</h2>
+<h2>An OpenAI (ChatGPT) plug-in for Embarcadero RAD Studio IDE and more!</h2>
 
 ### **NOTE: You will need an API key that you can [generate here](https://beta.openai.com/account/api-keys)**
 
