@@ -14,16 +14,7 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.StdCtrls, Vcl.ExtCtrls, System.Win.Registry, System.SyncObjs,
   ToolsAPI, System.StrUtils, System.Generics.Collections, Vcl.Mask,
-  Vcl.ComCtrls, DockForm;
-
-const
-  DefaultURL = 'https://api.openai.com/v1/completions';
-  DefaultModel = 'text-davinci-003';
-  DefaultMaxToken = 2048;
-  DefaultTemperature = 0;
-  DefaultIdentifier = 'cpt';
-  DefaultCodeFormatter = False;
-  DefaultRTL = False;
+  Vcl.ComCtrls, DockForm, UConsts;
 
 type
   TQuestionPair = class;
@@ -289,7 +280,7 @@ begin
     Add(3, TQuestionPair.Create('Find possible problems', 'What is wrong with this class in Delphi?'));
     Add(4, TQuestionPair.Create('Improve Naming', 'Improve naming of the members of this class in Delphi:'));
     Add(5, TQuestionPair.Create('Rewrite in modern coding style', 'Rewrite this class with modern coding style in Delphi:'));
-    Add(6, TQuestionPair.Create('Crreate Interface','Create necessary interfaces for this Class in Delphi:'));
+    Add(6, TQuestionPair.Create('Create Interface','Create necessary interfaces for this Class in Delphi:'));
     Add(7, TQuestionPair.Create('Convert to Generic Type', 'Convert this class to generic class in Delphi:'));
     Add(8, TQuestionPair.Create('Write XML doc', 'Write Documentation using inline XML based comments for this class in Delphi:'));
   end;
@@ -298,7 +289,7 @@ end;
 procedure TSingletonSettingObj.LoadDefaults;
 begin
   FApiKey := '';
-  FURL := DefaultURL;
+  FURL := DefaultChatGPTURL;
   FModel := DefaultModel;
   FMaxToken := DefaultMaxToken;
   FTemperature := DefaultTemperature;
@@ -319,7 +310,7 @@ begin
 
   FEnableWriteSonic := False;
   FWriteSonicAPIKey := '';
-  FWriteSonicBaseURL := '';
+  FWriteSonicBaseURL := DefaultWriteSonicURL;
 
   LoadDefaultQuestions;
 end;
@@ -345,10 +336,10 @@ begin
             FApiKey := ReadString('ChatGPTApiKey');
 
           if ValueExists('ChatGPTURL') then
-            FURL := IfThen(ReadString('ChatGPTURL').IsEmpty, DefaultURL,
+            FURL := IfThen(ReadString('ChatGPTURL').IsEmpty, DefaultChatGPTURL,
               ReadString('ChatGPTURL'))
           else
-            FURL := DefaultURL;
+            FURL := DefaultChatGPTURL;
 
           if ValueExists('ChatGPTModel') then
             FModel := IfThen(ReadString('ChatGPTModel').IsEmpty, DefaultModel,
@@ -455,7 +446,7 @@ begin
           if ValueExists('ChatGPTWriteSonicBaseURL') then
             FWriteSonicBaseURL := ReadString('ChatGPTWriteSonicBaseURL')
           else
-            FWriteSonicBaseURL := '';
+            FWriteSonicBaseURL := DefaultWriteSonicURL;
           //==============================WriteSonic=========================end
         end;
 
@@ -595,7 +586,7 @@ end;
 procedure TFrm_Setting.Btn_DefaultClick(Sender: TObject);
 begin
   edt_ApiKey.Text := '';
-  edt_Url.Text := DefaultURL;
+  edt_Url.Text := DefaultChatGPTURL;
   cbbModel.ItemIndex := 0;
   edt_MaxToken.Text := IntToStr(DefaultMaxToken);
   edt_Temperature.Text := IntToStr(DefaultTemperature);
@@ -609,6 +600,7 @@ begin
   lbEdt_History.Text := '';
   ColorBox_Highlight.Selected := clRed;
   chk_AnimatedLetters.Checked := True;
+  lbEdt_WriteSonicBaseURL.Text := DefaultWriteSonicURL;
 end;
 
 procedure TFrm_Setting.Btn_HistoryPathBuilderClick(Sender: TObject);
@@ -687,7 +679,8 @@ begin
   end;
   LvSettingObj.WriteToRegistry;
   if Assigned(LvSettingObj.DockableFormPointer) then
-    TChatGPTDockForm(LvSettingObj.DockableFormPointer).Fram_Question.tsWriteSonicAnswer.TabVisible := LvSettingObj.EnableWriteSonic;
+    TChatGPTDockForm(LvSettingObj.DockableFormPointer).Fram_Question.tsWriteSonicAnswer.TabVisible :=
+    (CompilerVersion >= 32) and (LvSettingObj.EnableWriteSonic);
   Close;
 end;
 
@@ -748,6 +741,7 @@ begin
   HasChanges := False;
   GridPanelPredefinedQs.RowCollection.Clear;
   pgcSetting.ActivePageIndex := 0;
+  tsOtherAiServices.TabVisible := CompilerVersion >= 32;
 end;
 
 procedure TFrm_Setting.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);

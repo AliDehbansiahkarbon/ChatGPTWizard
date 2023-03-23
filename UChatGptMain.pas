@@ -420,6 +420,7 @@ begin
     Btn_Ask.Enabled := True;
     Align := alClient;
     pgcMain.ActivePageIndex := 0;
+    tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.MultiAI);
     if TSingletonSettingObj.Instance.RighToLeft then
     begin
       Btn_Ask.Left := pnlTop.Width - Btn_Ask.Width - 5;
@@ -714,7 +715,9 @@ end;
 
 procedure TChatGPTDockForm.FormShow(Sender: TObject);
 begin
-  Fram_Question.tsWriteSonicAnswer.TabVisible := TSingletonSettingObj.Instance.MultiAI;
+  Cs.Enter;
+  Fram_Question.tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.MultiAI);
+  Cs.Leave;
 end;
 
 initialization

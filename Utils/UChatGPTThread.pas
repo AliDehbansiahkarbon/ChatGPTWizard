@@ -10,11 +10,8 @@ unit UChatGPTThread;
 interface
 uses
   System.Classes, System.SysUtils, IdHTTP, IdSSLOpenSSL, IdComponent, Vcl.Dialogs,
-  XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows, UChatGPTSetting;
-
-const
-  WM_UPDATE_MESSAGE = WM_USER + 5874;
-  WM_PROGRESS_MESSAGE = WM_USER + 5875;
+  XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows,
+  UChatGPTSetting, UConsts;
 
 type
   TExecutorTrd = class(TThread)

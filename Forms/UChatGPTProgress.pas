@@ -11,7 +11,7 @@ interface
 uses
   Winapi.Windows, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls,
-  Winapi.Messages, UChatGPTThread, Vcl.Buttons, UChatGPTSetting;
+  Winapi.Messages, UChatGPTThread, Vcl.Buttons, UChatGPTSetting, UConsts;
 
 type
   TFrm_Progress = class(TForm)

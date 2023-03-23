@@ -19,7 +19,8 @@ uses
   FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
   FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool,
   FireDAC.Phys, FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLite, FireDAC.Comp.Client,
-  FireDAC.Comp.DataSet, FireDAC.VCLUI.Wait, FireDAC.Comp.UI, UWriteSonicThread;
+  FireDAC.Comp.DataSet, FireDAC.VCLUI.Wait, FireDAC.Comp.UI, UConsts
+  {$IF CompilerVersion >= 32.0}, UWriteSonicThread{$ENDIF};
 
 type
   TOnClickProc = procedure(Sender: TObject) of object;
@@ -121,8 +122,10 @@ type
     procedure pgcAnswersChange(Sender: TObject);
   private
     FChatGPTTrd: TExecutorTrd;
+    {$IF CompilerVersion >= 32.0}
     FWriteSonicTrd: TWriteSonicTrd;
-    FPrg: TProgressBar;
+    {$ENDIF}
+    FProgressbar: TProgressBar;
     FClassList: TClassList;
     FClassTreeView: TTreeView;
     FCellCloseBtn: TSpeedButton;
@@ -150,7 +153,9 @@ type
 
     procedure OnUpdateMessage(var Msg: TMessage); message WM_UPDATE_MESSAGE;
     procedure OnProgressMessage(var Msg: TMessage); message WM_PROGRESS_MESSAGE;
+    {$IF CompilerVersion >= 32.0}
     procedure OnWriteSonicUpdateMessage(var Msg: TMessage); message WM_WRITESONIC_UPDATE_MESSAGE;
+    {$ENDIF}
   end;
 
 implementation
@@ -276,7 +281,7 @@ begin
   if not AIsClassView then
   begin
     LvSetting.TaskList.Add('GPT');
-    if LvEnableWriteSonic then
+    if (CompilerVersion >= 32) and (LvEnableWriteSonic) then
       LvSetting.TaskList.Add('WS');
   end
   else
@@ -288,6 +293,7 @@ begin
     LvProxyPassword, LvAnimatedLetters, LvTimeOut);
   FChatGPTTrd.Start;
 
+  {$IF CompilerVersion >= 32.0}
   if MultiAI then
   begin
     if LvEnableWriteSonic then
@@ -299,6 +305,7 @@ begin
       FWriteSonicTrd.Start;
     end;
   end;
+  {$ENDIF}
 end;
 
 procedure TFram_Question.Chk_CaseSensitiveClick(Sender: TObject);
@@ -313,9 +320,11 @@ var
 begin
   if FClassTreeView.Selected <> FClassTreeView.TopItem then // Not applicable to the first node of the TreeView.
   begin
+    Cs.Enter;
     LvSettingObj := TSingletonSettingObj.Instance;
     if LvSettingObj.TryFindQuestion(TMenuItem(Sender).Caption.Replace('&', '') , LvQuestion) > -1 then
     begin
+      Cs.Leave;
       if not LvQuestion.Trim.IsEmpty then
       begin
         FLastQuestion := LvQuestion + #13 + FClassTreeView.Selected.Text; // Shorter string will be logged.
@@ -356,18 +365,21 @@ end;
 // had to create and destroy each time!
 procedure TFram_Question.CreateProgressbar;
 begin
-  FPrg := TProgressBar.Create(Self);
-  FPrg.Parent := pnlBottom;
-  with FPrg do
+  if  not Assigned(FProgressbar)  then
   begin
-    Left := 11;
-    Top := 10;
-    Width := 80;
-    Height := 16;
-    Anchors := [akLeft, akBottom];
-    Style := pbstMarquee;
-    TabOrder := 1;
-    Visible := True;
+    FProgressbar := TProgressBar.Create(Self);
+    FProgressbar.Parent := pnlBottom;
+    with FProgressbar do
+    begin
+      Left := 11;
+      Top := 10;
+      Width := 80;
+      Height := 16;
+      Anchors := [akLeft, akBottom];
+      Style := pbstMarquee;
+      TabOrder := 1;
+      Visible := True;
+    end;
   end;
 end;
 
@@ -730,6 +742,7 @@ procedure TFram_Question.InitialFrame;
 begin
   FLastQuestion := '';
   Align := alClient;
+  tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
 
   FCellCloseBtn := TSpeedButton.Create(Self);
   FCellCloseBtn.Glyph.LoadFromResourceName(HInstance, 'CLOSE');
@@ -819,13 +832,18 @@ procedure TFram_Question.OnProgressMessage(var Msg: TMessage);
 begin
   if Msg.WParam = 0 then
   begin
-    if Assigned(FPrg) then
-      FreeAndNil(FPrg);
-  end
-  else
-    CreateProgressbar;
+    Cs.Enter;
+    if TSingletonSettingObj.Instance.TaskList.Count = 0 then
+    begin
+      Btn_Ask.Enabled := True;
 
-  Btn_Ask.Enabled := Msg.WParam = 0;
+      if Assigned(FProgressbar) then
+        FreeAndNil(FProgressbar);
+    end;
+    Cs.Leave;
+  end
+  else if Msg.WParam = 1 then
+    CreateProgressbar;
 end;
 
 procedure TFram_Question.OnUpdateMessage(var Msg: TMessage);
@@ -917,6 +935,7 @@ begin
   end;
 end;
 
+{$IF CompilerVersion >= 32.0}
 procedure TFram_Question.OnWriteSonicUpdateMessage(var Msg: TMessage);
 begin
   if Msg.LParam = 0 then //whole string in one message.
@@ -926,10 +945,9 @@ begin
   end
   else if Msg.LParam = 1 then // Char by Char.
   begin
-    if Msg.WParam = 13 then
-      mmoWriteSonicAnswer.Lines.Add('')
-    else
-      mmoWriteSonicAnswer.Lines[Pred(mmoWriteSonicAnswer.Lines.Count)] := mmoWriteSonicAnswer.Lines[Pred(mmoWriteSonicAnswer.Lines.Count)] + char(Msg.WParam);
+    mmoWriteSonicAnswer.Lines[Pred(mmoWriteSonicAnswer.Lines.Count)] := mmoWriteSonicAnswer.Lines[Pred(mmoWriteSonicAnswer.Lines.Count)] + char(Msg.WParam);
+    if Char(Msg.WParam) = CrLf then
+      mmoWriteSonicAnswer.Lines.Add('');
   end
   else if Msg.LParam = 2 then // Finished.
   begin
@@ -946,6 +964,7 @@ begin
     EnableUI('WS');
   end;
 end;
+{$ENDIF}
 
 procedure TFram_Question.pgcAnswersChange(Sender: TObject);
 begin
@@ -1085,13 +1104,16 @@ begin
     if Assigned(FChatGPTTrd) then FChatGPTTrd.Terminate;
   except
   end;
+
+  {$IF CompilerVersion >= 32.0}
   try
     if Assigned(FWriteSonicTrd) then FWriteSonicTrd.Terminate;
   except
   end;
+  {$ENDIF}
 
-  if Assigned(FPrg) then
-    FreeAndNil(FPrg);
+  if Assigned(FProgressbar) then
+    FreeAndNil(FProgressbar);
 
   Btn_Ask.Enabled := True;
 end;
