@@ -1,6 +1,6 @@
 # ChatGPTWizard
 
-<img src="https://user-images.githubusercontent.com/5601608/225608017-be60c550-0413-49db-b4b6-3664da20e82f.png" width=400 heigth=400 />
+<img src="https://user-images.githubusercontent.com/5601608/225608017-be60c550-0413-49db-b4b6-3664da20e82f.png" width=500 heigth=500 style="margin-left:70px;" />
 
 <br />
 <br />
@@ -133,7 +133,7 @@ select all and press `Ctrl+Shift+Alt+A`.
 **[Full Demo ver.2](https://youtu.be/qHqEGfxAhIM)**
 
 
-**Presentation: [CHAtGPT wizard.pptx](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/files/10612086/CHAtGPT.wizard.pptx)**
+**Presentation: [ChatGPT wizard.pptx](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/files/10612086/CHAtGPT.wizard.pptx)**
 
 
-**Good luck :smiley:**
+**Good luck!**
