@@ -14,16 +14,7 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.StdCtrls, Vcl.ExtCtrls, System.Win.Registry, System.SyncObjs,
   ToolsAPI, System.StrUtils, System.Generics.Collections, Vcl.Mask,
-  Vcl.ComCtrls;
-
-const
-  DefaultURL = 'https://api.openai.com/v1/completions';
-  DefaultModel = 'text-davinci-003';
-  DefaultMaxToken = 2048;
-  DefaultTemperature = 0;
-  DefaultIdentifier = 'cpt';
-  DefaultCodeFormatter = False;
-  DefaultRTL = False;
+  Vcl.ComCtrls, DockForm, UConsts;
 
 type
   TQuestionPair = class;
@@ -75,6 +66,12 @@ type
     FAnimatedLetters: Boolean;
     FTimeOut: Integer;
 
+    FEnableWriteSonic: Boolean;
+    FWriteSonicAPIKey: string;
+    FWriteSonicBaseURL: string;
+    FTaskList: TList<string>;
+    FDockableFormPointer: TDockableForm;
+
     class var FInstance: TSingletonSettingObj;
     class function GetInstance: TSingletonSettingObj; static;
     constructor Create;
@@ -84,6 +81,7 @@ type
     function GetRightIdentifier: string;
     procedure LoadDefaults;
     procedure LoadDefaultQuestions;
+    function GetMuliAI: Boolean;
   public
     procedure ReadRegistry;
     procedure WriteToRegistry;
@@ -113,6 +111,13 @@ type
     property PredefinedQuestions: TQuestionPairs read FPredefinedQuestions write FPredefinedQuestions;
     property AnimatedLetters: Boolean read FAnimatedLetters write FAnimatedLetters;
     property TimeOut: Integer read FTimeOut write FTimeOut;
+
+    property EnableWriteSonic: Boolean read FEnableWriteSonic write FEnableWriteSonic;
+    property WriteSonicAPIKey: string read FWriteSonicAPIKey write FWriteSonicAPIKey;
+    property WriteSonicBaseURL: string read FWriteSonicBaseURL write FWriteSonicBaseURL;
+    property MultiAI: Boolean read GetMuliAI;
+    property TaskList: TList<string> read FTaskList write FTaskList;
+    property DockableFormPointer: TDockableForm read FDockableFormPointer write FDockableFormPointer;
   end;
 
   TFrm_Setting = class(TForm)
@@ -162,6 +167,12 @@ type
     Btn_RemoveQuestion: TButton;
     chk_AnimatedLetters: TCheckBox;
     lbEdt_Timeout: TLabeledEdit;
+    tsOtherAiServices: TTabSheet;
+    grp_WriteSonic: TGroupBox;
+    chk_WriteSonic: TCheckBox;
+    lbEdt_WriteSonicAPIKey: TLabeledEdit;
+    lbEdt_WriteSonicBaseURL: TLabeledEdit;
+    pnlWriteSonic: TPanel;
     procedure Btn_SaveClick(Sender: TObject);
     procedure Btn_DefaultClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -176,10 +187,12 @@ type
     procedure ColorBox_HighlightChange(Sender: TObject);
     procedure chk_ProxyActiveClick(Sender: TObject);
     procedure pgcSettingChange(Sender: TObject);
+    procedure chk_WriteSonicClick(Sender: TObject);
   private
     procedure AddQuestion(AQuestionpair: TQuestionPair = nil);
     procedure RemoveLatestQuestion;
     procedure ClearGridPanel;
+    function ValidateInputs: Boolean;
   public
     HasChanges: Boolean;
     procedure AddAllDefinedQuestions;
@@ -190,6 +203,8 @@ var
   Cs: TCriticalSection;
 
 implementation
+uses
+  UChatGptMain;
 
 {$R *.dfm}
 
@@ -200,6 +215,8 @@ begin
   FProxySetting := TProxySetting.Create;
   FPredefinedQuestions := TObjectDictionary<Integer, TQuestionPair>.Create;
   CurrentActiveViewName := '';
+  FTaskList := TList<string>.Create;
+  DockableFormPointer := nil;
   LoadDefaults;
 end;
 
@@ -207,6 +224,7 @@ destructor TSingletonSettingObj.Destroy;
 begin
   FProxySetting.Free;
   FPredefinedQuestions.Free;
+  FTaskList.Free;
   inherited;
 end;
 
@@ -225,6 +243,11 @@ end;
 function TSingletonSettingObj.GetLeftIdentifier: string;
 begin
   Result := FIdentifier + ':';
+end;
+
+function TSingletonSettingObj.GetMuliAI: Boolean;
+begin
+  Result := FEnableWriteSonic;
 end;
 
 function TSingletonSettingObj.GetRightIdentifier: string;
@@ -257,7 +280,7 @@ begin
     Add(3, TQuestionPair.Create('Find possible problems', 'What is wrong with this class in Delphi?'));
     Add(4, TQuestionPair.Create('Improve Naming', 'Improve naming of the members of this class in Delphi:'));
     Add(5, TQuestionPair.Create('Rewrite in modern coding style', 'Rewrite this class with modern coding style in Delphi:'));
-    Add(6, TQuestionPair.Create('Crreate Interface','Create necessary interfaces for this Class in Delphi:'));
+    Add(6, TQuestionPair.Create('Create Interface','Create necessary interfaces for this Class in Delphi:'));
     Add(7, TQuestionPair.Create('Convert to Generic Type', 'Convert this class to generic class in Delphi:'));
     Add(8, TQuestionPair.Create('Write XML doc', 'Write Documentation using inline XML based comments for this class in Delphi:'));
   end;
@@ -266,7 +289,7 @@ end;
 procedure TSingletonSettingObj.LoadDefaults;
 begin
   FApiKey := '';
-  FURL := DefaultURL;
+  FURL := DefaultChatGPTURL;
   FModel := DefaultModel;
   FMaxToken := DefaultMaxToken;
   FTemperature := DefaultTemperature;
@@ -284,6 +307,11 @@ begin
   FHighlightColor := clRed;
   FAnimatedLetters := True;
   FTimeOut := 20;
+
+  FEnableWriteSonic := False;
+  FWriteSonicAPIKey := '';
+  FWriteSonicBaseURL := DefaultWriteSonicURL;
+
   LoadDefaultQuestions;
 end;
 
@@ -308,10 +336,10 @@ begin
             FApiKey := ReadString('ChatGPTApiKey');
 
           if ValueExists('ChatGPTURL') then
-            FURL := IfThen(ReadString('ChatGPTURL').IsEmpty, DefaultURL,
+            FURL := IfThen(ReadString('ChatGPTURL').IsEmpty, DefaultChatGPTURL,
               ReadString('ChatGPTURL'))
           else
-            FURL := DefaultURL;
+            FURL := DefaultChatGPTURL;
 
           if ValueExists('ChatGPTModel') then
             FModel := IfThen(ReadString('ChatGPTModel').IsEmpty, DefaultModel,
@@ -385,7 +413,9 @@ begin
           end;
 
           if ValueExists('ChatGPTHistoryPath') then
-            FHistoryPath := ReadString('ChatGPTHistoryPath');
+            FHistoryPath := ReadString('ChatGPTHistoryPath')
+          else
+            FHistoryPath := '';
 
           if ValueExists('ChatGPTHistoryPath') then
             FHighlightColor := ReadInteger('ChatGPTHighlightColor')
@@ -401,6 +431,23 @@ begin
             FTimeOut := ReadInteger('ChatGPTTimeOut')
           else
             FTimeOut := 20;
+
+          //==============================WriteSonic=======================begin
+          if ValueExists('ChatGPTEnableWriteSonic') then
+            FEnableWriteSonic := ReadBool('ChatGPTEnableWriteSonic')
+          else
+            FEnableWriteSonic := False;
+
+          if ValueExists('ChatGPTWriteSonicAPIKey') then
+            FWriteSonicAPIKey := ReadString('ChatGPTWriteSonicAPIKey')
+          else
+            FWriteSonicAPIKey := '';
+
+          if ValueExists('ChatGPTWriteSonicBaseURL') then
+            FWriteSonicBaseURL := ReadString('ChatGPTWriteSonicBaseURL')
+          else
+            FWriteSonicBaseURL := DefaultWriteSonicURL;
+          //==============================WriteSonic=========================end
         end;
 
         if OpenKey('\SOFTWARE\ChatGPTWizard\PredefinedQuestions', False) then
@@ -502,6 +549,10 @@ begin
         WriteBool('ChatGPTAnimatedLetters', FAnimatedLetters);
         WriteInteger('ChatGPTTimeOut', FTimeOut);
 
+        WriteBool('ChatGPTEnableWriteSonic', FEnableWriteSonic);
+        WriteString('ChatGPTWriteSonicAPIKey', FWriteSonicAPIKey);
+        WriteString('ChatGPTWriteSonicBaseURL', FWriteSonicBaseURL);
+
         if OpenKey('\SOFTWARE\ChatGPTWizard\PredefinedQuestions', True) then
         begin
           for I:= 0  to 100 do // Limited to maximum 100 menuitems.
@@ -535,7 +586,7 @@ end;
 procedure TFrm_Setting.Btn_DefaultClick(Sender: TObject);
 begin
   edt_ApiKey.Text := '';
-  edt_Url.Text := DefaultURL;
+  edt_Url.Text := DefaultChatGPTURL;
   cbbModel.ItemIndex := 0;
   edt_MaxToken.Text := IntToStr(DefaultMaxToken);
   edt_Temperature.Text := IntToStr(DefaultTemperature);
@@ -549,6 +600,7 @@ begin
   lbEdt_History.Text := '';
   ColorBox_Highlight.Selected := clRed;
   chk_AnimatedLetters.Checked := True;
+  lbEdt_WriteSonicBaseURL.Text := DefaultWriteSonicURL;
 end;
 
 procedure TFrm_Setting.Btn_HistoryPathBuilderClick(Sender: TObject);
@@ -573,14 +625,8 @@ var
   LvLabeledEdit: TControl;
   Lvpanel: TControl;
 begin
-  if chk_History.Checked then
-  begin
-    if Trim(lbEdt_History.Text).IsEmpty then
-    begin
-      ShowMessage('Please indicate the history folder path.');
-      Exit;
-    end;
-  end;
+  if not ValidateInputs then
+    Exit;
 
   LvSettingObj := TSingletonSettingObj.Instance;
   LvSettingObj.ApiKey := Trim(edt_ApiKey.Text);
@@ -605,6 +651,10 @@ begin
   LvSettingObj.AnimatedLetters := chk_AnimatedLetters.Checked;
   LvSettingObj.TimeOut := StrToInt(Frm_Setting.lbEdt_Timeout.Text);
 
+  LvSettingObj.EnableWriteSonic := chk_WriteSonic.Checked;
+  LvSettingObj.WriteSonicAPIKey := lbEdt_WriteSonicAPIKey.Text;
+  LvSettingObj.WriteSonicBaseURL := lbEdt_WriteSonicBaseURL.Text;
+
   lbEdt_History.Enabled := chk_History.Checked;
   Btn_HistoryPathBuilder.Enabled := chk_History.Checked;
 
@@ -628,6 +678,9 @@ begin
     end;      
   end;
   LvSettingObj.WriteToRegistry;
+  if Assigned(LvSettingObj.DockableFormPointer) then
+    TChatGPTDockForm(LvSettingObj.DockableFormPointer).Fram_Question.tsWriteSonicAnswer.TabVisible :=
+    (CompilerVersion >= 32) and (LvSettingObj.EnableWriteSonic);
   Close;
 end;
 
@@ -659,6 +712,12 @@ begin
   HasChanges := True;
 end;
 
+procedure TFrm_Setting.chk_WriteSonicClick(Sender: TObject);
+begin
+  lbEdt_WriteSonicAPIKey.Enabled := chk_WriteSonic.Checked;
+  lbEdt_WriteSonicBaseURL.Enabled := chk_WriteSonic.Checked;
+end;
+
 procedure TFrm_Setting.ClearGridPanel;
 var
   I: Integer;
@@ -682,6 +741,7 @@ begin
   HasChanges := False;
   GridPanelPredefinedQs.RowCollection.Clear;
   pgcSetting.ActivePageIndex := 0;
+  tsOtherAiServices.TabVisible := CompilerVersion >= 32;
 end;
 
 procedure TFrm_Setting.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -793,6 +853,30 @@ begin
       RowCollection.Items[Pred(GridPanelPredefinedQs.RowCollection.Count)].Free;
     end;
   end;
+end;
+
+function TFrm_Setting.ValidateInputs: Boolean;
+begin
+  Result := False;
+  if chk_History.Checked then
+  begin
+    if Trim(lbEdt_History.Text).IsEmpty then
+    begin
+      ShowMessage('Please indicate the history folder path.');
+      Exit;
+    end;
+  end;
+
+  if chk_WriteSonic.Checked then
+  begin
+    if (Trim(lbEdt_WriteSonicAPIKey.Text).IsEmpty) or (Trim(lbEdt_WriteSonicBaseURL.Text).IsEmpty) then
+    begin
+      ShowMessage('Please complete the WriteSonic section.');
+      Exit;
+    end;
+  end;
+
+  Result := True;
 end;
 
 { TQuestionPair }

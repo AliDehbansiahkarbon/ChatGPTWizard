@@ -10,21 +10,21 @@ package ChatGptWizard;
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS ON}
-{$LOCALSYMBOLS OFF}
+{$LOCALSYMBOLS ON}
 {$LONGSTRINGS ON}
 {$OPENSTRINGS ON}
-{$OPTIMIZATION ON}
+{$OPTIMIZATION OFF}
 {$OVERFLOWCHECKS OFF}
 {$RANGECHECKS OFF}
-{$REFERENCEINFO OFF}
+{$REFERENCEINFO ON}
 {$SAFEDIVIDE OFF}
-{$STACKFRAMES OFF}
+{$STACKFRAMES ON}
 {$TYPEDADDRESS OFF}
 {$VARSTRINGCHECKS ON}
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
-{$DEFINE RELEASE}
+{$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
 {$IMPLICITBUILD ON}
 
@@ -53,6 +53,8 @@ contains
   UChatGPTLexer in 'Lexer\UChatGPTLexer.pas',
   UPascalLexer in 'Lexer\UPascalLexer.pas',
   UPascalLexerTypes in 'Lexer\UPascalLexerTypes.pas',
-  UHistory in 'Utils\UHistory.pas';
+  UHistory in 'Utils\UHistory.pas',
+  UWriteSonicThread in 'Utils\UWriteSonicThread.pas',
+  UConsts in 'Utils\UConsts.pas';
 
 end.

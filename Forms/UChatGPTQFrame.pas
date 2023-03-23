@@ -19,7 +19,8 @@ uses
   FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
   FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool,
   FireDAC.Phys, FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLite, FireDAC.Comp.Client,
-  FireDAC.Comp.DataSet, FireDAC.VCLUI.Wait, FireDAC.Comp.UI;
+  FireDAC.Comp.DataSet, FireDAC.VCLUI.Wait, FireDAC.Comp.UI, UConsts
+  {$IF CompilerVersion >= 32.0}, UWriteSonicThread{$ENDIF};
 
 type
   TOnClickProc = procedure(Sender: TObject) of object;
@@ -33,7 +34,6 @@ type
   TFram_Question = class(TFrame)
     pnlMain: TPanel;
     Lbl_Question: TLabel;
-    Lbl_Answer: TLabel;
     pnlTop: TPanel;
     Btn_Clipboard: TButton;
     Btn_Ask: TButton;
@@ -77,6 +77,10 @@ type
     Chk_FuzzyMatch: TCheckBox;
     mmoClassViewResult: TMemo;
     splClassViewResult: TSplitter;
+    pgcAnswers: TPageControl;
+    tsChatGPTAnswer: TTabSheet;
+    tsWriteSonicAnswer: TTabSheet;
+    mmoWriteSonicAnswer: TMemo;
     procedure Btn_AskClick(Sender: TObject);
     procedure Btn_ClipboardClick(Sender: TObject);
     procedure CopytoClipboard1Click(Sender: TObject);
@@ -114,9 +118,14 @@ type
 
     // Custom Command.
     procedure CustomCommandClick(Sender: TObject);
+    procedure pgcMainChanging(Sender: TObject; var AllowChange: Boolean);
+    procedure pgcAnswersChange(Sender: TObject);
   private
-    FTrd: TExecutorTrd;
-    FPrg: TProgressBar;
+    FChatGPTTrd: TExecutorTrd;
+    {$IF CompilerVersion >= 32.0}
+    FWriteSonicTrd: TWriteSonicTrd;
+    {$ENDIF}
+    FProgressbar: TProgressBar;
     FClassList: TClassList;
     FClassTreeView: TTreeView;
     FCellCloseBtn: TSpeedButton;
@@ -125,7 +134,7 @@ type
 
     procedure CopyToClipBoard;
     procedure CreateProgressbar;
-    procedure CallThread(APrompt: string);
+    procedure CallThread(APrompt: string; AIsClassView: Boolean = False);
     function XPos(APattern, AStr: string; ACaseSensitive: Boolean): Integer;
     function LowChar(AChar: Char): Char; inline;
     function FuzzyMatchStr(const APattern, AStr: string; AMatchedIndexes: TList; ACaseSensitive: Boolean): Boolean;
@@ -133,15 +142,20 @@ type
                                     ACaseSensitive: Boolean; ABkColor: TColor; ASelectedBkColor: TColor);
     procedure HighlightCellTextFuzzy(AGrid: TDbGrid; const ARect: TRect; AField: TField; AMatchedIndexes : TList; AState: TGridDrawState ;
                                 ACaseSensitive: Boolean; ABkColor: TColor; ASelectedBkColor: TColor);
+    procedure EnableUI(ATaskName: string);
   public
     procedure InitialFrame;
     procedure InitialClassViewMenueItems(AClassList: TClassList);
-    procedure TerminateAll;
     procedure ReloadClassList(AClassList: TClassList);
+    procedure TerminateAll;
     procedure LoadHistory;
     procedure AddToHistory(AQuestion, AAnswer: string);
+
     procedure OnUpdateMessage(var Msg: TMessage); message WM_UPDATE_MESSAGE;
     procedure OnProgressMessage(var Msg: TMessage); message WM_PROGRESS_MESSAGE;
+    {$IF CompilerVersion >= 32.0}
+    procedure OnWriteSonicUpdateMessage(var Msg: TMessage); message WM_WRITESONIC_UPDATE_MESSAGE;
+    {$ENDIF}
   end;
 
 implementation
@@ -192,7 +206,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to C# code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -202,7 +216,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to C code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -212,37 +226,86 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to C++ code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
-procedure TFram_Question.CallThread(APrompt: string);
+procedure TFram_Question.CallThread(APrompt: string; AIsClassView: Boolean);
 var
-  LvApiKey: string;
-  LvUrl: string;
+  LvChatGPTApiKey: string;
+  LvChatGPTBaseUrl: string;
+
+  LvEnableWriteSonic: Boolean;
+  LvWriteSonicAPIKey: string;
+  LvWriteSonicBaseUrl: string;
+
   LvModel: string;
   LvQuestion: string;
   LvMaxToken: Integer;
   LvTemperature: Integer;
+
+  LvIsProxyActive: Boolean;
+  LvProxyHost: string;
+  LvProxyPort: Integer;
+  LvProxyUsername: string;
+  LvProxyPassword: string;
+  LvAnimatedLetters: Boolean;
+  LvTimeOut: Integer;
+
+  MultiAI: Boolean;
   LvSetting: TSingletonSettingObj;
 begin
   Cs.Enter;
   LvSetting := TSingletonSettingObj.Instance;
-  LvApiKey := LvSetting.ApiKey;
-  LvUrl := LvSetting.URL;
+  LvChatGPTApiKey := LvSetting.ApiKey;
+  LvChatGPTBaseUrl := LvSetting.URL;
   LvModel := LvSetting.Model;
   LvMaxToken := LvSetting.MaxToken;
   LvTemperature := LvSetting.Temperature;
   LvQuestion := APrompt;
-  Cs.Leave;
-  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, LvQuestion, LvUrl,
-    LvMaxToken, LvTemperature, LvSetting.ProxySetting.Active,
-    LvSetting.ProxySetting.ProxyHost, LvSetting.ProxySetting.ProxyPort,
-    LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword, LvSetting.AnimatedLetters, LvSetting.TimeOut);
-  FTrd.Start;
 
-  if Assigned(pgcMain) then
-    pgcMain.Enabled := False;
+  LvIsProxyActive :=  LvSetting.ProxySetting.Active;
+  LvProxyHost := LvSetting.ProxySetting.ProxyHost;
+  LvProxyPort := LvSetting.ProxySetting.ProxyPort;
+  LvProxyUsername := LvSetting.ProxySetting.ProxyUsername;
+  LvProxyPassword := LvSetting.ProxySetting.ProxyPassword;
+  LvAnimatedLetters := LvSetting.AnimatedLetters;
+  LvTimeOut := LvSetting.TimeOut;
+
+  LvEnableWriteSonic := LvSetting.EnableWriteSonic;
+  LvWriteSonicAPIKey := LvSetting.WriteSonicAPIKey;
+  LvWriteSonicBaseUrl := LvSetting.WriteSonicBaseURL;
+  MultiAI := LvSetting.MultiAI;
+
+  LvSetting.TaskList.Clear;
+  if not AIsClassView then
+  begin
+    LvSetting.TaskList.Add('GPT');
+    if (CompilerVersion >= 32) and (LvEnableWriteSonic) then
+      LvSetting.TaskList.Add('WS');
+  end
+  else
+    LvSetting.TaskList.Add('CLS');
+  Cs.Leave;
+
+  FChatGPTTrd := TExecutorTrd.Create(Self.Handle, LvChatGPTApiKey, LvModel, LvQuestion, LvChatGPTBaseUrl,
+    LvMaxToken, LvTemperature, LvIsProxyActive, LvProxyHost, LvProxyPort, LvProxyUsername,
+    LvProxyPassword, LvAnimatedLetters, LvTimeOut);
+  FChatGPTTrd.Start;
+
+  {$IF CompilerVersion >= 32.0}
+  if MultiAI then
+  begin
+    if LvEnableWriteSonic then
+    begin
+      mmoWriteSonicAnswer.Lines.Clear;
+      FWriteSonicTrd := TWriteSonicTrd.Create(Self.Handle, LvWriteSonicAPIKey, LvWriteSonicBaseUrl, LvQuestion, LvIsProxyActive,
+        LvProxyHost, LvProxyPort, LvProxyUsername, LvProxyPassword, LvAnimatedLetters, LvTimeOut);
+
+      FWriteSonicTrd.Start;
+    end;
+  end;
+  {$ENDIF}
 end;
 
 procedure TFram_Question.Chk_CaseSensitiveClick(Sender: TObject);
@@ -257,15 +320,17 @@ var
 begin
   if FClassTreeView.Selected <> FClassTreeView.TopItem then // Not applicable to the first node of the TreeView.
   begin
+    Cs.Enter;
     LvSettingObj := TSingletonSettingObj.Instance;
     if LvSettingObj.TryFindQuestion(TMenuItem(Sender).Caption.Replace('&', '') , LvQuestion) > -1 then
     begin
+      Cs.Leave;
       if not LvQuestion.Trim.IsEmpty then
       begin
         FLastQuestion := LvQuestion + #13 + FClassTreeView.Selected.Text; // Shorter string will be logged.
         LvQuestion  := LvQuestion  + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
         mmoClassViewResult.Lines.Clear;
-        CallThread(LvQuestion );
+        CallThread(LvQuestion, True);
       end;
     end;
   end;
@@ -300,18 +365,21 @@ end;
 // had to create and destroy each time!
 procedure TFram_Question.CreateProgressbar;
 begin
-  FPrg := TProgressBar.Create(Self);
-  FPrg.Parent := pnlBottom;
-  with FPrg do
+  if  not Assigned(FProgressbar)  then
   begin
-    Left := 11;
-    Top := 10;
-    Width := 80;
-    Height := 16;
-    Anchors := [akLeft, akBottom];
-    Style := pbstMarquee;
-    TabOrder := 1;
-    Visible := True;
+    FProgressbar := TProgressBar.Create(Self);
+    FProgressbar.Parent := pnlBottom;
+    with FProgressbar do
+    begin
+      Left := 11;
+      Top := 10;
+      Width := 80;
+      Height := 16;
+      Anchors := [akLeft, akBottom];
+      Style := pbstMarquee;
+      TabOrder := 1;
+      Visible := True;
+    end;
   end;
 end;
 
@@ -332,7 +400,7 @@ begin
     FLastQuestion := FLastQuestion + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
 
   mmoClassViewResult.Lines.Clear;
-  CallThread(FLastQuestion);
+  CallThread(FLastQuestion, True);
 end;
 
 procedure TFram_Question.DrawColumnCell(Sender: TObject; const Rect: TRect; DataCol: Integer; Column: TColumn; State: TGridDrawState);
@@ -416,6 +484,22 @@ begin
   FHistoryGrid.Repaint;
 end;
 
+procedure TFram_Question.EnableUI(ATaskName: string);
+begin
+  Cs.Enter;
+  TSingletonSettingObj.Instance.TaskList.Remove(ATaskName);
+  if TSingletonSettingObj.Instance.TaskList.Count = 0 then
+  begin
+    Btn_Ask.Enabled := True;
+    if ATaskName = 'CLS' then
+    begin
+      mmoClassViewResult.Visible := True;
+      splClassViewResult.Visible := True;
+    end;
+  end;
+  Cs.Leave;
+end;
+
 procedure TFram_Question.FDQryHistoryAfterScroll(DataSet: TDataSet);
 begin
   mmoHistoryDetail.Lines.Clear;
@@ -490,7 +574,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to the GO programming language code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -658,6 +742,7 @@ procedure TFram_Question.InitialFrame;
 begin
   FLastQuestion := '';
   Align := alClient;
+  tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
 
   FCellCloseBtn := TSpeedButton.Create(Self);
   FCellCloseBtn.Glyph.LoadFromResourceName(HInstance, 'CLOSE');
@@ -710,7 +795,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to Java code: ' + #13 + FClassList.Items [FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -720,7 +805,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to Javascript code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -747,13 +832,18 @@ procedure TFram_Question.OnProgressMessage(var Msg: TMessage);
 begin
   if Msg.WParam = 0 then
   begin
-    if Assigned(FPrg) then
-      FreeAndNil(FPrg);
-  end
-  else
-    CreateProgressbar;
+    Cs.Enter;
+    if TSingletonSettingObj.Instance.TaskList.Count = 0 then
+    begin
+      Btn_Ask.Enabled := True;
 
-  Btn_Ask.Enabled := Msg.WParam = 0;
+      if Assigned(FProgressbar) then
+        FreeAndNil(FProgressbar);
+    end;
+    Cs.Leave;
+  end
+  else if Msg.WParam = 1 then
+    CreateProgressbar;
 end;
 
 procedure TFram_Question.OnUpdateMessage(var Msg: TMessage);
@@ -776,16 +866,14 @@ begin
       end
       else if Msg.LParam = 2 then // Finished.
       begin
-        pgcMain.Enabled := True;
-        Btn_Ask.Enabled := True;
+        EnableUI('GPT');
         AddToHistory(mmoQuestion.Lines.Text, mmoAnswer.Lines.Text);
       end
       else if Msg.LParam = 3 then // Exception.
       begin
         mmoAnswer.Lines.Clear;
         mmoAnswer.Lines.Add(String(Msg.WParam));
-        pgcMain.Enabled := True;
-        Btn_Ask.Enabled := True;
+        EnableUI('GPT');
       end;
     end
     else if pgcMain.ActivePage = tsClassView then
@@ -797,26 +885,19 @@ begin
       end
       else if Msg.LParam = 1 then // Char by Char.
       begin
-        if Msg.WParam = 13 then
+        if Msg.WParam = 13 then // (Equals to the Enter key or CRLF)
           mmoClassViewResult.Lines.Add('')
         else
           mmoClassViewResult.Lines[Pred(mmoClassViewResult.Lines.Count)] := mmoClassViewResult.Lines[Pred(mmoClassViewResult.Lines.Count)] + char(Msg.WParam);
       end
-      else if Msg.LParam = 2 then //  Finished.
+      else if Msg.LParam = 2 then // Finished.
       begin
-        pgcMain.Enabled := True;
-        Btn_Ask.Enabled := True;
-        mmoClassViewResult.Visible := True;
-        splClassViewResult.Visible := True;
+        EnableUI('CLS');
         AddToHistory(FLastQuestion , mmoClassViewResult.Lines.Text);
       end
       else if Msg.LParam = 3 then // Exception.
       begin
-        pgcMain.Enabled := True;
-        Btn_Ask.Enabled := True;
-        mmoClassViewResult.Visible := True;
-        splClassViewResult.Visible := True;
-
+        EnableUI('CLS');
         mmoClassViewResult.Lines.Clear;
         mmoClassViewResult.Lines.Add(String(Msg.WParam));
       end;
@@ -838,7 +919,7 @@ begin
     end
     else if Msg.LParam = 2 then // Finished.
     begin
-      Btn_Ask.Enabled := True;
+      EnableUI('GPT');
       AddToHistory(mmoQuestion.Lines.Text, mmoAnswer.Lines.Text);
     end;
   end;
@@ -848,27 +929,83 @@ begin
     if chk_AutoCopy.Checked then
       CopyToClipBoard;
 
+    Cs.Enter;
     TSingletonSettingObj.Instance.ShouldReloadHistory := True;
+    Cs.Leave;
+  end;
+end;
+
+{$IF CompilerVersion >= 32.0}
+procedure TFram_Question.OnWriteSonicUpdateMessage(var Msg: TMessage);
+begin
+  if Msg.LParam = 0 then //whole string in one message.
+  begin
+    mmoWriteSonicAnswer.Lines.Clear;
+    mmoWriteSonicAnswer.Lines.Add(String(Msg.WParam));
+  end
+  else if Msg.LParam = 1 then // Char by Char.
+  begin
+    mmoWriteSonicAnswer.Lines[Pred(mmoWriteSonicAnswer.Lines.Count)] := mmoWriteSonicAnswer.Lines[Pred(mmoWriteSonicAnswer.Lines.Count)] + char(Msg.WParam);
+    if Char(Msg.WParam) = CrLf then
+      mmoWriteSonicAnswer.Lines.Add('');
+  end
+  else if Msg.LParam = 2 then // Finished.
+  begin
+    EnableUI('WS');
+    AddToHistory(mmoWriteSonicAnswer.Lines.Text, '***** WriteSonic *****' + #13 + mmoWriteSonicAnswer.Lines.Text);
+    Cs.Enter;
+    TSingletonSettingObj.Instance.ShouldReloadHistory := True;
+    Cs.Leave;
+  end
+  else if Msg.LParam = 3 then // Exception
+  begin
+    mmoWriteSonicAnswer.Lines.Clear;
+    mmoWriteSonicAnswer.Lines.Add(String(Msg.WParam));
+    EnableUI('WS');
+  end;
+end;
+{$ENDIF}
+
+procedure TFram_Question.pgcAnswersChange(Sender: TObject);
+begin
+  case pgcAnswers.ActivePageIndex of
+    0: Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
+    1: Clipboard.SetTextBuf(pwidechar(mmoWriteSonicAnswer.Lines.Text));
   end;
 end;
 
 procedure TFram_Question.pgcMainChange(Sender: TObject);
+var
+  LvShouldReloadHistory: Boolean;
 begin
+  Cs.Enter;
+  LvShouldReloadHistory := TSingletonSettingObj.Instance.ShouldReloadHistory;
+  Cs.Leave;
+
   if pgcMain.ActivePage = tsClassView then
     ReloadClassList(FClassList);
 
   if pgcMain.ActivePage = tsHistory then
   begin
-    if TSingletonSettingObj.Instance.ShouldReloadHistory then
+    if LvShouldReloadHistory then
     begin
       LoadHistory;
+      Width := Width + 1; // Do not remove!
+                          // Doesn't really change the width, it's a trick to force the grid to fit columns!
+
+      Cs.Enter;
       TSingletonSettingObj.Instance.ShouldReloadHistory := False;
-      Width := Width + 1; // Doesn't really change the width, it's a trick to force the grid to fit columns!
+      Cs.Leave;
     end;
 
     if FDQryHistory.RecordCount > 0  then
       FDQryHistory.AfterScroll(FDQryHistory);
   end;
+end;
+
+procedure TFram_Question.pgcMainChanging(Sender: TObject; var AllowChange: Boolean);
+begin
+  AllowChange := TSingletonSettingObj.Instance.TaskList.Count = 0;
 end;
 
 procedure TFram_Question.pmClassOperationsPopup(Sender: TObject);
@@ -884,7 +1021,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to Pyhton code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -952,7 +1089,7 @@ begin
   begin
     FLastQuestion := 'Convert this Delphi Code to Rust code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
     mmoClassViewResult.Lines.Clear;
-    CallThread(FLastQuestion);
+    CallThread(FLastQuestion, True);
   end;
 end;
 
@@ -964,15 +1101,19 @@ end;
 procedure TFram_Question.TerminateAll;
 begin
   try
-    if Assigned(FTrd) then FTrd.Terminate;
+    if Assigned(FChatGPTTrd) then FChatGPTTrd.Terminate;
   except
   end;
 
-  if Assigned(FPrg) then
-    FreeAndNil(FPrg);
+  {$IF CompilerVersion >= 32.0}
+  try
+    if Assigned(FWriteSonicTrd) then FWriteSonicTrd.Terminate;
+  except
+  end;
+  {$ENDIF}
 
-  if Assigned(pgcMain) then
-    pgcMain.Enabled := True;
+  if Assigned(FProgressbar) then
+    FreeAndNil(FProgressbar);
 
   Btn_Ask.Enabled := True;
 end;

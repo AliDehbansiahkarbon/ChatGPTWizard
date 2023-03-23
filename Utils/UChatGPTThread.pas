@@ -10,12 +10,8 @@ unit UChatGPTThread;
 interface
 uses
   System.Classes, System.SysUtils, IdHTTP, IdSSLOpenSSL, IdComponent, Vcl.Dialogs,
-  XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows, UChatGPTSetting;
-
-const
-  WM_UPDATE_MESSAGE = WM_USER + 5874;
-  WM_PROGRESS_MESSAGE = WM_USER + 5875;
-  WM_Animated_MESSAGE = WM_USER + 5876;
+  XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows,
+  UChatGPTSetting, UConsts;
 
 type
   TExecutorTrd = class(TThread)
@@ -35,7 +31,7 @@ type
     procedure Execute; override;
   public
     constructor Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer;
-                       AActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string;
+                       AProxayIsActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string;
                        AProxyPassword: string; AAnimated: Boolean; ATimeOut: Integer);
     destructor Destroy; override;
   end;
@@ -84,7 +80,7 @@ type
     FCreated: Integer;
     FModel: string;
     FChoices: TObjectList<TChoice>;
-    FUsage: Tusage;
+    FUsage: TUsage;
   public
     constructor Create;
     destructor Destroy; override;
@@ -94,7 +90,7 @@ type
     property created: Integer read FCreated write FCreated;
     property model: string read FModel write FModel;
     property choices: TObjectList<TChoice> read FChoices write FChoices;
-    property usage: Tusage read FUsage write FUsage;
+    property usage: TUsage read FUsage write FUsage;
   end;
   
   TOpenAIAPI = class
@@ -110,6 +106,7 @@ type
 
 implementation
 
+{ TOpenAIAPI }
 constructor TOpenAIAPI.Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting; ATimeOut: Integer);
 begin
   inherited Create;
@@ -200,7 +197,7 @@ end;
 
 { TExecutorTrd }
 constructor TExecutorTrd.Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer;
-                       AActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string;
+                       AProxayIsActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string;
                        AProxyPassword: string; AAnimated: Boolean; ATimeOut: Integer);
 begin
   inherited Create(True);
@@ -218,7 +215,7 @@ begin
   FProxySetting := TProxySetting.Create;
   with FProxySetting do
   begin
-    Active := AActive;
+    Active := AProxayIsActive;
     ProxyHost := AProxyHost;
     ProxyPort := AProxyPort;
     ProxyUsername := AProxyUsername;
@@ -240,13 +237,13 @@ var
   LvAPI: TOpenAIAPI;
   LvResult: string;
   I: Integer;
-//==================
-//Lparams meaning:
-//       0 = sending whole string in one message
-//       1 = sending character by character(animated)
-//       2 = Finished the task.
-//       3 = Exceptions.
-//==================
+{=================================================}
+{  Lparams meaning:                               }
+{  0 = sending whole string in one message        }
+{  1 = sending character by character(animated)   }
+{  2 = Finished the task.                         }
+{  3 = Exceptions.                                }
+{=================================================}
 begin
   inherited;
   LvAPI := TOpenAIAPI.Create(FApiKey, FUrl, FProxySetting, FTimeOut);
