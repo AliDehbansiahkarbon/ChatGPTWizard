@@ -18,11 +18,11 @@
 
 Short
 
-<a target="_blank" href="https://www.youtube.com/watch?v=vUgHg3ZPvXI"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg"/></a>
+<a href="https://www.youtube.com/watch?v=vUgHg3ZPvXI" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
 
 Long
 
-<a target="_blank" href="https://www.youtube.com/watch?v=qHqEGfxAhIM"><img src="https://img.youtube.com/vi/qHqEGfxAhIM/0.jpg"/></a>
+<a href="https://www.youtube.com/watch?v=qHqEGfxAhIM" target="_blank"><img src="https://img.youtube.com/vi/qHqEGfxAhIM/0.jpg" /></a>
 
 <br />
 
