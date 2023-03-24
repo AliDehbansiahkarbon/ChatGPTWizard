@@ -13,11 +13,22 @@
 
 ## Demo
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/vUgHg3ZPvXI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+Short
 
 <br />
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/qHqEGfxAhIM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+[![Demo Vid 1](https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg)](https://www.youtube.com/watch?v=vUgHg3ZPvXI)
+
+<br />
+
+Long
+
+<br />
+
+[![Demo Vid 2](https://img.youtube.com/vi/qHqEGfxAhIM/0.jpg)](https://www.youtube.com/watch?v=qHqEGfxAhIM)
+
+<br />
+
 
 
 ## Platforms
