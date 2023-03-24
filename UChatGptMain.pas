@@ -96,10 +96,11 @@ type
   TChatGPTDockForm = class(TDockableForm)
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormShow(Sender: TObject);
    private
     FDockFormClassListObj: TClassList;
-    Fram_Question: TFram_Question;
   public
+    Fram_Question: TFram_Question;
     constructor Create(AOwner: TComponent);
     destructor Destroy; override;
   end;
@@ -175,24 +176,33 @@ begin
   Frm_Setting := TFrm_Setting.Create(nil);
   try
     TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Setting, Frm_Setting); //Apply Theme
-    Frm_Setting.Edt_ApiKey.Text := FSetting.ApiKey;
-    Frm_Setting.Edt_Url.Text := FSetting.URL;
-    Frm_Setting.Edt_MaxToken.Text := FSetting.MaxToken.ToString;
-    Frm_Setting.Edt_Temperature.Text := FSetting.Temperature.ToString;
-    Frm_Setting.cbbModel.ItemIndex := Frm_Setting.cbbModel.Items.IndexOf(FSetting.Model);
-    Frm_Setting.Edt_SourceIdentifier.Text := FSetting.Identifier;
-    Frm_Setting.chk_CodeFormatter.Checked := FSetting.CodeFormatter;
-    Frm_Setting.chk_Rtl.Checked := FSetting.RighToLeft;
-    Frm_Setting.chk_History.Checked := FSetting.HistoryEnabled;
-    Frm_Setting.lbEdt_History.Text := FSetting.HistoryPath;
-    Frm_Setting.lbEdt_History.Enabled := FSetting.HistoryEnabled;
-    Frm_Setting.Btn_HistoryPathBuilder.Enabled := FSetting.HistoryEnabled;
-    Frm_Setting.ColorBox_Highlight.Selected := FSetting.HighlightColor;
-    Frm_Setting.chk_AnimatedLetters.Checked := FSetting.AnimatedLetters;
-    Frm_Setting.lbEdt_Timeout.Text := FSetting.TimeOut.ToString;
-    Frm_Setting.AddAllDefinedQuestions;
+    with Frm_Setting do
+    begin
+      Edt_ApiKey.Text := FSetting.ApiKey;
+      Edt_Url.Text := FSetting.URL;
+      Edt_MaxToken.Text := FSetting.MaxToken.ToString;
+      Edt_Temperature.Text := FSetting.Temperature.ToString;
+      cbbModel.ItemIndex := Frm_Setting.cbbModel.Items.IndexOf(FSetting.Model);
+      Edt_SourceIdentifier.Text := FSetting.Identifier;
+      chk_CodeFormatter.Checked := FSetting.CodeFormatter;
+      chk_Rtl.Checked := FSetting.RighToLeft;
+      chk_History.Checked := FSetting.HistoryEnabled;
+      lbEdt_History.Text := FSetting.HistoryPath;
+      lbEdt_History.Enabled := FSetting.HistoryEnabled;
+      Btn_HistoryPathBuilder.Enabled := FSetting.HistoryEnabled;
+      ColorBox_Highlight.Selected := FSetting.HighlightColor;
+      chk_AnimatedLetters.Checked := FSetting.AnimatedLetters;
+      lbEdt_Timeout.Text := FSetting.TimeOut.ToString;
+      AddAllDefinedQuestions;
 
-    Frm_Setting.ShowModal;
+      chk_WriteSonic.Checked := FSetting.EnableWriteSonic;
+      lbEdt_WriteSonicAPIKey.Text := FSetting.WriteSonicAPIKey;
+      lbEdt_WriteSonicBaseURL.Text := FSetting.WriteSonicBaseURL;
+      lbEdt_WriteSonicAPIKey.Enabled := FSetting.EnableWriteSonic;
+      lbEdt_WriteSonicBaseURL.Enabled := FSetting.EnableWriteSonic;
+
+      ShowModal;
+    end;
     if Frm_Setting.HasChanges then
       RenewUI(FChatGPTDockForm);
   finally
@@ -410,6 +420,7 @@ begin
     Btn_Ask.Enabled := True;
     Align := alClient;
     pgcMain.ActivePageIndex := 0;
+    tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.MultiAI);
     if TSingletonSettingObj.Instance.RighToLeft then
     begin
       Btn_Ask.Left := pnlTop.Width - Btn_Ask.Width - 5;
@@ -672,10 +683,13 @@ begin
   begin
     if (not HistoryEnabled) and (not ShouldReloadHistory) and (FileExists(GetHistoryFullPath)) then
       ShouldReloadHistory := True;
+
+    DockableFormPointer := Self;
   end;
 
   Self.OnKeyDown := FormKeyDown;
   Self.OnClose := FormClose;
+  Self.OnShow := FormShow;
   Self.KeyPreview := True;
 end;
 
@@ -697,6 +711,13 @@ procedure TChatGPTDockForm.FormKeyDown(Sender: TObject; var Key: Word; Shift: TS
 begin
   if Ord(Key) = 27 then
     Close;
+end;
+
+procedure TChatGPTDockForm.FormShow(Sender: TObject);
+begin
+  Cs.Enter;
+  Fram_Question.tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.MultiAI);
+  Cs.Leave;
 end;
 
 initialization

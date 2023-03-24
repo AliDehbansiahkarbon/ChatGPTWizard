@@ -14,6 +14,7 @@ object Fram_Question: TFram_Question
     MultiLine = True
     TabOrder = 0
     OnChange = pgcMainChange
+    OnChanging = pgcMainChanging
     object tsChatGPT: TTabSheet
       Caption = 'ChatGPT'
       object pnlMain: TPanel
@@ -24,6 +25,7 @@ object Fram_Question: TFram_Question
         Align = alClient
         ParentColor = True
         TabOrder = 0
+        ExplicitHeight = 371
         object pnlTop: TPanel
           Left = 1
           Top = 1
@@ -32,20 +34,20 @@ object Fram_Question: TFram_Question
           Align = alTop
           TabOrder = 0
           object Btn_Clipboard: TButton
-            Left = 96
-            Top = 6
+            Left = 121
+            Top = 8
             Width = 137
-            Height = 28
+            Height = 27
             Caption = 'Copy to Clipboard'
             TabOrder = 1
             WordWrap = True
             OnClick = Btn_ClipboardClick
           end
           object Btn_Ask: TButton
-            Left = 15
-            Top = 6
+            Left = 40
+            Top = 8
             Width = 74
-            Height = 28
+            Height = 27
             Hint = 'Ctrl + Enter'
             Caption = 'Ask'
             ParentShowHint = False
@@ -54,10 +56,10 @@ object Fram_Question: TFram_Question
             OnClick = Btn_AskClick
           end
           object Btn_Clear: TButton
-            Left = 246
-            Top = 6
+            Left = 271
+            Top = 8
             Width = 74
-            Height = 28
+            Height = 27
             Caption = 'Clear All'
             TabOrder = 2
             OnClick = Btn_ClearClick
@@ -71,6 +73,7 @@ object Fram_Question: TFram_Question
           Align = alClient
           BevelOuter = bvNone
           TabOrder = 1
+          ExplicitHeight = 325
           object splitter: TSplitter
             Left = 0
             Top = 114
@@ -89,36 +92,62 @@ object Fram_Question: TFram_Question
             Height = 206
             Align = alClient
             TabOrder = 0
-            object Lbl_Answer: TLabel
-              Left = 7
-              Top = 5
-              Width = 45
-              Height = 15
-              Caption = 'Answer:'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -12
-              Font.Name = 'Segoe UI'
-              Font.Style = [fsBold]
-              ParentFont = False
-            end
-            object mmoAnswer: TMemo
-              AlignWithMargins = True
-              Left = 4
-              Top = 21
-              Width = 417
-              Height = 181
-              Margins.Top = 20
+            ExplicitHeight = 208
+            object pgcAnswers: TPageControl
+              Left = 1
+              Top = 1
+              Width = 423
+              Height = 204
+              ActivePage = tsChatGPTAnswer
               Align = alClient
               Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -12
-              Font.Name = 'Consolas'
+              Font.Color = clWindow
+              Font.Height = -11
+              Font.Name = 'Segoe UI'
               Font.Style = []
+              HotTrack = True
               ParentFont = False
-              ReadOnly = True
-              ScrollBars = ssVertical
               TabOrder = 0
+              OnChange = pgcAnswersChange
+              ExplicitHeight = 206
+              object tsChatGPTAnswer: TTabSheet
+                Caption = 'ChatGPT'
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -8
+                Font.Name = 'Segoe UI'
+                Font.Style = []
+                ParentFont = False
+                object mmoAnswer: TMemo
+                  Left = 0
+                  Top = 0
+                  Width = 415
+                  Height = 178
+                  Align = alClient
+                  Font.Charset = DEFAULT_CHARSET
+                  Font.Color = clWindowText
+                  Font.Height = -12
+                  Font.Name = 'Consolas'
+                  Font.Style = []
+                  ParentFont = False
+                  ReadOnly = True
+                  ScrollBars = ssVertical
+                  TabOrder = 0
+                end
+              end
+              object tsWriteSonicAnswer: TTabSheet
+                Caption = 'WriteSonic'
+                ImageIndex = 1
+                object mmoWriteSonicAnswer: TMemo
+                  Left = 0
+                  Top = 0
+                  Width = 415
+                  Height = 176
+                  Align = alClient
+                  ScrollBars = ssVertical
+                  TabOrder = 0
+                end
+              end
             end
           end
           object pnlQuestion: TPanel
@@ -145,9 +174,9 @@ object Fram_Question: TFram_Question
               ParentFont = False
             end
             object mmoQuestion: TMemo
-              Left = 11
+              Left = 5
               Top = 20
-              Width = 402
+              Width = 415
               Height = 89
               Hint = 'Type a question and press Ctrl + Enter'
               Anchors = [akLeft, akTop, akRight, akBottom]
@@ -194,13 +223,13 @@ object Fram_Question: TFram_Question
         Left = 0
         Top = 140
         Width = 427
-        Height = 229
+        Height = 231
         Align = alClient
         TabOrder = 1
         object splClassViewResult: TSplitter
           Left = 238
           Top = 1
-          Height = 227
+          Height = 229
           Align = alRight
           Visible = False
           ExplicitLeft = 216
@@ -212,7 +241,7 @@ object Fram_Question: TFram_Question
           Left = 4
           Top = 4
           Width = 231
-          Height = 221
+          Height = 223
           Align = alClient
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
@@ -229,7 +258,7 @@ object Fram_Question: TFram_Question
           Left = 241
           Top = 1
           Width = 185
-          Height = 227
+          Height = 229
           Align = alRight
           ReadOnly = True
           TabOrder = 1
@@ -291,7 +320,7 @@ object Fram_Question: TFram_Question
             Left = 7
             Top = 8
             Width = 202
-            Height = 23
+            Height = 21
             Anchors = [akLeft, akTop, akRight]
             TabOrder = 1
             OnChange = Edt_SearchChange
@@ -328,11 +357,12 @@ object Fram_Question: TFram_Question
         Height = 181
         Align = alClient
         TabOrder = 1
+        ExplicitHeight = 183
         object mmoHistoryDetail: TMemo
           Left = 1
           Top = 1
           Width = 425
-          Height = 179
+          Height = 181
           Align = alClient
           ReadOnly = True
           ScrollBars = ssBoth

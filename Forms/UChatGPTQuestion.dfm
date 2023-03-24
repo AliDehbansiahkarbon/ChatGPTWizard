@@ -12,10 +12,12 @@ object FrmChatGPT: TFrmChatGPT
   Font.Name = 'Segoe UI'
   Font.Style = []
   KeyPreview = True
+  OldCreateOrder = True
   ParentBiDiMode = False
   Position = poMainFormCenter
   OnKeyDown = FormKeyDown
   OnShow = FormShow
+  PixelsPerInch = 96
   TextHeight = 15
   inline Fram_Question: TFram_Question
     Left = 0
@@ -57,11 +59,21 @@ object FrmChatGPT: TFrmChatGPT
               Height = 260
               ExplicitWidth = 419
               ExplicitHeight = 260
-              inherited mmoAnswer: TMemo
-                Width = 411
-                Height = 235
-                ExplicitWidth = 411
-                ExplicitHeight = 235
+              inherited pgcAnswers: TPageControl
+                Width = 417
+                Height = 258
+                ExplicitWidth = 417
+                ExplicitHeight = 258
+                inherited tsChatGPTAnswer: TTabSheet
+                  ExplicitWidth = 409
+                  ExplicitHeight = 230
+                  inherited mmoAnswer: TMemo
+                    Width = 409
+                    Height = 230
+                    ExplicitWidth = 409
+                    ExplicitHeight = 230
+                  end
+                end
               end
             end
             inherited pnlQuestion: TPanel
@@ -77,6 +89,10 @@ object FrmChatGPT: TFrmChatGPT
         end
       end
       inherited tsHistory: TTabSheet
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         inherited splHistory: TSplitter
           Width = 421
           ExplicitWidth = 421

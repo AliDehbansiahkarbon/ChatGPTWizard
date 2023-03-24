@@ -11,7 +11,7 @@ interface
 uses
   Winapi.Windows, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls,
-  Winapi.Messages, UChatGPTThread, Vcl.Buttons, UChatGPTSetting;
+  Winapi.Messages, UChatGPTThread, Vcl.Buttons, UChatGPTSetting, UConsts;
 
 type
   TFrm_Progress = class(TForm)
@@ -72,6 +72,13 @@ var
   LvModel: string;
   LvMaxToken: Integer;
   LvTemperature: Integer;
+
+  LvIsProxyActive: Boolean;
+  LvProxyHost: string;
+  LvProxyPort: Integer;
+  LvProxyUsername: string;
+  LvProxyPassword: string;
+  LvTimeOut: Integer;
   LvSetting: TSingletonSettingObj;
 begin
   Cs.Enter;
@@ -81,11 +88,18 @@ begin
   LvModel := LvSetting.Model;
   LvMaxToken := LvSetting.MaxToken;
   LvTemperature := LvSetting.Temperature;
-  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, SelectedText, LvUrl, LvMaxToken, LvTemperature,
-                              LvSetting.ProxySetting.Active, LvSetting.ProxySetting.ProxyHost, LvSetting.ProxySetting.ProxyPort,
-                              LvSetting.ProxySetting.ProxyUsername, LvSetting.ProxySetting.ProxyPassword, False, LvSetting.TimeOut);
-  FTrd.Start;
+
+  LvIsProxyActive :=  LvSetting.ProxySetting.Active;
+  LvProxyHost := LvSetting.ProxySetting.ProxyHost;
+  LvProxyPort := LvSetting.ProxySetting.ProxyPort;
+  LvProxyUsername := LvSetting.ProxySetting.ProxyUsername;
+  LvProxyPassword := LvSetting.ProxySetting.ProxyPassword;
+  LvTimeOut := LvSetting.TimeOut;
   Cs.Leave;
+
+  FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, SelectedText, LvUrl, LvMaxToken, LvTemperature,
+                              LvIsProxyActive, LvProxyHost, LvProxyPort, LvProxyUsername, LvProxyPassword, False, LvTimeOut);
+  FTrd.Start;
 end;
 
 procedure TFrm_Progress.OnProgressMessage(var Msg: TMessage);
