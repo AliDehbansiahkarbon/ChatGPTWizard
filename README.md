@@ -35,8 +35,8 @@ Long
 
 This Plugin Supports the following AI Services:
 
-- [ChatGPT](https://chat.openai.com/chat) ([generate API Key](https://beta.openai.com/account/api-keys))
-- [Writesonic](https://writesonic.com) ([generate API Key](https://docs.writesonic.com/reference/finding-your-api-key))
+- [ChatGPT](https://chat.openai.com/chat) ([generate API Key here](https://beta.openai.com/account/api-keys))
+- [Writesonic](https://writesonic.com) ([generate API Key here](https://docs.writesonic.com/reference/finding-your-api-key))
 
 **NOTE: Other AI Services are enabled in Rad Studio 10.2 and above!**
 
