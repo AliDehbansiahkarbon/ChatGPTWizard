@@ -7,7 +7,10 @@
 
 <h2>An OpenAI plug-in for Embarcadero RAD Studio IDE.</h2>
 
-### **NOTE: You will need an API key to use this plugin. see [here](#platforms)**
+<h3>First Plugin Ever to support ChatGPT & Writesonic!</h3>
+<br /
+
+#### **NOTE: You will need an API key to use this plugin. see [here](#platforms)**
 
 <br />
 
@@ -15,24 +18,25 @@
 
 Short
 
-[![Demo Vid 1](https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg)](https://www.youtube.com/watch?v=vUgHg3ZPvXI)
-
-<br />
+<a target="_blank" href="https://www.youtube.com/watch?v=vUgHg3ZPvXI"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg"/></a>
 
 Long
 
-[![Demo Vid 2](https://img.youtube.com/vi/qHqEGfxAhIM/0.jpg)](https://www.youtube.com/watch?v=qHqEGfxAhIM)
+<a target="_blank" href="https://www.youtube.com/watch?v=qHqEGfxAhIM"><img src="https://img.youtube.com/vi/qHqEGfxAhIM/0.jpg"/></a>
 
 <br />
-
-
 
 ## Platforms
 
 This Plugin Supports the following AI Services:
 
-- [ChatGPT](https://chat.openai.com/chat) ([generate API Key here](https://beta.openai.com/account/api-keys))
-- [Writesonic](https://writesonic.com) ([generate API Key here](https://docs.writesonic.com/reference/finding-your-api-key))
+### [ChatGPT](https://chat.openai.com/chat)
+
+[generate API Key here](https://beta.openai.com/account/api-keys)
+
+### [Writesonic](https://writesonic.com)
+
+[generate API Key here](https://docs.writesonic.com/reference/finding-your-api-key)
 
 **NOTE: Other AI Services(non-ChatGPT) are enabled in Rad Studio 10.2 and above!**
 
@@ -40,7 +44,7 @@ This Plugin Supports the following AI Services:
 ## Remarks
 
 - It's compatible with Xe5 and later versions.
-- Uses XSuperObject library which is included in the [project files](https://github.com/onryldz/x-superobject/blob/master/XSuperObject.pas)
+- Uses XSuperObject library which is included in the project files. you can also find the latest version [here](https://github.com/onryldz/x-superobject/blob/master/XSuperObject.pas)
 - Settings are stored in registry which can be found here: `Computer\HKEY_CURRENT_USER\Software\ChatGPTWizard`
 - Consider that if you run it in the IDE without opening any project it will raise a message that it cannot load the SSL library. for more details see [here](#issues-with-ssl)
 
