@@ -16,9 +16,14 @@
 
 ## Demo
 
-Short
+Short1(ChatGPT)
 
 <a href="https://www.youtube.com/watch?v=vUgHg3ZPvXI" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
+
+Short2(Writesonic)
+
+<a href="https://www.youtube.com/watch?v=Uq9WfE7iVjA" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
+
 
 Long
 
