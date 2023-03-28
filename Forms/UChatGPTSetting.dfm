@@ -12,11 +12,9 @@ object Frm_Setting: TFrm_Setting
   Font.Name = 'Segoe UI'
   Font.Style = []
   KeyPreview = True
-  OldCreateOrder = True
   Position = poMainFormCenter
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
-  PixelsPerInch = 96
   TextHeight = 15
   object pgcSetting: TPageControl
     Left = 0
@@ -29,10 +27,6 @@ object Frm_Setting: TFrm_Setting
     OnChange = pgcSettingChange
     object tsMainSetting: TTabSheet
       Caption = 'Main Setting'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object pnl1: TPanel
         Left = 0
         Top = 0
@@ -136,15 +130,20 @@ object Frm_Setting: TFrm_Setting
               Width = 122
               Height = 23
               Style = csDropDownList
-              ItemIndex = 0
               TabOrder = 4
-              Text = 'text-davinci-003'
               OnChange = cbbModelChange
               Items.Strings = (
                 'text-davinci-003'
                 'text-curie-001'
                 'text-babbage-001'
-                'text-ada-001')
+                'text-ada-001'
+                'gpt-3.5-turbo'
+                'gpt-3.5-turbo-0301'
+                'code-davinci-002'
+                'text-davinci-002'
+                'gpt-4'
+                'gpt-4-32k'
+                'gpt-4-0314')
             end
             object chk_AnimatedLetters: TCheckBox
               Left = 234
@@ -229,6 +228,7 @@ object Frm_Setting: TFrm_Setting
                 EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 1
+                Text = ''
                 OnChange = edt_UrlChange
               end
               object Btn_HistoryPathBuilder: TButton
@@ -285,6 +285,7 @@ object Frm_Setting: TFrm_Setting
                 EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 0
+                Text = ''
                 OnChange = edt_UrlChange
               end
               object lbEdt_ProxyPort: TLabeledEdit
@@ -299,6 +300,7 @@ object Frm_Setting: TFrm_Setting
                 LabelPosition = lpLeft
                 NumbersOnly = True
                 TabOrder = 1
+                Text = ''
                 OnChange = edt_UrlChange
               end
               object chk_ProxyActive: TCheckBox
@@ -321,6 +323,7 @@ object Frm_Setting: TFrm_Setting
                 EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 3
+                Text = ''
                 OnChange = edt_UrlChange
               end
               object lbEdt_ProxyPassword: TLabeledEdit
@@ -334,6 +337,7 @@ object Frm_Setting: TFrm_Setting
                 EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 4
+                Text = ''
                 OnChange = edt_UrlChange
               end
             end
@@ -399,10 +403,6 @@ object Frm_Setting: TFrm_Setting
     object tsPreDefinedQuestions: TTabSheet
       Caption = 'PreDefined Questions'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Btn_AddQuestion: TButton
         Left = 5
         Top = 11
@@ -455,10 +455,6 @@ object Frm_Setting: TFrm_Setting
     object tsOtherAiServices: TTabSheet
       Caption = 'Other AI Services'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object grp_WriteSonic: TGroupBox
         AlignWithMargins = True
         Left = 3
@@ -498,6 +494,7 @@ object Frm_Setting: TFrm_Setting
             LabelSpacing = 5
             PasswordChar = '*'
             TabOrder = 1
+            Text = ''
           end
           object lbEdt_WriteSonicBaseURL: TLabeledEdit
             Left = 74
@@ -510,6 +507,7 @@ object Frm_Setting: TFrm_Setting
             LabelPosition = lpLeft
             LabelSpacing = 5
             TabOrder = 2
+            Text = ''
           end
         end
       end
