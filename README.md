@@ -10,7 +10,7 @@
 <h3>First Plugin Ever to support ChatGPT & Writesonic!</h3>
 <br /
 
-#### **NOTE: You will need an API key to use this plugin. see [here](#platforms)**
+#### **NOTE: You will need an API key to use this plugin. see the [API section](#platforms)**
 
 <br />
 
