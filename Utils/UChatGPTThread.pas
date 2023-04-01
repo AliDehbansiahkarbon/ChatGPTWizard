@@ -11,7 +11,7 @@ interface
 uses
   System.Classes, System.SysUtils, IdHTTP, IdSSLOpenSSL, IdComponent, Vcl.Dialogs,
   XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows,
-  UChatGPTSetting, UConsts;
+  UChatGPTSetting, UConsts, System.JSON;
 
 type
   TExecutorTrd = class(TThread)
@@ -27,6 +27,7 @@ type
     FProxySetting: TProxySetting;
     FAnimated: Boolean;
     FTimeOut: Integer;
+    function IsValidJson(const jsonString: string): Boolean;
   protected
     procedure Execute; override;
   public
@@ -99,9 +100,11 @@ type
     FUrl: string;
     FProxySetting: TProxySetting;
     FTimeOut: Integer;
+
   public
     constructor Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting; ATimeOut: Integer);
-    function Query(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
+    function QueryStream(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
+    function QueryString(const AModel, APrompt: string; AMaxToken, ATemperature: Integer): string;
   end;
 
 implementation
@@ -116,7 +119,7 @@ begin
   FTimeOut := ATimeOut;
 end;
 
-function TOpenAIAPI.Query(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
+function TOpenAIAPI.QueryStream(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
 var
   LvHttpClient: TIdHTTP;
   LvSslIOHandler: TIdSSLIOHandlerSocketOpenSSL;
@@ -164,13 +167,64 @@ begin
       LvResponseStream := TStringStream.Create;
       LvHttpClient.Post(FUrl , LvParamStream, LvResponseStream);
 
-      if not LvResponseStream.DataString.IsEmpty then
-        Result :=  UTF8ToString(LvChatGPTResponse.FromJSON(LvResponseStream.DataString).Choices[0].Text.Trim);
+      if not Assigned(LvResponseStream) then
+        Result := 'No response from API, try again with another question.'
+      else
+      begin
+        if not LvResponseStream.DataString.IsEmpty then
+            Result := UTF8ToString(LvResponseStream.DataString);
+      end;
     except on E: Exception do
       Result := E.Message;
     end;
   finally
     LvResponseStream.Free;
+    LvRequestJSON.Free;
+    LvParamStream.Free;
+    LvChatGPTResponse.Free;
+    LvSslIOHandler.Free;
+    LvHttpClient.Free;
+  end;
+end;
+
+function TOpenAIAPI.QueryString(const AModel, APrompt: string; AMaxToken, ATemperature: Integer): string;
+var
+  LvHttpClient: TIdHTTP;
+  LvSslIOHandler: TIdSSLIOHandlerSocketOpenSSL;
+  LvParamStream: TStringStream;
+  LvResponse: string;
+  LvRequestJSON: TRequestJSON;
+  LvChatGPTResponse: TChatGPTResponse;
+begin
+  LvChatGPTResponse := TChatGPTResponse.Create;
+  LvHttpClient := TIdHTTP.Create(nil);
+
+  try
+    LvSslIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
+    LvHttpClient.IOHandler := LvSslIOHandler;
+    LvSslIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
+    LvHttpClient.Request.CustomHeaders.AddValue('Authorization', 'Bearer ' + FAccessToken);
+    LvHttpClient.Request.ContentType := 'application/json';
+
+    LvRequestJSON := TRequestJSON.Create;
+    with LvRequestJSON do
+    begin
+      Model := AModel;
+      Prompt := APrompt;
+      Max_tokens := AMaxToken;
+      Temperature := ATemperature;
+    end;
+
+    LvParamStream := TStringStream.Create(LvRequestJSON.AsJSON(), TEncoding.UTF8);
+    try
+      LvResponse := LvHttpClient.Post(FUrl, LvParamStream);
+
+      if not LvResponse.IsEmpty then
+        Result :=  UTF8ToString(LvChatGPTResponse.FromJSON(LvResponse).Choices[0].Text.Trim);
+    except on E: Exception do
+      Result := E.Message;
+    end;
+  finally
     LvRequestJSON.Free;
     LvParamStream.Free;
     LvChatGPTResponse.Free;
@@ -250,7 +304,12 @@ begin
   try
     try
       if not Terminated then
-        LvResult := LvAPI.Query(FModel, FPrompt, FMaxToken, FTemperature).Trim;
+      begin
+        LvResult := LvAPI.QueryStream(FModel, FPrompt, FMaxToken, FTemperature).Trim;
+
+        if (not Terminated) and (not IsValidJson(LvResult)) then
+          LvResult := LvAPI.QueryString(FModel, FPrompt, FMaxToken, FTemperature).Trim;
+      end;
 
       if (not Terminated) and (not LvResult.IsEmpty) then
       begin
@@ -282,6 +341,20 @@ begin
     end;
   finally
     LvAPI.Free;
+  end;
+end;
+
+function TExecutorTrd.IsValidJson(const jsonString: string): Boolean;
+var
+  jsonObj: TJSONObject;
+begin
+  Result := False;
+  try
+    jsonObj := TJSONObject.ParseJSONValue(jsonString) as TJSONObject;
+    Result := Assigned(jsonObj); // If parsing succeeds, JSON is valid
+    jsonObj.Free;
+  except
+    Result := False;
   end;
 end;
 
