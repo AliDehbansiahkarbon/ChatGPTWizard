@@ -51,6 +51,27 @@ type
     property temperature: Integer read FTemperature write FTemperature;
   end;
 
+  T3_5TurboMessages = class
+  private
+    FRole: string;
+    FContent: string;
+  public
+    constructor Create(ARole, AContent: string);
+    property role: string read FRole write FRole;
+    property content: string read FContent write FContent;
+  end;
+
+  TRequestJSON3_5Turbo = class
+  private
+    FModel: string;
+    FMessages: TObjectList<T3_5TurboMessages>;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    property model: string read FModel write FModel;
+    property messages: TObjectList<T3_5TurboMessages> read FMessages write FMessages;
+  end;
+
   TChoice = class
   private
     FText: string;
@@ -101,7 +122,7 @@ type
     FUrl: string;
     FProxySetting: TProxySetting;
     FTimeOut: Integer;
-
+    function Is3_5Turbo(AModel: string): Boolean;
   public
     constructor Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting; ATimeOut: Integer);
     function QueryStream(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
@@ -120,15 +141,18 @@ begin
   FTimeOut := ATimeOut;
 end;
 
+function TOpenAIAPI.Is3_5Turbo(AModel: string): Boolean;
+begin
+  Result := AModel.Contains('gpt-3.5-turbo');
+end;
+
 function TOpenAIAPI.QueryStream(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
 var
   LvHttpClient: TIdHTTP;
   LvSslIOHandler: TIdSSLIOHandlerSocketOpenSSL;
   LvParamStream: TStringStream;
-
   LvRequestJSON: TRequestJSON;
   LvChatGPTResponse: TChatGPTResponse;
-
   LvResponseStream: TStringStream;
 begin
   LvHttpClient := TIdHTTP.Create(nil);
@@ -136,17 +160,17 @@ begin
   LvHttpClient.ReadTimeout := (FTimeOut * 1000) * 2;
 
   if (FProxySetting.Active) and (not LvHttpClient.ProxyParams.ProxyServer.IsEmpty) then
-  begin  
+  begin
     LvHttpClient.ProxyParams.ProxyServer := FProxySetting.ProxyHost;
     LvHttpClient.ProxyParams.ProxyPort := FProxySetting.ProxyPort;
     LvHttpClient.ProxyParams.ProxyUsername := FProxySetting.ProxyUsername;
     LvHttpClient.ProxyParams.ProxyPassword := FProxySetting.ProxyPassword;
-  end;    
-  
+  end;
+
   LvSslIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
   LvChatGPTResponse := TChatGPTResponse.Create;
-  LvRequestJSON := TRequestJSON.Create;
 
+  LvRequestJSON := TRequestJSON.Create;
   with LvRequestJSON do
   begin
     model := AModel;
@@ -195,7 +219,9 @@ var
   LvParamStream: TStringStream;
   LvResponse: string;
   LvRequestJSON: TRequestJSON;
+  LvRequestJSON3_5Turbo: TRequestJSON3_5Turbo;
   LvChatGPTResponse: TChatGPTResponse;
+  Lv3_5Response: ISuperObject;
 begin
   LvChatGPTResponse := TChatGPTResponse.Create;
   LvHttpClient := TIdHTTP.Create(nil);
@@ -207,26 +233,54 @@ begin
     LvHttpClient.Request.CustomHeaders.AddValue('Authorization', 'Bearer ' + FAccessToken);
     LvHttpClient.Request.ContentType := 'application/json';
 
-    LvRequestJSON := TRequestJSON.Create;
-    with LvRequestJSON do
+    if Is3_5Turbo(AModel) then
     begin
-      Model := AModel;
-      Prompt := APrompt;
-      Max_tokens := AMaxToken;
-      Temperature := ATemperature;
+      LvRequestJSON3_5Turbo := TRequestJSON3_5Turbo.Create;
+      LvRequestJSON3_5Turbo.model := AModel;
+      LvRequestJSON3_5Turbo.messages.Add(T3_5TurboMessages.Create('user', APrompt));
+    end
+    else
+    begin
+      LvRequestJSON := TRequestJSON.Create;
+      with LvRequestJSON do
+      begin
+        model := AModel;
+        prompt := APrompt;
+        max_tokens := AMaxToken;
+        temperature := ATemperature;
+      end;
     end;
 
-    LvParamStream := TStringStream.Create(LvRequestJSON.AsJSON(), TEncoding.UTF8);
+    if Is3_5Turbo(AModel) then
+      LvParamStream := TStringStream.Create(LvRequestJSON3_5Turbo.AsJSON(True), TEncoding.UTF8)
+    else
+      LvParamStream := TStringStream.Create(LvRequestJSON.AsJSON(), TEncoding.UTF8);
+
     try
       LvResponse := LvHttpClient.Post(FUrl, LvParamStream);
-
       if not LvResponse.IsEmpty then
-        Result :=  UTF8ToString(LvChatGPTResponse.FromJSON(LvResponse).Choices[0].Text.Trim);
+      begin
+        if Is3_5Turbo(AModel) then
+        begin
+          Lv3_5Response := SO(LvResponse);
+          Result := UTF8ToString(Lv3_5Response['choices[0].message.content'].AsString.Trim);
+        end
+        else
+          Result :=  UTF8ToString(LvChatGPTResponse.FromJSON(LvResponse).Choices[0].Text.Trim);
+
+        if Result.IsEmpty then
+          Result := 'No answer!';
+      end
+      else
+        Result := 'No answer!';
     except on E: Exception do
       Result := E.Message;
     end;
   finally
-    LvRequestJSON.Free;
+    if Is3_5Turbo(AModel) then
+      LvRequestJSON3_5Turbo.Free
+    else
+      LvRequestJSON.Free;
     LvParamStream.Free;
     LvChatGPTResponse.Free;
     LvSslIOHandler.Free;
@@ -321,23 +375,36 @@ begin
     try
       if not Terminated then
       begin
-        LvResult := LvAPI.QueryStream(FModel, FPrompt, FMaxToken, FTemperature).Trim;
+        if LvAPI.Is3_5Turbo(FModel) then
+          LvResult := LvAPI.QueryString(FModel, FPrompt, FMaxToken, FTemperature).Trim
+        else
+        begin
+          LvResult := LvAPI.QueryStream(FModel, FPrompt, FMaxToken, FTemperature).Trim;
 
-        if (not Terminated) and (not IsValidJson(LvResult)) then
-          LvResult := LvAPI.QueryString(FModel, FPrompt, FMaxToken, FTemperature).Trim;
+          if (not Terminated) and (not IsValidJson(LvResult)) then
+            LvResult := LvAPI.QueryString(FModel, FPrompt, FMaxToken, FTemperature).Trim;
+        end;
       end;
 
       if (not Terminated) and (not LvResult.IsEmpty) then
       begin
         if FAnimated then
         begin
-          for I := 0 to Pred(LvResult.Length) do
+          if LvResult.Length = 1 then
           begin
             if not Terminated then
+              SendMessage(FHandle, WM_UPDATE_MESSAGE, Integer(LvResult), 0);
+          end
+          else
+          begin
+            for I := 0 to Pred(LvResult.Length) do
             begin
-              Sleep(1);
               if not Terminated then
-                SendMessage(FHandle, WM_UPDATE_MESSAGE, Integer(LvResult[I]), 1);
+              begin
+                Sleep(1);
+                if not Terminated then
+                  SendMessage(FHandle, WM_UPDATE_MESSAGE, Integer(LvResult[I]), 1);
+              end;
             end;
           end;
           SendMessage(FHandle, WM_UPDATE_MESSAGE, 0, 2);
@@ -372,6 +439,27 @@ begin
   except
     Result := False;
   end;
+end;
+
+{ TRequestJSON3_5Turbo }
+
+constructor TRequestJSON3_5Turbo.Create;
+begin
+  FMessages := TObjectList<T3_5TurboMessages>.Create;
+end;
+
+destructor TRequestJSON3_5Turbo.Destroy;
+begin
+  FMessages.Free;
+  inherited;
+end;
+
+{ T3_5TurboMessages }
+
+constructor T3_5TurboMessages.Create(ARole, AContent: string);
+begin
+  FRole := ARole;
+  FContent := AContent;
 end;
 
 end.

@@ -10,6 +10,7 @@ const
   WM_WRITESONIC_UPDATE_MESSAGE = WM_USER + 5876;
 
   DefaultChatGPTURL = 'https://api.openai.com/v1/completions';
+  DefaultChatGPT3_5TurboURL = 'https://api.openai.com/v1/chat/completions';
   DefaultModel = 'text-davinci-003';
   DefaultMaxToken = 2048;
   DefaultTemperature = 0;
