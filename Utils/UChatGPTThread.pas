@@ -11,7 +11,7 @@ interface
 uses
   System.Classes, System.SysUtils, IdHTTP, IdSSLOpenSSL, IdComponent, Vcl.Dialogs,
   XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows,
-  UChatGPTSetting, UConsts, System.JSON;
+  UChatGPTSetting, UConsts, System.JSON, System.StrUtils;
 
 type
   TExecutorTrd = class(TThread)
@@ -27,7 +27,8 @@ type
     FProxySetting: TProxySetting;
     FAnimated: Boolean;
     FTimeOut: Integer;
-    function IsValidJson(const jsonString: string): Boolean;
+    function IsValidJson(const AJsonString: string): Boolean;
+    function CorrectPrompt(APrompt: string): string;
   protected
     procedure Execute; override;
   public
@@ -250,6 +251,21 @@ begin
 end;
 
 { TExecutorTrd }
+function TExecutorTrd.CorrectPrompt(APrompt: string): string;
+begin
+  if not APrompt.IsEmpty then
+  begin
+    while APrompt[APrompt.Length] = '?' do
+    begin
+      if APrompt.Length > 1 then
+        APrompt := LeftStr(APrompt, APrompt.Length - 1)
+      else
+        Break;
+    end;
+  end;
+  Result := APrompt;
+end;
+
 constructor TExecutorTrd.Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer;
                        AProxayIsActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string;
                        AProxyPassword: string; AAnimated: Boolean; ATimeOut: Integer);
@@ -259,7 +275,7 @@ begin
   FFormattedResponse := TStringList.Create;
   FApiKey := AApiKey;
   FModel := AModel;
-  FPrompt := APrompt;
+  FPrompt := CorrectPrompt(APrompt);
   FMaxToken := AMaxToken;
   FTemperature := ATemperature;
   FHandle := AHandle;
@@ -344,13 +360,13 @@ begin
   end;
 end;
 
-function TExecutorTrd.IsValidJson(const jsonString: string): Boolean;
+function TExecutorTrd.IsValidJson(const AJsonString: string): Boolean;
 var
   jsonObj: TJSONObject;
 begin
   Result := False;
   try
-    jsonObj := TJSONObject.ParseJSONValue(jsonString) as TJSONObject;
+    jsonObj := TJSONObject.ParseJSONValue(AJsonString) as TJSONObject;
     Result := Assigned(jsonObj); // If parsing succeeds, JSON is valid
     jsonObj.Free;
   except

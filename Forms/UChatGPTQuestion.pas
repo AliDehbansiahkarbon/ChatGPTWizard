@@ -19,6 +19,7 @@ type
     Fram_Question: TFram_Question;
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   end;
 
 var
@@ -27,6 +28,11 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TFrmChatGPT.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Fram_Question.TerminateAll;
+end;
 
 procedure TFrmChatGPT.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
