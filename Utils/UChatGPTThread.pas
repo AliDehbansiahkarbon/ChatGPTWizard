@@ -11,7 +11,7 @@ interface
 uses
   System.Classes, System.SysUtils, IdHTTP, IdSSLOpenSSL, IdComponent, Vcl.Dialogs,
   XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows,
-  UChatGPTSetting, UConsts, System.JSON, System.StrUtils;
+  UChatGPTSetting, UConsts, System.JSON, System.StrUtils, System.Net.HttpClient;
 
 type
   TExecutorTrd = class(TThread)
@@ -27,7 +27,7 @@ type
     FProxySetting: TProxySetting;
     FAnimated: Boolean;
     FTimeOut: Integer;
-    function IsValidJson(const AJsonString: string): Boolean;
+    class function IsValidJson(const AJsonString: string): Boolean;
     function CorrectPrompt(APrompt: string): string;
   protected
     procedure Execute; override;
@@ -115,7 +115,7 @@ type
     property choices: TObjectList<TChoice> read FChoices write FChoices;
     property usage: TUsage read FUsage write FUsage;
   end;
-  
+
   TOpenAIAPI = class
   private
     FAccessToken: string;
@@ -125,8 +125,9 @@ type
     function Is3_5Turbo(AModel: string): Boolean;
   public
     constructor Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting; ATimeOut: Integer);
-    function QueryStream(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
-    function QueryString(const AModel, APrompt: string; AMaxToken, ATemperature: Integer): string;
+    function QueryStreamIndy(const AModel: string; const APrompt: string; AMaxToken: Integer; ATemperature: Integer): string;
+    function QueryStringIndy(const AModel: string; const APrompt: string; AMaxToken: Integer; ATemperature: Integer): string;
+    function QueryStreamNative(const AModel: string; const APrompt: string; AMaxToken: Integer; ATemperature: Integer): string;
   end;
 
 implementation
@@ -146,7 +147,7 @@ begin
   Result := AModel.Contains('gpt-3.5-turbo');
 end;
 
-function TOpenAIAPI.QueryStream(const AModel: string; const APrompt: string; AMaxToken: Integer; Aemperature: Integer): string;
+function TOpenAIAPI.QueryStreamIndy(const AModel: string; const APrompt: string; AMaxToken: Integer; ATemperature: Integer): string;
 var
   LvHttpClient: TIdHTTP;
   LvSslIOHandler: TIdSSLIOHandlerSocketOpenSSL;
@@ -154,6 +155,8 @@ var
   LvRequestJSON: TRequestJSON;
   LvChatGPTResponse: TChatGPTResponse;
   LvResponseStream: TStringStream;
+  Lv3_5Response: ISuperObject;
+  LvRequestJSON3_5Turbo: TRequestJSON3_5Turbo;
 begin
   LvHttpClient := TIdHTTP.Create(nil);
   LvHttpClient.ConnectTimeout := FTimeOut * 1000;
@@ -170,13 +173,25 @@ begin
   LvSslIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
   LvChatGPTResponse := TChatGPTResponse.Create;
 
-  LvRequestJSON := TRequestJSON.Create;
-  with LvRequestJSON do
+
+  if Is3_5Turbo(AModel) then
   begin
-    model := AModel;
-    prompt := APrompt;
-    max_tokens := AMaxToken;
-    temperature := Aemperature;
+    LvRequestJSON3_5Turbo := TRequestJSON3_5Turbo.Create;
+    LvRequestJSON3_5Turbo.model := AModel;
+    LvRequestJSON3_5Turbo.messages.Add(T3_5TurboMessages.Create('user', APrompt));
+    LvParamStream := TStringStream.Create(LvRequestJSON3_5Turbo.AsJSON(True), TEncoding.UTF8);
+  end
+  else
+  begin
+    LvRequestJSON := TRequestJSON.Create;
+    with LvRequestJSON do
+    begin
+      model := AModel;
+      prompt := APrompt;
+      max_tokens := AMaxToken;
+      temperature := ATemperature;
+    end;
+    LvParamStream := TStringStream.Create(LvRequestJSON.AsJSON(), TEncoding.UTF8);
   end;
 
   try
@@ -197,14 +212,17 @@ begin
       else
       begin
         if not LvResponseStream.DataString.IsEmpty then
-            Result := UTF8ToString(LvResponseStream.DataString);
+          Result := UTF8ToString(LvResponseStream.DataString);
       end;
     except on E: Exception do
-      Result := E.Message;
+      Result := 'Error in finction QueryStreamIndy.' + #13 + E.Message;
     end;
   finally
+    if Is3_5Turbo(AModel) then
+      LvRequestJSON3_5Turbo.Free
+    else
+      LvRequestJSON.Free;
     LvResponseStream.Free;
-    LvRequestJSON.Free;
     LvParamStream.Free;
     LvChatGPTResponse.Free;
     LvSslIOHandler.Free;
@@ -212,19 +230,105 @@ begin
   end;
 end;
 
-function TOpenAIAPI.QueryString(const AModel, APrompt: string; AMaxToken, ATemperature: Integer): string;
+function TOpenAIAPI.QueryStreamNative(const AModel, APrompt: string; AMaxToken, ATemperature: Integer): string;
+var
+  LvHttpClient: THTTPClient;
+  LvResponse: IHTTPResponse;
+  LvResponceContent: string;
+  LvChatGPTResponse: TChatGPTResponse;
+  LvRequestJSON: TRequestJSON;
+  LvParamStream: TStringStream;
+  LvRequestJSON3_5Turbo: TRequestJSON3_5Turbo;
+  Lv3_5Response: ISuperObject;
+begin
+  LvResponceContent := '';
+  LvHttpClient := THTTPClient.Create;
+  LvHttpClient.ConnectionTimeout := FTimeOut * 1000;
+  LvHttpClient.SendTimeout := (FTimeOut * 1000) * 2;
+
+  LvChatGPTResponse := TChatGPTResponse.Create;
+
+  if Is3_5Turbo(AModel) then
+  begin
+    LvRequestJSON3_5Turbo := TRequestJSON3_5Turbo.Create;
+    LvRequestJSON3_5Turbo.model := AModel;
+    LvRequestJSON3_5Turbo.messages.Add(T3_5TurboMessages.Create('user', APrompt));
+    LvParamStream := TStringStream.Create(LvRequestJSON3_5Turbo.AsJSON(True), TEncoding.UTF8);
+  end
+  else
+  begin
+    LvRequestJSON := TRequestJSON.Create;
+    with LvRequestJSON do
+    begin
+      model := AModel;
+      prompt := APrompt;
+      max_tokens := AMaxToken;
+      temperature := ATemperature;
+    end;
+    LvParamStream := TStringStream.Create(LvRequestJSON.AsJSON(), TEncoding.UTF8);
+  end;
+
+  try
+    LvHttpClient.CustomHeaders['Authorization'] := 'Bearer ' + FAccessToken;
+    LvHttpClient.CustomHeaders['Content-Type'] := 'application/json';
+    LvHttpClient.CustomHeaders['AcceptEncoding'] := 'deflate, gzip;q=1.0, *;q=0.5';
+
+    try
+      LvResponse := LvHttpClient.Post(FUrl , LvParamStream);
+      LvResponceContent := LvResponse.ContentAsString(TEncoding.UTF8);
+
+
+      if (not TExecutorTrd.IsValidJson(LvResponceContent)) then
+        LvResponceContent := QueryStreamIndy(AModel, APrompt, AMaxToken, ATemperature);
+
+
+      if (not TExecutorTrd.IsValidJson(LvResponceContent)) then
+        LvResponceContent := QueryStringIndy(AModel, APrompt, AMaxToken, ATemperature);
+
+      if not LvResponceContent.IsEmpty then
+      begin
+        if Is3_5Turbo(AModel) then
+        begin
+          Lv3_5Response := SO(LvResponceContent);
+          Result := UTF8ToString(Lv3_5Response['choices[0].message.content'].AsString.Trim);
+        end
+        else
+          Result :=  LvChatGPTResponse.FromJSON(LvResponceContent).Choices[0].Text.Trim;
+
+        if Result.IsEmpty then
+          Result := 'No answer, try again!';
+      end
+      else
+        Result := 'No answer, try again!';
+    except on E: Exception do
+      Result := E.Message;
+    end;
+  finally
+    if Is3_5Turbo(AModel) then
+      LvRequestJSON3_5Turbo.Free
+    else
+      LvRequestJSON.Free;
+    LvParamStream.Free;
+    LvChatGPTResponse.Free;
+    LvHttpClient.Free;
+  end;
+end;
+
+function TOpenAIAPI.QueryStringIndy(const AModel: string; const APrompt: string; AMaxToken: Integer; ATemperature: Integer): string;
 var
   LvHttpClient: TIdHTTP;
   LvSslIOHandler: TIdSSLIOHandlerSocketOpenSSL;
   LvParamStream: TStringStream;
   LvResponse: string;
   LvRequestJSON: TRequestJSON;
-  LvRequestJSON3_5Turbo: TRequestJSON3_5Turbo;
   LvChatGPTResponse: TChatGPTResponse;
   Lv3_5Response: ISuperObject;
+  LvRequestJSON3_5Turbo: TRequestJSON3_5Turbo;
 begin
-  LvChatGPTResponse := TChatGPTResponse.Create;
   LvHttpClient := TIdHTTP.Create(nil);
+  LvHttpClient.ConnectTimeout := FTimeOut * 1000;
+  LvHttpClient.ReadTimeout := (FTimeOut * 1000) * 2;
+  LvChatGPTResponse := TChatGPTResponse.Create;
 
   try
     LvSslIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
@@ -238,6 +342,7 @@ begin
       LvRequestJSON3_5Turbo := TRequestJSON3_5Turbo.Create;
       LvRequestJSON3_5Turbo.model := AModel;
       LvRequestJSON3_5Turbo.messages.Add(T3_5TurboMessages.Create('user', APrompt));
+      LvParamStream := TStringStream.Create(LvRequestJSON3_5Turbo.AsJSON(True), TEncoding.UTF8);
     end
     else
     begin
@@ -249,32 +354,17 @@ begin
         max_tokens := AMaxToken;
         temperature := ATemperature;
       end;
-    end;
-
-    if Is3_5Turbo(AModel) then
-      LvParamStream := TStringStream.Create(LvRequestJSON3_5Turbo.AsJSON(True), TEncoding.UTF8)
-    else
       LvParamStream := TStringStream.Create(LvRequestJSON.AsJSON(), TEncoding.UTF8);
+    end;
 
     try
       LvResponse := LvHttpClient.Post(FUrl, LvParamStream);
       if not LvResponse.IsEmpty then
-      begin
-        if Is3_5Turbo(AModel) then
-        begin
-          Lv3_5Response := SO(LvResponse);
-          Result := UTF8ToString(Lv3_5Response['choices[0].message.content'].AsString.Trim);
-        end
-        else
-          Result :=  UTF8ToString(LvChatGPTResponse.FromJSON(LvResponse).Choices[0].Text.Trim);
-
-        if Result.IsEmpty then
-          Result := 'No answer!';
-      end
+        Result := UTF8ToString(LvResponse)
       else
         Result := 'No answer!';
     except on E: Exception do
-      Result := E.Message;
+      Result := 'Error in finction QueryStringIndy.' + #13 + E.Message;
     end;
   finally
     if Is3_5Turbo(AModel) then
@@ -283,6 +373,7 @@ begin
       LvRequestJSON.Free;
     LvParamStream.Free;
     LvChatGPTResponse.Free;
+
     LvSslIOHandler.Free;
     LvHttpClient.Free;
   end;
@@ -374,17 +465,7 @@ begin
   try
     try
       if not Terminated then
-      begin
-        if LvAPI.Is3_5Turbo(FModel) then
-          LvResult := LvAPI.QueryString(FModel, FPrompt, FMaxToken, FTemperature).Trim
-        else
-        begin
-          LvResult := LvAPI.QueryStream(FModel, FPrompt, FMaxToken, FTemperature).Trim;
-
-          if (not Terminated) and (not IsValidJson(LvResult)) then
-            LvResult := LvAPI.QueryString(FModel, FPrompt, FMaxToken, FTemperature).Trim;
-        end;
-      end;
+        LvResult := LvAPI.QueryStreamNative(FModel, FPrompt, FMaxToken, FTemperature).Trim;
 
       if (not Terminated) and (not LvResult.IsEmpty) then
       begin
@@ -427,7 +508,7 @@ begin
   end;
 end;
 
-function TExecutorTrd.IsValidJson(const AJsonString: string): Boolean;
+class function TExecutorTrd.IsValidJson(const AJsonString: string): Boolean;
 var
   jsonObj: TJSONObject;
 begin
