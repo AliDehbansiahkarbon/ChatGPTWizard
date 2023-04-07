@@ -4,8 +4,8 @@ interface
 
 uses
   System.Classes, System.SysUtils, Vcl.Dialogs, System.Generics.Collections,
-  Winapi.Messages, Winapi.Windows, System.IOUtils, Rest.HttpClient,
-  XSuperObject, UChatGPTSetting, UConsts;
+  Winapi.Messages, Winapi.Windows, System.IOUtils, Rest.HttpClient, XSuperObject,
+  UChatGPTSetting, UConsts, System.Net.HttpClient, System.Net.URLClient;
 
 type
   TRequestJson = class
@@ -38,7 +38,8 @@ type
     FProxySetting: TProxySetting;
     FPrompt: string;
 
-    function Query: string;
+    function QueryIndy: string;
+    function QueryTHTTPClient: string;
     function LoadFromFileInTempFolder(const fileName: string): string;
     procedure SaveToFileInTempFolder(const fileName, content: string);
   protected
@@ -99,7 +100,7 @@ var
 begin
   inherited;
   try
-    LvResult := Query;
+    LvResult := QueryTHTTPClient;
 
     if (not Terminated) and (not LvResult.IsEmpty) then
     begin
@@ -131,7 +132,7 @@ begin
   end;
 end;
 
-function TWriteSonicTrd.Query: string;
+function TWriteSonicTrd.QueryIndy: string;
 var
   LvHttpClient: TRESTHTTP;
   LvParamStream: TStringStream;
@@ -172,7 +173,65 @@ begin
       LvHttpClient.Post(FBaseURL , LvParamStream, LvResponseStream);
 
       if not LvResponseStream.DataString.IsEmpty then
-        Result :=  UTF8ToString(LvResponse.FromJSON(LvResponseStream.DataString).&message.Trim);
+        Result := AdjustLineBreaks(LvResponse.FromJSON(UTF8ToString(LvResponseStream.DataString)).&message.Trim);
+    except on E: Exception do
+      Result := E.Message;
+    end;
+  finally
+    LvResponseStream.Free;
+    LvRequest.Free;
+    LvParamStream.Free;
+    LvResponse.Free;
+    LvHttpClient.Free;
+  end;
+end;
+
+function TWriteSonicTrd.QueryTHTTPClient: string;
+var
+  LvHttpClient: THTTPClient;
+  LvParamStream: TStringStream;
+  LvResponseStream: TStringStream;
+  LvRequest: TRequestJson;
+  LvResponse: TResponseJson;
+  LvHTTPResponse: IHTTPResponse;
+begin
+  LvHttpClient := THTTPClient.Create;
+  LvHttpClient.ConnectionTimeout := FTimeOut * 1000;
+  LvHttpClient.SendTimeout := (FTimeOut * 1000) * 2;
+
+  if (FProxySetting.Active) and (not FProxySetting.ProxyHost.IsEmpty) then
+  begin
+    with FProxySetting do
+      LvHttpClient.ProxySettings := TProxySettings.Create(ProxyHost, ProxyPort, ProxyUsername, ProxyPassword);
+  end;
+
+  LvResponse := TResponseJson.Create;
+  LvRequest := TRequestJson.Create;
+
+  with LvRequest do
+  begin
+    FEnable_Google_Results := False;
+    FEnable_memory := False;
+    FInput_text := FPrompt;
+  end;
+
+  try
+    LvParamStream := TStringStream.Create(LvRequest.AsJSON(True), TEncoding.UTF8);
+
+    LvHttpClient.CustomHeaders['X-API-KEY'] := FAPIKey;
+    LvHttpClient.CustomHeaders['Content-Type'] := 'application/json';
+
+    try
+      LvResponseStream := TStringStream.Create;
+      LvHTTPResponse := LvHttpClient.Post(FBaseURL , LvParamStream, LvResponseStream);
+
+      if not LvResponseStream.DataString.IsEmpty then
+      begin
+        if not TSingletonSettingObj.IsValidJson(LvHTTPResponse.ContentAsString(TEncoding.UTF8)) then
+          Result := AdjustLineBreaks(QueryIndy, tlbsCRLF)
+        else
+          Result := AdjustLineBreaks(LvResponse.FromJSON(LvHTTPResponse.ContentAsString(TEncoding.UTF8)).&message.Trim, tlbsCRLF);
+      end;
     except on E: Exception do
       Result := E.Message;
     end;

@@ -14,7 +14,7 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.StdCtrls, Vcl.ExtCtrls, System.Win.Registry, System.SyncObjs,
   ToolsAPI, System.StrUtils, System.Generics.Collections, Vcl.Mask,
-  Vcl.ComCtrls, DockForm, UConsts;
+  Vcl.ComCtrls, DockForm, UConsts, System.JSON;
 
 type
   TQuestionPair = class;
@@ -89,6 +89,7 @@ type
     function GetHistoryFullPath: string;
     function TryFindQuestion(ACaption: string; var AQuestion: string): Integer;
     Class Procedure RegisterFormClassForTheming(Const AFormClass: TCustomFormClass; Const Component: TComponent = Nil);
+    class function IsValidJson(const AJsonString: string): Boolean;
 
     class property Instance: TSingletonSettingObj read GetInstance;
     property ApiKey: string read FApiKey write FApiKey;
@@ -268,6 +269,20 @@ begin
     FreeAndNil(Frm_Setting);
   end;
   Result := TSingletonSettingObj.Instance.ApiKey;
+end;
+
+class function TSingletonSettingObj.IsValidJson(const AJsonString: string): Boolean;
+var
+  LvJsonObj: TJSONObject;
+begin
+  Result := False;
+  try
+    LvJsonObj := TJSONObject.ParseJSONValue(AJsonString) as TJSONObject;
+    Result := Assigned(LvJsonObj); // If parsing succeeds, JSON is valid
+    LvJsonObj.Free;
+  except
+    Result := False;
+  end;
 end;
 
 procedure TSingletonSettingObj.LoadDefaultQuestions;

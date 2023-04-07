@@ -11,7 +11,7 @@ interface
 uses
   System.Classes, System.SysUtils, IdHTTP, IdSSLOpenSSL, IdComponent, Vcl.Dialogs,
   XSuperObject, System.Generics.Collections, Winapi.Messages, Winapi.Windows,
-  UChatGPTSetting, UConsts, System.JSON, System.StrUtils, System.Net.HttpClient;
+  UChatGPTSetting, UConsts, System.StrUtils, System.Net.HttpClient;
 
 type
   TExecutorTrd = class(TThread)
@@ -27,7 +27,6 @@ type
     FProxySetting: TProxySetting;
     FAnimated: Boolean;
     FTimeOut: Integer;
-    class function IsValidJson(const AJsonString: string): Boolean;
     function CorrectPrompt(APrompt: string): string;
   protected
     procedure Execute; override;
@@ -212,10 +211,10 @@ begin
       else
       begin
         if not LvResponseStream.DataString.IsEmpty then
-          Result := UTF8ToString(LvResponseStream.DataString);
+          Result := AdjustLineBreaks(UTF8ToString(LvResponseStream.DataString));
       end;
     except on E: Exception do
-      Result := 'Error in finction QueryStreamIndy.' + #13 + E.Message;
+      Result := 'Error in function QueryStreamIndy.' + #13 + E.Message;
     end;
   finally
     if Is3_5Turbo(AModel) then
@@ -278,11 +277,11 @@ begin
       LvResponceContent := LvResponse.ContentAsString(TEncoding.UTF8);
 
 
-      if (not TExecutorTrd.IsValidJson(LvResponceContent)) then
+      if (not TSingletonSettingObj.IsValidJson(LvResponceContent)) then
         LvResponceContent := QueryStreamIndy(AModel, APrompt, AMaxToken, ATemperature);
 
 
-      if (not TExecutorTrd.IsValidJson(LvResponceContent)) then
+      if (not TSingletonSettingObj.IsValidJson(LvResponceContent)) then
         LvResponceContent := QueryStringIndy(AModel, APrompt, AMaxToken, ATemperature);
 
       if not LvResponceContent.IsEmpty then
@@ -290,10 +289,10 @@ begin
         if Is3_5Turbo(AModel) then
         begin
           Lv3_5Response := SO(LvResponceContent);
-          Result := UTF8ToString(Lv3_5Response['choices[0].message.content'].AsString.Trim);
+          Result := AdjustLineBreaks(UTF8ToString(Lv3_5Response['choices[0].message.content'].AsString.Trim));
         end
         else
-          Result :=  LvChatGPTResponse.FromJSON(LvResponceContent).Choices[0].Text.Trim;
+          Result :=  AdjustLineBreaks(LvChatGPTResponse.FromJSON(LvResponceContent).Choices[0].Text.Trim);
 
         if Result.IsEmpty then
           Result := 'No answer, try again!';
@@ -360,11 +359,11 @@ begin
     try
       LvResponse := LvHttpClient.Post(FUrl, LvParamStream);
       if not LvResponse.IsEmpty then
-        Result := UTF8ToString(LvResponse)
+        Result := AdjustLineBreaks(UTF8ToString(LvResponse))
       else
         Result := 'No answer!';
     except on E: Exception do
-      Result := 'Error in finction QueryStringIndy.' + #13 + E.Message;
+      Result := 'Error in function QueryStringIndy.' + #13 + E.Message;
     end;
   finally
     if Is3_5Turbo(AModel) then
@@ -505,20 +504,6 @@ begin
     end;
   finally
     LvAPI.Free;
-  end;
-end;
-
-class function TExecutorTrd.IsValidJson(const AJsonString: string): Boolean;
-var
-  jsonObj: TJSONObject;
-begin
-  Result := False;
-  try
-    jsonObj := TJSONObject.ParseJSONValue(AJsonString) as TJSONObject;
-    Result := Assigned(jsonObj); // If parsing succeeds, JSON is valid
-    jsonObj.Free;
-  except
-    Result := False;
   end;
 end;
 

@@ -25,7 +25,6 @@ object Fram_Question: TFram_Question
         Align = alClient
         ParentColor = True
         TabOrder = 0
-        ExplicitHeight = 371
         object pnlTop: TPanel
           Left = 1
           Top = 1
@@ -73,7 +72,6 @@ object Fram_Question: TFram_Question
           Align = alClient
           BevelOuter = bvNone
           TabOrder = 1
-          ExplicitHeight = 325
           object splitter: TSplitter
             Left = 0
             Top = 114
@@ -92,7 +90,6 @@ object Fram_Question: TFram_Question
             Height = 206
             Align = alClient
             TabOrder = 0
-            ExplicitHeight = 208
             object pgcAnswers: TPageControl
               Left = 1
               Top = 1
@@ -109,7 +106,6 @@ object Fram_Question: TFram_Question
               ParentFont = False
               TabOrder = 0
               OnChange = pgcAnswersChange
-              ExplicitHeight = 206
               object tsChatGPTAnswer: TTabSheet
                 Caption = 'ChatGPT'
                 Font.Charset = DEFAULT_CHARSET
@@ -122,7 +118,7 @@ object Fram_Question: TFram_Question
                   Left = 0
                   Top = 0
                   Width = 415
-                  Height = 178
+                  Height = 176
                   Align = alClient
                   Font.Charset = DEFAULT_CHARSET
                   Font.Color = clWindowText
@@ -223,13 +219,13 @@ object Fram_Question: TFram_Question
         Left = 0
         Top = 140
         Width = 427
-        Height = 231
+        Height = 229
         Align = alClient
         TabOrder = 1
         object splClassViewResult: TSplitter
           Left = 238
           Top = 1
-          Height = 229
+          Height = 227
           Align = alRight
           Visible = False
           ExplicitLeft = 216
@@ -241,7 +237,7 @@ object Fram_Question: TFram_Question
           Left = 4
           Top = 4
           Width = 231
-          Height = 223
+          Height = 221
           Align = alClient
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
@@ -258,7 +254,7 @@ object Fram_Question: TFram_Question
           Left = 241
           Top = 1
           Width = 185
-          Height = 229
+          Height = 227
           Align = alRight
           ReadOnly = True
           TabOrder = 1
@@ -320,7 +316,7 @@ object Fram_Question: TFram_Question
             Left = 7
             Top = 8
             Width = 202
-            Height = 21
+            Height = 23
             Anchors = [akLeft, akTop, akRight]
             TabOrder = 1
             OnChange = Edt_SearchChange
@@ -357,12 +353,11 @@ object Fram_Question: TFram_Question
         Height = 181
         Align = alClient
         TabOrder = 1
-        ExplicitHeight = 183
         object mmoHistoryDetail: TMemo
           Left = 1
           Top = 1
           Width = 425
-          Height = 181
+          Height = 179
           Align = alClient
           ReadOnly = True
           ScrollBars = ssBoth

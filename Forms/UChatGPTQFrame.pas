@@ -148,7 +148,7 @@ type
     procedure InitialClassViewMenueItems(AClassList: TClassList);
     procedure ReloadClassList(AClassList: TClassList);
     procedure TerminateAll;
-    procedure LoadHistory;
+    function LoadHistory: Boolean;
     procedure AddToHistory(AQuestion, AAnswer: string);
 
     procedure OnUpdateMessage(var Msg: TMessage); message WM_UPDATE_MESSAGE;
@@ -164,9 +164,11 @@ implementation
 
 procedure TFram_Question.AddToHistory(AQuestion, AAnswer: string);
 begin
-  if (TSingletonSettingObj.Instance.HistoryEnabled) and
-     (FDConnection.Connected) and (FDQryHistory.Active) then
+  if (TSingletonSettingObj.Instance.HistoryEnabled) then
   begin
+    if not FDConnection.Connected then
+      LoadHistory;
+
     FDQryHistory.Append;
     FDQryHistoryQuestion.AsString := AQuestion;
     FDQryHistoryAnswer.AsString := AAnswer;
@@ -1058,8 +1060,9 @@ begin
   LoadHistory;
 end;
 
-procedure TFram_Question.LoadHistory;
+function TFram_Question.LoadHistory: Boolean;
 begin
+  Result := False;
   if FileExists(TSingletonSettingObj.Instance.GetHistoryFullPath) then
   begin
     try
@@ -1069,10 +1072,13 @@ begin
       FDConnection.Params.Add('Database=' + TSingletonSettingObj.Instance.GetHistoryFullPath);
       FDConnection.Open;
       FDQryHistory.Open;
+      Result := True;
     except on E: Exception do
       ShowMessage('SQLite Connection didn''t established.' + #13 + 'Error: ' + E.Message);
     end;
-  end;
+  end
+  else
+    ShowMessage('The database file doesn''t exist.')
 end;
 
 function TFram_Question.LowChar(AChar: Char): Char;
