@@ -1063,22 +1063,25 @@ end;
 function TFram_Question.LoadHistory: Boolean;
 begin
   Result := False;
-  if FileExists(TSingletonSettingObj.Instance.GetHistoryFullPath) then
+  if TSingletonSettingObj.Instance.HistoryEnabled then
   begin
-    try
-      FDConnection.Close;
-      FDConnection.Params.Clear;
-      FDConnection.Params.Add('DriverID=SQLite');
-      FDConnection.Params.Add('Database=' + TSingletonSettingObj.Instance.GetHistoryFullPath);
-      FDConnection.Open;
-      FDQryHistory.Open;
-      Result := True;
-    except on E: Exception do
-      ShowMessage('SQLite Connection didn''t established.' + #13 + 'Error: ' + E.Message);
-    end;
-  end
-  else
-    ShowMessage('The database file doesn''t exist.')
+    if FileExists(TSingletonSettingObj.Instance.GetHistoryFullPath) then
+    begin
+      try
+        FDConnection.Close;
+        FDConnection.Params.Clear;
+        FDConnection.Params.Add('DriverID=SQLite');
+        FDConnection.Params.Add('Database=' + TSingletonSettingObj.Instance.GetHistoryFullPath);
+        FDConnection.Open;
+        FDQryHistory.Open;
+        Result := True;
+      except on E: Exception do
+        ShowMessage('SQLite Connection didn''t established.' + #13 + 'Error: ' + E.Message);
+      end;
+    end
+    else
+      ShowMessage('The database file doesn''t exist.')
+  end;
 end;
 
 function TFram_Question.LowChar(AChar: Char): Char;
