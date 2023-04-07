@@ -152,9 +152,7 @@ var
   LvSslIOHandler: TIdSSLIOHandlerSocketOpenSSL;
   LvParamStream: TStringStream;
   LvRequestJSON: TRequestJSON;
-  LvChatGPTResponse: TChatGPTResponse;
   LvResponseStream: TStringStream;
-  Lv3_5Response: ISuperObject;
   LvRequestJSON3_5Turbo: TRequestJSON3_5Turbo;
 begin
   LvHttpClient := TIdHTTP.Create(nil);
@@ -170,8 +168,6 @@ begin
   end;
 
   LvSslIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
-  LvChatGPTResponse := TChatGPTResponse.Create;
-
 
   if Is3_5Turbo(AModel) then
   begin
@@ -196,8 +192,6 @@ begin
   try
     LvHttpClient.IOHandler := LvSslIOHandler;
     LvSslIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
-    LvParamStream := TStringStream.Create(LvRequestJSON.AsJSON(True), TEncoding.UTF8);
-
     LvHttpClient.Request.CustomHeaders.AddValue('Authorization', 'Bearer '+ FAccessToken);
     LvHttpClient.Request.ContentType := 'application/json';
     LvHttpClient.Request.AcceptEncoding := 'deflate, gzip;q=1.0, *;q=0.5';
@@ -223,7 +217,6 @@ begin
       LvRequestJSON.Free;
     LvResponseStream.Free;
     LvParamStream.Free;
-    LvChatGPTResponse.Free;
     LvSslIOHandler.Free;
     LvHttpClient.Free;
   end;
@@ -233,19 +226,16 @@ function TOpenAIAPI.QueryStreamNative(const AModel, APrompt: string; AMaxToken, 
 var
   LvHttpClient: THTTPClient;
   LvResponse: IHTTPResponse;
-  LvResponceContent: string;
-  LvChatGPTResponse: TChatGPTResponse;
+  LvResponseContent: string;
   LvRequestJSON: TRequestJSON;
   LvParamStream: TStringStream;
   LvRequestJSON3_5Turbo: TRequestJSON3_5Turbo;
-  Lv3_5Response: ISuperObject;
+  LvResponseXObject: ISuperObject;
 begin
-  LvResponceContent := '';
+  LvResponseContent := '';
   LvHttpClient := THTTPClient.Create;
   LvHttpClient.ConnectionTimeout := FTimeOut * 1000;
   LvHttpClient.SendTimeout := (FTimeOut * 1000) * 2;
-
-  LvChatGPTResponse := TChatGPTResponse.Create;
 
   if Is3_5Turbo(AModel) then
   begin
@@ -274,28 +264,30 @@ begin
 
     try
       LvResponse := LvHttpClient.Post(FUrl , LvParamStream);
-      LvResponceContent := LvResponse.ContentAsString(TEncoding.UTF8);
+      LvResponseContent := LvResponse.ContentAsString(TEncoding.UTF8);
 
+      if (not TSingletonSettingObj.IsValidJson(LvResponseContent)) then
+        LvResponseContent := QueryStreamIndy(AModel, APrompt, AMaxToken, ATemperature);
 
-      if (not TSingletonSettingObj.IsValidJson(LvResponceContent)) then
-        LvResponceContent := QueryStreamIndy(AModel, APrompt, AMaxToken, ATemperature);
+      if (not TSingletonSettingObj.IsValidJson(LvResponseContent)) then
+        LvResponseContent := QueryStringIndy(AModel, APrompt, AMaxToken, ATemperature);
 
-
-      if (not TSingletonSettingObj.IsValidJson(LvResponceContent)) then
-        LvResponceContent := QueryStringIndy(AModel, APrompt, AMaxToken, ATemperature);
-
-      if not LvResponceContent.IsEmpty then
+      if not LvResponseContent.IsEmpty then
       begin
-        if Is3_5Turbo(AModel) then
-        begin
-          Lv3_5Response := SO(LvResponceContent);
-          Result := AdjustLineBreaks(UTF8ToString(Lv3_5Response['choices[0].message.content'].AsString.Trim));
-        end
+        LvResponseXObject := SO(LvResponseContent);
+
+        if LvResponseXObject.Contains('error') then
+          Result :=  AdjustLineBreaks(LvResponseXObject['error.message'].AsString.Trim)
         else
-          Result :=  AdjustLineBreaks(LvChatGPTResponse.FromJSON(LvResponceContent).Choices[0].Text.Trim);
+        begin
+          if Is3_5Turbo(AModel) then
+            Result := AdjustLineBreaks(LvResponseXObject['choices[0].message.content'].AsString.Trim)
+          else
+            Result :=  AdjustLineBreaks(LvResponseXObject['Choices[0].Text'].AsString.Trim);
+        end;
 
         if Result.IsEmpty then
-          Result := 'No answer, try again!';
+          Result := 'IsEmpty No answer, try again!';
       end
       else
         Result := 'No answer, try again!';
@@ -308,7 +300,6 @@ begin
     else
       LvRequestJSON.Free;
     LvParamStream.Free;
-    LvChatGPTResponse.Free;
     LvHttpClient.Free;
   end;
 end;
@@ -320,14 +311,11 @@ var
   LvParamStream: TStringStream;
   LvResponse: string;
   LvRequestJSON: TRequestJSON;
-  LvChatGPTResponse: TChatGPTResponse;
-  Lv3_5Response: ISuperObject;
   LvRequestJSON3_5Turbo: TRequestJSON3_5Turbo;
 begin
   LvHttpClient := TIdHTTP.Create(nil);
   LvHttpClient.ConnectTimeout := FTimeOut * 1000;
   LvHttpClient.ReadTimeout := (FTimeOut * 1000) * 2;
-  LvChatGPTResponse := TChatGPTResponse.Create;
 
   try
     LvSslIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
@@ -371,8 +359,6 @@ begin
     else
       LvRequestJSON.Free;
     LvParamStream.Free;
-    LvChatGPTResponse.Free;
-
     LvSslIOHandler.Free;
     LvHttpClient.Free;
   end;
