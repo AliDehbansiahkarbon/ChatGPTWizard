@@ -112,9 +112,13 @@ var
   CurrentModule: IOTAModule;
 begin
   Result := '';
-  ModuleServices := BorlandIDEServices as IOTAModuleServices;
-  CurrentModule := ModuleServices.CurrentModule;
-  Result := CurrentModule.CurrentEditor.FileName;
+  try
+    ModuleServices := BorlandIDEServices as IOTAModuleServices;
+    CurrentModule := ModuleServices.CurrentModule;
+    if Assigned(CurrentModule) then
+      Result := CurrentModule.CurrentEditor.FileName;
+  except
+  end;
 end;
 
 function TcpLexer.GetSingleClassSource(AUnitContent: TStringList; AClassName: string): string;
@@ -211,6 +215,9 @@ var
   LvSourceLoader: TStringList;
   LvFileStream: TFileStream;
 begin
+  if ACurrentUnitPath.IsEmpty then
+    Exit;
+
   LvTempContent := '';
   PassedTypeIdentifier := False;
   FClassList.Clear;
