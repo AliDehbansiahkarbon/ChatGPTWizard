@@ -140,6 +140,21 @@ object Fram_Question: TFram_Question
                   Width = 415
                   Height = 176
                   Align = alClient
+                  ReadOnly = True
+                  ScrollBars = ssVertical
+                  TabOrder = 0
+                end
+              end
+              object tsYouChat: TTabSheet
+                Caption = 'YouChat'
+                ImageIndex = 2
+                object mmoYouChatAnswer: TMemo
+                  Left = 0
+                  Top = 0
+                  Width = 415
+                  Height = 176
+                  Align = alClient
+                  ReadOnly = True
                   ScrollBars = ssVertical
                   TabOrder = 0
                 end
@@ -388,6 +403,14 @@ object Fram_Question: TFram_Question
       Checked = True
       State = cbChecked
       TabOrder = 0
+    end
+    object ActivityIndicator1: TActivityIndicator
+      Left = 6
+      Top = 5
+      Animate = True
+      IndicatorColor = aicWhite
+      IndicatorSize = aisSmall
+      IndicatorType = aitSectorRing
     end
   end
   object pmMemo: TPopupMenu

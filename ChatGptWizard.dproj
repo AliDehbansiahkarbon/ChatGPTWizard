@@ -131,6 +131,7 @@
         <DCCReference Include="Utils\UHistory.pas"/>
         <DCCReference Include="Utils\UWriteSonicThread.pas"/>
         <DCCReference Include="Utils\UConsts.pas"/>
+        <DCCReference Include="Utils\UYouChatThread.pas"/>
         <RcItem Include="Resources\CloseBtn.bmp">
             <ResourceType>BITMAP</ResourceType>
             <ResourceId>CLOSE</ResourceId>

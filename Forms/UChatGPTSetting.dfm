@@ -511,6 +511,62 @@ object Frm_Setting: TFrm_Setting
           end
         end
       end
+      object grp_YouChat: TGroupBox
+        AlignWithMargins = True
+        Left = 3
+        Top = 135
+        Width = 447
+        Height = 126
+        Align = alTop
+        Caption = 'YouChat'
+        TabOrder = 1
+        object pnlYouChat: TPanel
+          AlignWithMargins = True
+          Left = 5
+          Top = 20
+          Width = 437
+          Height = 101
+          Align = alClient
+          BevelOuter = bvLowered
+          TabOrder = 0
+          object chk_YouChat: TCheckBox
+            Left = 8
+            Top = 4
+            Width = 121
+            Height = 17
+            Caption = 'Enable YouChat'
+            TabOrder = 0
+            OnClick = chk_YouChatClick
+          end
+          object lbEdt_YouChatAPIKey: TLabeledEdit
+            Left = 74
+            Top = 31
+            Width = 330
+            Height = 23
+            EditLabel.Width = 43
+            EditLabel.Height = 15
+            EditLabel.Caption = 'API Key:'
+            LabelPosition = lpLeft
+            LabelSpacing = 5
+            PasswordChar = '*'
+            TabOrder = 1
+            Text = ''
+          end
+          object lbEdt_YouChatBaseURL: TLabeledEdit
+            Left = 74
+            Top = 60
+            Width = 330
+            Height = 23
+            EditLabel.Width = 51
+            EditLabel.Height = 15
+            EditLabel.Caption = 'Base URL:'
+            LabelPosition = lpLeft
+            LabelSpacing = 5
+            TabOrder = 2
+            Text = ''
+          end
+        end
+      end
     end
   end
   object pnlBottom: TPanel

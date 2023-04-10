@@ -19,8 +19,9 @@ uses
   FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
   FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool,
   FireDAC.Phys, FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLite, FireDAC.Comp.Client,
-  FireDAC.Comp.DataSet, FireDAC.VCLUI.Wait, FireDAC.Comp.UI, UConsts
-  {$IF CompilerVersion >= 32.0}, UWriteSonicThread{$ENDIF};
+  FireDAC.Comp.DataSet, FireDAC.VCLUI.Wait, FireDAC.Comp.UI, UConsts,
+  Vcl.WinXCtrls
+  {$IF CompilerVersion >= 32.0}, UWriteSonicThread, UYouChatThread{$ENDIF};
 
 type
   TOnClickProc = procedure(Sender: TObject) of object;
@@ -81,6 +82,9 @@ type
     tsChatGPTAnswer: TTabSheet;
     tsWriteSonicAnswer: TTabSheet;
     mmoWriteSonicAnswer: TMemo;
+    tsYouChat: TTabSheet;
+    mmoYouChatAnswer: TMemo;
+    ActivityIndicator1: TActivityIndicator;
     procedure Btn_AskClick(Sender: TObject);
     procedure Btn_ClipboardClick(Sender: TObject);
     procedure CopytoClipboard1Click(Sender: TObject);
@@ -124,8 +128,8 @@ type
     FChatGPTTrd: TExecutorTrd;
     {$IF CompilerVersion >= 32.0}
     FWriteSonicTrd: TWriteSonicTrd;
+    FYouChatTrd: TYouChatTrd;
     {$ENDIF}
-    FProgressbar: TProgressBar;
     FClassList: TClassList;
     FClassTreeView: TTreeView;
     FCellCloseBtn: TSpeedButton;
@@ -133,7 +137,6 @@ type
     FLastQuestion: string;
 
     procedure CopyToClipBoard;
-    procedure CreateProgressbar;
     procedure CallThread(APrompt: string; AIsClassView: Boolean = False);
     function XPos(APattern, AStr: string; ACaseSensitive: Boolean): Integer;
     function LowChar(AChar: Char): Char; inline;
@@ -155,6 +158,7 @@ type
     procedure OnProgressMessage(var Msg: TMessage); message WM_PROGRESS_MESSAGE;
     {$IF CompilerVersion >= 32.0}
     procedure OnWriteSonicUpdateMessage(var Msg: TMessage); message WM_WRITESONIC_UPDATE_MESSAGE;
+    procedure OnYouChatUpdateMessage(var Msg: TMessage); message WM_YOUCHAT_UPDATE_MESSAGE;
     {$ENDIF}
   end;
 
@@ -195,6 +199,8 @@ procedure TFram_Question.Btn_ClearClick(Sender: TObject);
 begin
   mmoQuestion.Lines.Clear;
   mmoAnswer.Lines.Clear;
+  mmoWriteSonicAnswer.Lines.Clear;
+  mmoYouChatAnswer.Lines.Clear;
 end;
 
 procedure TFram_Question.Btn_ClipboardClick(Sender: TObject);
@@ -241,6 +247,10 @@ var
   LvWriteSonicAPIKey: string;
   LvWriteSonicBaseUrl: string;
 
+  LvEnableYouChat: Boolean;
+  LvYouChatAPIKey: string;
+  LvYouChatBaseUrl: string;
+
   LvModel: string;
   LvQuestion: string;
   LvMaxToken: Integer;
@@ -277,6 +287,11 @@ begin
   LvEnableWriteSonic := LvSetting.EnableWriteSonic;
   LvWriteSonicAPIKey := LvSetting.WriteSonicAPIKey;
   LvWriteSonicBaseUrl := LvSetting.WriteSonicBaseURL;
+
+  LvEnableYouChat := LvSetting.EnableYouChat;
+  LvYouChatAPIKey := LvSetting.YouChatAPIKey;
+  LvYouChatBaseUrl := LvSetting.YouChatBaseURL;
+
   MultiAI := LvSetting.MultiAI;
 
   LvSetting.TaskList.Clear;
@@ -285,6 +300,9 @@ begin
     LvSetting.TaskList.Add('GPT');
     if (CompilerVersion >= 32) and (LvEnableWriteSonic) then
       LvSetting.TaskList.Add('WS');
+
+    if (CompilerVersion >= 32) and (LvEnableYouChat) then
+      LvSetting.TaskList.Add('YC');
   end
   else
     LvSetting.TaskList.Add('CLS');
@@ -305,6 +323,15 @@ begin
         LvProxyHost, LvProxyPort, LvProxyUsername, LvProxyPassword, LvAnimatedLetters, LvTimeOut);
 
       FWriteSonicTrd.Start;
+    end;
+
+    if LvEnableYouChat then
+    begin
+      mmoYouChatAnswer.Lines.Clear;
+      FYouChatTrd := TYouChatTrd.Create(Self.Handle, LvYouChatAPIKey, LvYouChatBaseUrl, LvQuestion, LvIsProxyActive,
+        LvProxyHost, LvProxyPort, LvProxyUsername, LvProxyPassword, LvAnimatedLetters, LvTimeOut);
+
+      FYouChatTrd.Start;
     end;
   end;
   {$ENDIF}
@@ -361,28 +388,6 @@ end;
 procedure TFram_Question.CopytoClipboard1Click(Sender: TObject);
 begin
   CopyToClipBoard;
-end;
-
-// progressbar is not working properly inside the docking form,
-// had to create and destroy each time!
-procedure TFram_Question.CreateProgressbar;
-begin
-  if  not Assigned(FProgressbar)  then
-  begin
-    FProgressbar := TProgressBar.Create(Self);
-    FProgressbar.Parent := pnlBottom;
-    with FProgressbar do
-    begin
-      Left := 11;
-      Top := 10;
-      Width := 80;
-      Height := 16;
-      Anchors := [akLeft, akBottom];
-      Style := pbstMarquee;
-      TabOrder := 1;
-      Visible := True;
-    end;
-  end;
 end;
 
 procedure TFram_Question.CustomCommandClick(Sender: TObject);
@@ -504,8 +509,11 @@ end;
 
 procedure TFram_Question.FDQryHistoryAfterScroll(DataSet: TDataSet);
 begin
-  mmoHistoryDetail.Lines.Clear;
-  mmoHistoryDetail.Lines.Add(FDQryHistoryAnswer.AsString);
+  if Assigned(pgcMain) then
+  begin
+    mmoHistoryDetail.Lines.Clear;
+    mmoHistoryDetail.Lines.Add(FDQryHistoryAnswer.AsString);
+  end;
 end;
 
 procedure TFram_Question.FDQryHistoryDateGetText(Sender: TField; var Text: string; DisplayText: Boolean);
@@ -745,10 +753,12 @@ begin
   FLastQuestion := '';
   Align := alClient;
   tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
+  tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
 
   FCellCloseBtn := TSpeedButton.Create(Self);
   FCellCloseBtn.Glyph.LoadFromResourceName(HInstance, 'CLOSE');
   FCellCloseBtn.OnClick := CloseBtnClick;
+  ActivityIndicator1.Visible := False;
 
   FHistoryGrid := THistoryDBGrid.Create(Self);
   with FHistoryGrid do
@@ -838,14 +848,12 @@ begin
     if TSingletonSettingObj.Instance.TaskList.Count = 0 then
     begin
       Btn_Ask.Enabled := True;
-
-      if Assigned(FProgressbar) then
-        FreeAndNil(FProgressbar);
+      ActivityIndicator1.Visible := False;
     end;
     Cs.Leave;
   end
   else if Msg.WParam = 1 then
-    CreateProgressbar;
+    ActivityIndicator1.Visible := True;
 end;
 
 procedure TFram_Question.OnUpdateMessage(var Msg: TMessage);
@@ -966,6 +974,35 @@ begin
     EnableUI('WS');
   end;
 end;
+
+procedure TFram_Question.OnYouChatUpdateMessage(var Msg: TMessage);
+begin
+  if Msg.LParam = 0 then //whole string in one message.
+  begin
+    mmoYouChatAnswer.Lines.Clear;
+    mmoYouChatAnswer.Lines.Add(String(Msg.WParam));
+  end
+  else if Msg.LParam = 1 then // Char by Char.
+  begin
+    mmoYouChatAnswer.Lines[Pred(mmoYouChatAnswer.Lines.Count)] := mmoYouChatAnswer.Lines[Pred(mmoYouChatAnswer.Lines.Count)] + char(Msg.WParam);
+    if Char(Msg.WParam) = CrLf then
+      mmoYouChatAnswer.Lines.Add('');
+  end
+  else if Msg.LParam = 2 then // Finished.
+  begin
+    EnableUI('YC');
+    AddToHistory(mmoYouChatAnswer.Lines.Text, '***** YouChat *****' + #13 + mmoYouChatAnswer.Lines.Text);
+    Cs.TryEnter;
+    TSingletonSettingObj.Instance.ShouldReloadHistory := True;
+    Cs.Leave;
+  end
+  else if Msg.LParam = 3 then // Exception
+  begin
+    mmoYouChatAnswer.Lines.Clear;
+    mmoYouChatAnswer.Lines.Add(String(Msg.WParam));
+    EnableUI('YC');
+  end;
+end;
 {$ENDIF}
 
 procedure TFram_Question.pgcAnswersChange(Sender: TObject);
@@ -973,6 +1010,7 @@ begin
   case pgcAnswers.ActivePageIndex of
     0: Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
     1: Clipboard.SetTextBuf(pwidechar(mmoWriteSonicAnswer.Lines.Text));
+    2: Clipboard.SetTextBuf(pwidechar(mmoYouChatAnswer.Lines.Text));
   end;
 end;
 
@@ -980,15 +1018,15 @@ procedure TFram_Question.pgcMainChange(Sender: TObject);
 var
   LvShouldReloadHistory: Boolean;
 begin
-  Cs.Enter;
-  LvShouldReloadHistory := TSingletonSettingObj.Instance.ShouldReloadHistory;
-  Cs.Leave;
-
   if pgcMain.ActivePage = tsClassView then
     ReloadClassList(FClassList);
 
   if pgcMain.ActivePage = tsHistory then
   begin
+    Cs.Enter;
+    LvShouldReloadHistory := TSingletonSettingObj.Instance.ShouldReloadHistory;
+    Cs.Leave;
+
     if LvShouldReloadHistory then
     begin
       LoadHistory;
@@ -1119,11 +1157,12 @@ begin
     if Assigned(FWriteSonicTrd) then FWriteSonicTrd.Terminate;
   except
   end;
+
+  try
+    if Assigned(FYouChatTrd) then FYouChatTrd.Terminate;
+  except
+  end;
   {$ENDIF}
-
-  if Assigned(FProgressbar) then
-    FreeAndNil(FProgressbar);
-
   Btn_Ask.Enabled := True;
 end;
 

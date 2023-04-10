@@ -201,6 +201,12 @@ begin
       lbEdt_WriteSonicAPIKey.Enabled := FSetting.EnableWriteSonic;
       lbEdt_WriteSonicBaseURL.Enabled := FSetting.EnableWriteSonic;
 
+      chk_YouChat.Checked := FSetting.EnableYouChat;
+      lbEdt_YouChatAPIKey.Text := FSetting.YouChatAPIKey;
+      lbEdt_YouChatBaseURL.Text := FSetting.YouChatBaseURL;
+      lbEdt_YouChatAPIKey.Enabled := FSetting.EnableYouChat;
+      lbEdt_YouChatBaseURL.Enabled := FSetting.EnableYouChat;
+
       ShowModal;
     end;
     if Frm_Setting.HasChanges then
@@ -420,7 +426,9 @@ begin
     Btn_Ask.Enabled := True;
     Align := alClient;
     pgcMain.ActivePageIndex := 0;
-    tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.MultiAI);
+    tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
+    tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
+
     if TSingletonSettingObj.Instance.RighToLeft then
     begin
       Btn_Ask.Left := pnlTop.Width - Btn_Ask.Width - 5;
@@ -524,7 +532,7 @@ begin
   FMenuHook.HookMenu(FEditorPopUpMenu);
   if FMenuHook.IsHooked(FEditorPopUpMenu) then
   begin
-    FChatGPTSubMenu := TCpMenuItemDef.Create('ChatGPTSubMenu', 'ChatGPT SubMenu', nil, ipAfter, 'ChatGPTSubMenu');
+    FChatGPTSubMenu := TCpMenuItemDef.Create('ChatGPTSubMenu', 'ChatGPT', nil, ipAfter, 'ChatGPTSubMenu');
     FChatGPTSubMenu.OnCreated := OnChatGPTSubMenuClick;
     FMenuHook.AddMenuItemDef(FChatGPTSubMenu);
   end;
@@ -716,7 +724,8 @@ end;
 procedure TChatGPTDockForm.FormShow(Sender: TObject);
 begin
   Cs.Enter;
-  Fram_Question.tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.MultiAI);
+  Fram_Question.tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
+  Fram_Question.tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
   Cs.Leave;
 end;
 

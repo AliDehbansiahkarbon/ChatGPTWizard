@@ -51,7 +51,9 @@ begin
     pnlMain.Align := alClient;
     Cs.Enter;
     tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
+    tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
     Cs.Leave;
+    ActivityIndicator1.Visible := False;
     FreeAndNil(pgcMain);
   end;
 end;

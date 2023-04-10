@@ -40,8 +40,6 @@ type
 
     function QueryIndy: string;
     function QueryTHTTPClient: string;
-    function LoadFromFileInTempFolder(const fileName: string): string;
-    procedure SaveToFileInTempFolder(const fileName, content: string);
   protected
     procedure Execute; override;
   public
@@ -243,40 +241,4 @@ begin
     LvHttpClient.Free;
   end;
 end;
-
-procedure TWriteSonicTrd.SaveToFileInTempFolder(const fileName, content: string);
-var
-  LvPath: string;
-  LvFileStream: TFileStream;
-begin
-  LvPath := IncludeTrailingPathDelimiter(TPath.GetTempPath) + fileName;
-  LvFileStream := TFileStream.Create(LvPath, fmCreate);
-  try
-    LvFileStream.WriteBuffer(Pointer(content)^, Length(content) * SizeOf(Char));
-  finally
-    LvFileStream.Free;
-  end;
-end;
-
-function TWriteSonicTrd.LoadFromFileInTempFolder(const fileName: string): string;
-var
-  LvPath: string;
-  LvStream: TFileStream;
-  LvSize: Integer;
-begin
-  LvPath := IncludeTrailingPathDelimiter(TPath.GetTempPath) + fileName;
-
-  if not FileExists(LvPath) then
-    raise Exception.Create('File not found: ' + LvPath);
-
-  LvStream := TFileStream.Create(LvPath, fmOpenRead);
-  try
-    LvSize := LvStream.Size;
-    SetLength(Result, LvSize div SizeOf(Char));
-    LvStream.ReadBuffer(Pointer(Result)^, LvSize);
-  finally
-    LvStream.Free;
-  end;
-end;
-
 end.

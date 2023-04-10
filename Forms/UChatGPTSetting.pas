@@ -69,6 +69,11 @@ type
     FEnableWriteSonic: Boolean;
     FWriteSonicAPIKey: string;
     FWriteSonicBaseURL: string;
+
+    FEnableYouChat: Boolean;
+    FYouChatAPIKey: string;
+    FYouChatBaseURL: string;
+
     FTaskList: TList<string>;
     FDockableFormPointer: TDockableForm;
 
@@ -116,6 +121,11 @@ type
     property EnableWriteSonic: Boolean read FEnableWriteSonic write FEnableWriteSonic;
     property WriteSonicAPIKey: string read FWriteSonicAPIKey write FWriteSonicAPIKey;
     property WriteSonicBaseURL: string read FWriteSonicBaseURL write FWriteSonicBaseURL;
+
+    property EnableYouChat: Boolean read FEnableYouChat write FEnableYouChat;
+    property YouChatAPIKey: string read FYouChatAPIKey write FYouChatAPIKey;
+    property YouChatBaseURL: string read FYouChatBaseURL write FYouChatBaseURL;
+
     property MultiAI: Boolean read GetMuliAI;
     property TaskList: TList<string> read FTaskList write FTaskList;
     property DockableFormPointer: TDockableForm read FDockableFormPointer write FDockableFormPointer;
@@ -174,6 +184,11 @@ type
     lbEdt_WriteSonicAPIKey: TLabeledEdit;
     lbEdt_WriteSonicBaseURL: TLabeledEdit;
     pnlWriteSonic: TPanel;
+    grp_YouChat: TGroupBox;
+    pnlYouChat: TPanel;
+    chk_YouChat: TCheckBox;
+    lbEdt_YouChatAPIKey: TLabeledEdit;
+    lbEdt_YouChatBaseURL: TLabeledEdit;
     procedure Btn_SaveClick(Sender: TObject);
     procedure Btn_DefaultClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -189,6 +204,7 @@ type
     procedure chk_ProxyActiveClick(Sender: TObject);
     procedure pgcSettingChange(Sender: TObject);
     procedure chk_WriteSonicClick(Sender: TObject);
+    procedure chk_YouChatClick(Sender: TObject);
   private
     procedure AddQuestion(AQuestionpair: TQuestionPair = nil);
     procedure RemoveLatestQuestion;
@@ -248,7 +264,7 @@ end;
 
 function TSingletonSettingObj.GetMuliAI: Boolean;
 begin
-  Result := FEnableWriteSonic;
+  Result := FEnableWriteSonic or FEnableYouChat;
 end;
 
 function TSingletonSettingObj.GetRightIdentifier: string;
@@ -326,6 +342,10 @@ begin
   FEnableWriteSonic := False;
   FWriteSonicAPIKey := '';
   FWriteSonicBaseURL := DefaultWriteSonicURL;
+
+  FEnableYouChat := False;
+  FYouChatAPIKey := '';
+  FYouChatBaseURL := DefaultYouChatURL;
 
   LoadDefaultQuestions;
 end;
@@ -463,6 +483,23 @@ begin
           else
             FWriteSonicBaseURL := DefaultWriteSonicURL;
           //==============================WriteSonic=========================end
+
+          //==============================YouChat=======================begin
+          if ValueExists('ChatGPTEnableYouChat') then
+            FEnableYouChat := ReadBool('ChatGPTEnableYouChat')
+          else
+            FEnableYouChat := False;
+
+          if ValueExists('ChatGPTYouChatAPIKey') then
+            FYouChatAPIKey := ReadString('ChatGPTYouChatAPIKey')
+          else
+            FYouChatAPIKey := '';
+
+          if ValueExists('ChatGPTYouChatBaseURL') then
+            FYouChatBaseURL := ReadString('ChatGPTYouChatBaseURL')
+          else
+            FYouChatBaseURL := DefaultYouChatURL;
+          //==============================YouChat=========================end
         end;
 
         if OpenKey('\SOFTWARE\ChatGPTWizard\PredefinedQuestions', False) then
@@ -568,6 +605,10 @@ begin
         WriteString('ChatGPTWriteSonicAPIKey', FWriteSonicAPIKey);
         WriteString('ChatGPTWriteSonicBaseURL', FWriteSonicBaseURL);
 
+        WriteBool('ChatGPTEnableYouChat', FEnableYouChat);
+        WriteString('ChatGPTYouChatAPIKey', FYouChatAPIKey);
+        WriteString('ChatGPTYouChatBaseURL', FYouChatBaseURL);
+
         if OpenKey('\SOFTWARE\ChatGPTWizard\PredefinedQuestions', True) then
         begin
           for I:= 0  to 100 do // Limited to maximum 100 menuitems.
@@ -670,6 +711,10 @@ begin
   LvSettingObj.WriteSonicAPIKey := lbEdt_WriteSonicAPIKey.Text;
   LvSettingObj.WriteSonicBaseURL := lbEdt_WriteSonicBaseURL.Text;
 
+  LvSettingObj.EnableYouChat := chk_YouChat.Checked;
+  LvSettingObj.YouChatAPIKey := lbEdt_YouChatAPIKey.Text;
+  LvSettingObj.YouChatBaseURL := lbEdt_YouChatBaseURL.Text;
+
   lbEdt_History.Enabled := chk_History.Checked;
   Btn_HistoryPathBuilder.Enabled := chk_History.Checked;
 
@@ -694,8 +739,14 @@ begin
   end;
   LvSettingObj.WriteToRegistry;
   if Assigned(LvSettingObj.DockableFormPointer) then
+  begin
     TChatGPTDockForm(LvSettingObj.DockableFormPointer).Fram_Question.tsWriteSonicAnswer.TabVisible :=
     (CompilerVersion >= 32) and (LvSettingObj.EnableWriteSonic);
+
+    TChatGPTDockForm(LvSettingObj.DockableFormPointer).Fram_Question.tsYouChat.TabVisible :=
+    (CompilerVersion >= 32) and (LvSettingObj.EnableYouChat);
+
+  end;
   Close;
 end;
 
@@ -750,6 +801,12 @@ procedure TFrm_Setting.chk_WriteSonicClick(Sender: TObject);
 begin
   lbEdt_WriteSonicAPIKey.Enabled := chk_WriteSonic.Checked;
   lbEdt_WriteSonicBaseURL.Enabled := chk_WriteSonic.Checked;
+end;
+
+procedure TFrm_Setting.chk_YouChatClick(Sender: TObject);
+begin
+  lbEdt_YouChatAPIKey.Enabled := chk_YouChat.Checked;
+  lbEdt_YouChatBaseURL.Enabled := chk_YouChat.Checked;
 end;
 
 procedure TFrm_Setting.ClearGridPanel;
