@@ -235,7 +235,7 @@ begin
   LvResponseContent := '';
   LvHttpClient := THTTPClient.Create;
   LvHttpClient.ConnectionTimeout := FTimeOut * 1000;
-  LvHttpClient.SendTimeout := (FTimeOut * 1000) * 2;
+  LvHttpClient.ResponseTimeout := (FTimeOut * 1000) * 2;
 
   if Is3_5Turbo(AModel) then
   begin

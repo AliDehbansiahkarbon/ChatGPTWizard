@@ -1,4 +1,4 @@
-unit UWriteSonicThread;
+unit UYouChatThread;
 
 interface
 
@@ -8,27 +8,7 @@ uses
   UChatGPTSetting, UConsts, System.Net.HttpClient, System.Net.URLClient;
 
 type
-  TRequestJson = class
-  private
-    FEnable_Google_Results: Boolean;
-    FEnable_memory: Boolean;
-    FInput_text: string;
-  public
-    property enable_google_results: Boolean read FEnable_Google_Results write FEnable_Google_Results;
-    property enable_memory: Boolean read FEnable_memory write FEnable_memory;
-    property input_text: string read FInput_text write FInput_text;
-  end;
-
-  TResponseJson = class
-  private
-    FMessage: string;
-    FImage_urls: TArray<string>;
-  public
-    property &message: string read FMessage write FMessage;
-    property image_urls: TArray<string> read FImage_urls write FImage_urls;
-  end;
-
-  TWriteSonicTrd = class(TThread)
+  TYouChatTrd = class(TThread)
   private
     FHandle: HWND;
     FAPIKey: string;
@@ -38,7 +18,7 @@ type
     FProxySetting: TProxySetting;
     FPrompt: string;
 
-    function QueryIndy: string;
+    function QueryRestHttp: string;
     function QueryTHTTPClient: string;
   protected
     procedure Execute; override;
@@ -53,7 +33,7 @@ implementation
 
 { TWriteSonicTrd }
 
-constructor TWriteSonicTrd.Create(AHandle: HWND; AAPIKey: string; ABaseURL: string; APrompt: string; AProxayIsActive: Boolean;
+constructor TYouChatTrd.Create(AHandle: HWND; AAPIKey: string; ABaseURL: string; APrompt: string; AProxayIsActive: Boolean;
                                   AProxyHost: string; AProxyPort: Integer; AProxyUsername: string; AProxyPassword: string;
                                   AAnimated: Boolean; ATimeOut: Integer);
 begin
@@ -77,14 +57,14 @@ begin
   PostMessage(FHandle, WM_PROGRESS_MESSAGE, 1, 0);
 end;
 
-destructor TWriteSonicTrd.Destroy;
+destructor TYouChatTrd.Destroy;
 begin
   FProxySetting.Free;
   PostMessage(FHandle, WM_PROGRESS_MESSAGE, 0, 0);
   inherited;
 end;
 
-procedure TWriteSonicTrd.Execute;
+procedure TYouChatTrd.Execute;
 {=================================================}
 {  Lparams meaning:                               }
 {  0 = sending whole string in one message        }
@@ -110,33 +90,32 @@ begin
           begin
             Sleep(1);
             if not Terminated then
-              SendMessage(FHandle, WM_WRITESONIC_UPDATE_MESSAGE, Integer(LvResult[I]), 1); //Send next char.
+              SendMessage(FHandle, WM_YOUCHAT_UPDATE_MESSAGE, Integer(LvResult[I]), 1); //Send next char.
           end;
         end;
-        SendMessage(FHandle, WM_WRITESONIC_UPDATE_MESSAGE, 0, 2); // Finished.
+        SendMessage(FHandle, WM_YOUCHAT_UPDATE_MESSAGE, 0, 2); // Finished.
       end
       else
       begin
-        SendMessageW(FHandle, WM_WRITESONIC_UPDATE_MESSAGE, Integer(LvResult), 0); // Send whole string.
-        SendMessage(FHandle, WM_WRITESONIC_UPDATE_MESSAGE, 0, 2); // Finished.
+        SendMessageW(FHandle, WM_YOUCHAT_UPDATE_MESSAGE, Integer(LvResult), 0); // Send whole string.
+        SendMessage(FHandle, WM_YOUCHAT_UPDATE_MESSAGE, 0, 2); // Finished.
       end;
     end;
   except on E: Exception do
     begin
       Sleep(10);
-      SendMessageW(FHandle, WM_WRITESONIC_UPDATE_MESSAGE, Integer(E.Message), 3); // Send exception.
+      SendMessageW(FHandle, WM_YOUCHAT_UPDATE_MESSAGE, Integer(E.Message), 3); // Send exception.
       Terminate;
     end;
   end;
 end;
 
-function TWriteSonicTrd.QueryIndy: string;
+function TYouChatTrd.QueryRestHttp: string;
 var
   LvHttpClient: TRESTHTTP;
-  LvParamStream: TStringStream;
+  LvResponse: ISuperObject;
   LvResponseStream: TStringStream;
-  LvRequest: TRequestJson;
-  LvResponse: TResponseJson;
+  LvFullQuery: string;
 begin
   LvHttpClient := TRESTHTTP.Create;
   LvHttpClient.ConnectTimeout := FTimeOut * 1000;
@@ -150,48 +129,32 @@ begin
     LvHttpClient.ProxyParams.ProxyPassword := FProxySetting.ProxyPassword;
   end;
 
-  LvResponse := TResponseJson.Create;
-  LvRequest := TRequestJson.Create;
-
-  with LvRequest do
-  begin
-    FEnable_Google_Results := False;
-    FEnable_memory := False;
-    FInput_text := FPrompt;
-  end;
-
   try
-    LvParamStream := TStringStream.Create(LvRequest.AsJSON(True), TEncoding.UTF8);
-
-    LvHttpClient.Request.CustomHeaders.Values['X-API-KEY'] := FAPIKey;
-    LvHttpClient.Request.CustomHeaders.Values['Content-Type'] := 'application/json';
-
     try
+      LvFullQuery := FBaseURL + '?message=' + FPrompt + '&key=' + FAPIKey;
       LvResponseStream := TStringStream.Create;
-      LvHttpClient.Post(FBaseURL , LvParamStream, LvResponseStream);
+      LvHttpClient.Get(LvFullQuery, LvResponseStream);
 
       if not LvResponseStream.DataString.IsEmpty then
-        Result := AdjustLineBreaks(LvResponse.FromJSON(UTF8ToString(LvResponseStream.DataString)).&message.Trim);
+      begin
+        LvResponse := SO(UTF8ToString(LvResponseStream.DataString));
+        Result := AdjustLineBreaks(LvResponse['message'].AsString.Trim);
+      end;
     except on E: Exception do
       Result := E.Message;
     end;
   finally
     LvResponseStream.Free;
-    LvRequest.Free;
-    LvParamStream.Free;
-    LvResponse.Free;
     LvHttpClient.Free;
   end;
 end;
 
-function TWriteSonicTrd.QueryTHTTPClient: string;
+function TYouChatTrd.QueryTHTTPClient: string;
 var
   LvHttpClient: THTTPClient;
-  LvParamStream: TStringStream;
-  LvResponseStream: TStringStream;
-  LvRequest: TRequestJson;
-  LvResponse: TResponseJson;
+  LvResponse: ISuperObject;
   LvHTTPResponse: IHTTPResponse;
+  LvFullQuery: string;
 begin
   LvHttpClient := THTTPClient.Create;
   LvHttpClient.ConnectionTimeout := FTimeOut * 1000;
@@ -203,42 +166,27 @@ begin
       LvHttpClient.ProxySettings := TProxySettings.Create(ProxyHost, ProxyPort, ProxyUsername, ProxyPassword);
   end;
 
-  LvResponse := TResponseJson.Create;
-  LvRequest := TRequestJson.Create;
-
-  with LvRequest do
-  begin
-    FEnable_Google_Results := False;
-    FEnable_memory := False;
-    FInput_text := FPrompt;
-  end;
-
   try
-    LvParamStream := TStringStream.Create(LvRequest.AsJSON(True), TEncoding.UTF8);
-
-    LvHttpClient.CustomHeaders['X-API-KEY'] := FAPIKey;
-    LvHttpClient.CustomHeaders['Content-Type'] := 'application/json';
-
     try
-      LvResponseStream := TStringStream.Create;
-      LvHTTPResponse := LvHttpClient.Post(FBaseURL , LvParamStream, LvResponseStream);
+      LvFullQuery := FBaseURL + '?message=' + FPrompt + '&key=' + FAPIKey;
+      LvHTTPResponse := LvHttpClient.Get(LvFullQuery);
 
-      if not LvResponseStream.DataString.IsEmpty then
+      if not LvHTTPResponse.ContentAsString.IsEmpty then
       begin
         if not TSingletonSettingObj.IsValidJson(LvHTTPResponse.ContentAsString(TEncoding.UTF8)) then
-          Result := AdjustLineBreaks(QueryIndy, tlbsCRLF)
+          Result := AdjustLineBreaks(QueryRestHttp, tlbsCRLF)
         else
-          Result := AdjustLineBreaks(LvResponse.FromJSON(LvHTTPResponse.ContentAsString(TEncoding.UTF8)).&message.Trim, tlbsCRLF);
+        begin
+          LvResponse := SO(LvHTTPResponse.ContentAsString(TEncoding.UTF8));
+          Result := AdjustLineBreaks(LvResponse['message'].AsString.Trim, tlbsCRLF);
+        end;
       end;
     except on E: Exception do
       Result := E.Message;
     end;
   finally
-    LvResponseStream.Free;
-    LvRequest.Free;
-    LvParamStream.Free;
-    LvResponse.Free;
     LvHttpClient.Free;
   end;
 end;
+
 end.
