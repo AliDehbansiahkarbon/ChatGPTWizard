@@ -43,6 +43,10 @@ This Plugin Supports the following AI Services:
 
 [generate API Key here](https://docs.writesonic.com/reference/finding-your-api-key)
 
+### [YouChat](https://you.com/code)
+
+[generate API Key here](https://betterapi.net/about)
+
 **NOTE: Other AI Services(non-ChatGPT) are enabled in Rad Studio 10.2 and above!**
 
 
