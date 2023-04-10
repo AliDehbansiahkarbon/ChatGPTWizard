@@ -48,7 +48,7 @@ This Plugin Supports the following AI Services:
 
 ## Remarks
 
-- It's compatible with Xe5 and later versions.
+- It's compatible with Delphi 10.1 Berlin and later versions.
 - Uses XSuperObject library which is included in the project files. you can also find the latest version [here](https://github.com/onryldz/x-superobject/blob/master/XSuperObject.pas)
 - Settings are stored in registry which can be found here: `Computer\HKEY_CURRENT_USER\Software\ChatGPTWizard`
 - Consider that if you run it in the IDE without opening any project it will raise a message that it cannot load the SSL library. for more details see [here](#issues-with-ssl)
