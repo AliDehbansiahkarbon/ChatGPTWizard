@@ -7,7 +7,7 @@
 
 <h2>An OpenAI plug-in for Embarcadero RAD Studio IDE.</h2>
 
-<h3>First Plugin Ever to support ChatGPT & Writesonic!</h3>
+<h3>First Plugin Ever to support ChatGPT, Writesonic, and YouChat!</h3>
 <br /
 
 #### **NOTE: You will need an API key to use this plugin. see the [API section](#platforms)**
