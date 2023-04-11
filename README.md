@@ -80,7 +80,7 @@ Click on the newly added ChatGPT menu on the IDE(or press Ctrl+Shidt+Alt+C) to o
 
 <br />
 
-**A New Tab has been added to get a separate result for Writesonic.**
+**Two New Tab has been added to get separate results for Writesonic and YouChat.**
 
 So now you are able to get two different answers based on any question, compare, merge and get the best quality with codes.
 
