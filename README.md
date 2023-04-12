@@ -7,7 +7,7 @@
 
 <h2>An OpenAI plug-in for Embarcadero RAD Studio IDE.</h2>
 
-<h3>First Plugin Ever to support ChatGPT & Writesonic!</h3>
+<h3>First Plugin Ever to support ChatGPT, Writesonic, and YouChat!</h3>
 <br /
 
 #### **NOTE: You will need an API key to use this plugin. see the [API section](#platforms)**
@@ -20,9 +20,9 @@ Short1(ChatGPT)
 
 <a href="https://www.youtube.com/watch?v=vUgHg3ZPvXI" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
 
-Short2(Writesonic)
+Short2(Writesonic & YouChat)
 
-<a href="https://www.youtube.com/watch?v=Uq9WfE7iVjA" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
+<a href="https://youtu.be/tEiKmalzZo8" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
 
 
 Long
@@ -80,7 +80,7 @@ Click on the newly added ChatGPT menu on the IDE(or press Ctrl+Shidt+Alt+C) to o
 
 <br />
 
-**A New Tab has been added to get a separate result for Writesonic.**
+**Two New Tab has been added to get separate results for Writesonic and YouChat.**
 
 So now you are able to get two different answers based on any question, compare, merge and get the best quality with codes.
 
