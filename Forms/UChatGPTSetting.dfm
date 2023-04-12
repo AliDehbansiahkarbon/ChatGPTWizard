@@ -12,22 +12,24 @@ object Frm_Setting: TFrm_Setting
   Font.Name = 'Segoe UI'
   Font.Style = []
   KeyPreview = True
+  OldCreateOrder = True
   Position = poMainFormCenter
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
+  PixelsPerInch = 96
   TextHeight = 15
   object pgcSetting: TPageControl
     Left = 0
     Top = 0
     Width = 461
     Height = 538
-    ActivePage = tsMainSetting
+    ActivePage = tsOtherAiServices
     Align = alClient
     TabOrder = 0
     OnChange = pgcSettingChange
     object tsMainSetting: TTabSheet
       Caption = 'Main Setting'
-      object pnl1: TPanel
+      object pnlMain: TPanel
         Left = 0
         Top = 0
         Width = 453
@@ -151,6 +153,10 @@ object Frm_Setting: TFrm_Setting
               Width = 113
               Height = 17
               Caption = 'Animated Letters'
+              Color = clBtnFace
+              Ctl3D = True
+              ParentColor = False
+              ParentCtl3D = False
               TabOrder = 5
               OnClick = chk_AnimatedLettersClick
             end
@@ -178,7 +184,7 @@ object Frm_Setting: TFrm_Setting
           Height = 322
           Align = alClient
           TabOrder = 1
-          object GroupBox1: TGroupBox
+          object grp_History: TGroupBox
             Left = 1
             Top = 1
             Width = 449
@@ -228,7 +234,6 @@ object Frm_Setting: TFrm_Setting
                 EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 1
-                Text = ''
                 OnChange = edt_UrlChange
               end
               object Btn_HistoryPathBuilder: TButton
@@ -285,7 +290,6 @@ object Frm_Setting: TFrm_Setting
                 EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 0
-                Text = ''
                 OnChange = edt_UrlChange
               end
               object lbEdt_ProxyPort: TLabeledEdit
@@ -300,7 +304,6 @@ object Frm_Setting: TFrm_Setting
                 LabelPosition = lpLeft
                 NumbersOnly = True
                 TabOrder = 1
-                Text = ''
                 OnChange = edt_UrlChange
               end
               object chk_ProxyActive: TCheckBox
@@ -323,7 +326,6 @@ object Frm_Setting: TFrm_Setting
                 EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 3
-                Text = ''
                 OnChange = edt_UrlChange
               end
               object lbEdt_ProxyPassword: TLabeledEdit
@@ -337,7 +339,6 @@ object Frm_Setting: TFrm_Setting
                 EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 4
-                Text = ''
                 OnChange = edt_UrlChange
               end
             end
@@ -403,167 +404,185 @@ object Frm_Setting: TFrm_Setting
     object tsPreDefinedQuestions: TTabSheet
       Caption = 'PreDefined Questions'
       ImageIndex = 1
-      object Btn_AddQuestion: TButton
-        Left = 5
-        Top = 11
-        Width = 78
-        Height = 27
-        Caption = 'Add'
-        TabOrder = 0
-        OnClick = Btn_AddQuestionClick
-      end
-      object ScrollBox: TScrollBox
-        AlignWithMargins = True
-        Left = 3
-        Top = 50
-        Width = 447
-        Height = 455
-        Margins.Top = 50
+      object pnlPredefinedQ: TPanel
+        Left = 0
+        Top = 0
+        Width = 453
+        Height = 508
         Align = alClient
-        TabOrder = 1
-        object GridPanelPredefinedQs: TGridPanel
-          Left = 0
-          Top = 0
-          Width = 443
-          Height = 0
-          Align = alTop
-          ColumnCollection = <
-            item
-              Value = 100.000000000000000000
-            end>
-          ControlCollection = <>
-          RowCollection = <
-            item
-              Value = 50.000000000000000000
-            end
-            item
-              Value = 50.000000000000000000
-            end>
+        TabOrder = 0
+        object Btn_AddQuestion: TButton
+          Left = 5
+          Top = 11
+          Width = 78
+          Height = 27
+          Caption = 'Add'
           TabOrder = 0
+          OnClick = Btn_AddQuestionClick
         end
-      end
-      object Btn_RemoveQuestion: TButton
-        Left = 86
-        Top = 11
-        Width = 90
-        Height = 27
-        Caption = 'Remove latest'
-        TabOrder = 2
-        OnClick = Btn_RemoveQuestionClick
+        object ScrollBox: TScrollBox
+          AlignWithMargins = True
+          Left = 4
+          Top = 51
+          Width = 445
+          Height = 453
+          Margins.Top = 50
+          Align = alClient
+          TabOrder = 1
+          object GridPanelPredefinedQs: TGridPanel
+            Left = 0
+            Top = 0
+            Width = 441
+            Height = 0
+            Align = alTop
+            ColumnCollection = <
+              item
+                Value = 100.000000000000000000
+              end>
+            ControlCollection = <>
+            RowCollection = <
+              item
+                Value = 50.000000000000000000
+              end
+              item
+                Value = 50.000000000000000000
+              end>
+            TabOrder = 0
+          end
+        end
+        object Btn_RemoveQuestion: TButton
+          Left = 86
+          Top = 11
+          Width = 90
+          Height = 27
+          Caption = 'Remove latest'
+          TabOrder = 2
+          OnClick = Btn_RemoveQuestionClick
+        end
       end
     end
     object tsOtherAiServices: TTabSheet
       Caption = 'Other AI Services'
       ImageIndex = 2
-      object grp_WriteSonic: TGroupBox
-        AlignWithMargins = True
-        Left = 3
-        Top = 3
-        Width = 447
-        Height = 126
-        Align = alTop
-        Caption = 'Writesonic'
+      object pnlOtherAIMain: TPanel
+        Left = 0
+        Top = 0
+        Width = 453
+        Height = 508
+        Align = alClient
+        BevelOuter = bvNone
         TabOrder = 0
-        object pnlWriteSonic: TPanel
+        ExplicitLeft = 136
+        ExplicitTop = 328
+        ExplicitWidth = 185
+        ExplicitHeight = 41
+        object grp_WriteSonic: TGroupBox
           AlignWithMargins = True
-          Left = 5
-          Top = 20
-          Width = 437
-          Height = 101
-          Align = alClient
-          BevelOuter = bvLowered
+          Left = 3
+          Top = 135
+          Width = 447
+          Height = 126
+          Align = alTop
+          Caption = 'Writesonic'
           TabOrder = 0
-          object chk_WriteSonic: TCheckBox
-            Left = 8
-            Top = 4
-            Width = 121
-            Height = 17
-            Caption = 'Enable WriteSonic'
+          ExplicitTop = 3
+          object pnlWriteSonic: TPanel
+            AlignWithMargins = True
+            Left = 5
+            Top = 20
+            Width = 437
+            Height = 101
+            Align = alClient
+            BevelOuter = bvLowered
             TabOrder = 0
-            OnClick = chk_WriteSonicClick
-          end
-          object lbEdt_WriteSonicAPIKey: TLabeledEdit
-            Left = 74
-            Top = 31
-            Width = 330
-            Height = 23
-            EditLabel.Width = 43
-            EditLabel.Height = 15
-            EditLabel.Caption = 'API Key:'
-            LabelPosition = lpLeft
-            LabelSpacing = 5
-            PasswordChar = '*'
-            TabOrder = 1
-            Text = ''
-          end
-          object lbEdt_WriteSonicBaseURL: TLabeledEdit
-            Left = 74
-            Top = 60
-            Width = 330
-            Height = 23
-            EditLabel.Width = 51
-            EditLabel.Height = 15
-            EditLabel.Caption = 'Base URL:'
-            LabelPosition = lpLeft
-            LabelSpacing = 5
-            TabOrder = 2
-            Text = ''
+            object chk_WriteSonic: TCheckBox
+              Left = 8
+              Top = 4
+              Width = 121
+              Height = 17
+              Caption = 'Enable WriteSonic'
+              TabOrder = 0
+              OnClick = chk_WriteSonicClick
+            end
+            object lbEdt_WriteSonicAPIKey: TLabeledEdit
+              Left = 74
+              Top = 31
+              Width = 330
+              Height = 23
+              EditLabel.Width = 43
+              EditLabel.Height = 15
+              EditLabel.Caption = 'API Key:'
+              LabelPosition = lpLeft
+              LabelSpacing = 5
+              PasswordChar = '*'
+              TabOrder = 1
+            end
+            object lbEdt_WriteSonicBaseURL: TLabeledEdit
+              Left = 74
+              Top = 60
+              Width = 330
+              Height = 23
+              EditLabel.Width = 51
+              EditLabel.Height = 15
+              EditLabel.Caption = 'Base URL:'
+              LabelPosition = lpLeft
+              LabelSpacing = 5
+              TabOrder = 2
+            end
           end
         end
-      end
-      object grp_YouChat: TGroupBox
-        AlignWithMargins = True
-        Left = 3
-        Top = 135
-        Width = 447
-        Height = 126
-        Align = alTop
-        Caption = 'YouChat'
-        TabOrder = 1
-        object pnlYouChat: TPanel
+        object grp_YouChat: TGroupBox
           AlignWithMargins = True
-          Left = 5
-          Top = 20
-          Width = 437
-          Height = 101
-          Align = alClient
-          BevelOuter = bvLowered
-          TabOrder = 0
-          object chk_YouChat: TCheckBox
-            Left = 8
-            Top = 4
-            Width = 121
-            Height = 17
-            Caption = 'Enable YouChat'
+          Left = 3
+          Top = 3
+          Width = 447
+          Height = 126
+          Align = alTop
+          Caption = 'YouChat'
+          TabOrder = 1
+          object pnlYouChat: TPanel
+            AlignWithMargins = True
+            Left = 5
+            Top = 20
+            Width = 437
+            Height = 101
+            Align = alClient
+            BevelOuter = bvLowered
             TabOrder = 0
-            OnClick = chk_YouChatClick
-          end
-          object lbEdt_YouChatAPIKey: TLabeledEdit
-            Left = 74
-            Top = 31
-            Width = 330
-            Height = 23
-            EditLabel.Width = 43
-            EditLabel.Height = 15
-            EditLabel.Caption = 'API Key:'
-            LabelPosition = lpLeft
-            LabelSpacing = 5
-            PasswordChar = '*'
-            TabOrder = 1
-            Text = ''
-          end
-          object lbEdt_YouChatBaseURL: TLabeledEdit
-            Left = 74
-            Top = 60
-            Width = 330
-            Height = 23
-            EditLabel.Width = 51
-            EditLabel.Height = 15
-            EditLabel.Caption = 'Base URL:'
-            LabelPosition = lpLeft
-            LabelSpacing = 5
-            TabOrder = 2
-            Text = ''
+            object chk_YouChat: TCheckBox
+              Left = 8
+              Top = 4
+              Width = 121
+              Height = 17
+              Caption = 'Enable YouChat'
+              TabOrder = 0
+              OnClick = chk_YouChatClick
+            end
+            object lbEdt_YouChatAPIKey: TLabeledEdit
+              Left = 74
+              Top = 31
+              Width = 330
+              Height = 23
+              EditLabel.Width = 43
+              EditLabel.Height = 15
+              EditLabel.Caption = 'API Key:'
+              LabelPosition = lpLeft
+              LabelSpacing = 5
+              PasswordChar = '*'
+              TabOrder = 1
+            end
+            object lbEdt_YouChatBaseURL: TLabeledEdit
+              Left = 74
+              Top = 60
+              Width = 330
+              Height = 23
+              EditLabel.Width = 51
+              EditLabel.Height = 15
+              EditLabel.Caption = 'Base URL:'
+              LabelPosition = lpLeft
+              LabelSpacing = 5
+              TabOrder = 2
+            end
           end
         end
       end

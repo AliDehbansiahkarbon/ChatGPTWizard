@@ -132,7 +132,7 @@ type
   end;
 
   TFrm_Setting = class(TForm)
-    pnl1: TPanel;
+    pnlMain: TPanel;
     grp_OpenAI: TGroupBox;
     pnlOpenAI: TPanel;
     lbl_1: TLabel;
@@ -149,7 +149,7 @@ type
     pnlBottom: TPanel;
     Btn_Default: TButton;
     Btn_Save: TButton;
-    GroupBox1: TGroupBox;
+    grp_History: TGroupBox;
     pnlHistory: TPanel;
     chk_History: TCheckBox;
     lbEdt_History: TLabeledEdit;
@@ -189,6 +189,8 @@ type
     chk_YouChat: TCheckBox;
     lbEdt_YouChatAPIKey: TLabeledEdit;
     lbEdt_YouChatBaseURL: TLabeledEdit;
+    pnlPredefinedQ: TPanel;
+    pnlOtherAIMain: TPanel;
     procedure Btn_SaveClick(Sender: TObject);
     procedure Btn_DefaultClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -833,6 +835,31 @@ begin
   GridPanelPredefinedQs.RowCollection.Clear;
   pgcSetting.ActivePageIndex := 0;
   tsOtherAiServices.TabVisible := CompilerVersion >= 32;
+
+  // Styling does not work properly in Tokyo and Rio the following lines will make it better.
+  if (CompilerVersion = 32{Tokyo}) or (CompilerVersion = 33{Rio}) then
+  begin
+    pgcSetting.StyleElements := [seFont, seBorder, seClient];
+
+    pnlMain.StyleElements := [seFont, seBorder];
+    pnlOpenAI.StyleElements := [seFont, seBorder];
+    pnlYouChat.StyleElements := [seFont, seBorder];
+    pnlWriteSonic.StyleElements := [seFont, seBorder];
+    pnlOther.StyleElements := [seFont, seBorder];
+    pnlHistory.StyleElements := [seFont, seBorder];
+
+    chk_History.StyleElements := [seFont, seBorder];
+    chk_ProxyActive.StyleElements := [seFont, seBorder];
+    chk_CodeFormatter.StyleElements := [seFont, seBorder];
+    chk_Rtl.StyleElements := [seFont, seBorder];
+    chk_WriteSonic.StyleElements := [seFont, seBorder];
+    chk_YouChat.StyleElements := [seFont, seBorder];
+    chk_AnimatedLetters.StyleElements := [seFont, seBorder];
+
+    tsPreDefinedQuestions.StyleElements := [seFont, seBorder, seClient];
+    pnlPredefinedQ.StyleElements := [seFont, seBorder];
+    pnlOtherAIMain.StyleElements := [seFont, seBorder];
+  end;
 end;
 
 procedure TFrm_Setting.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);

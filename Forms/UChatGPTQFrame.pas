@@ -799,6 +799,22 @@ begin
     OnResize := GridResize;
     OnDrawColumnCell := DrawColumnCell;
   end;
+
+  // Styling does not work properly in Tokyo and Rio the following lines will make it better.
+  if (CompilerVersion = 32{Tokyo}) or (CompilerVersion = 33{Rio}) then
+  begin
+    pgcMain.StyleElements := [seFont, seBorder, seClient];
+    pnlMain.StyleElements := [seFont, seBorder];
+    pnlCenter.StyleElements := [seFont, seBorder];
+    pnlAnswer.StyleElements := [seFont, seBorder];
+    pgcAnswers.StyleElements := [seFont, seBorder, seClient];
+    tsChatGPT.StyleElements := [seFont, seBorder, seClient];
+    pnlTop.StyleElements := [seFont, seBorder];
+    pnlQuestion.StyleElements := [seFont, seBorder];
+    pnlHistoryTop.StyleElements := [seFont, seBorder];
+    FHistoryGrid.StyleElements := [seFont, seBorder];
+    FHistoryGrid.ParentColor := True;
+  end;
 end;
 
 procedure TFram_Question.JavaClick(Sender: TObject);
