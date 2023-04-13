@@ -160,6 +160,8 @@ type
     procedure OnWriteSonicUpdateMessage(var Msg: TMessage); message WM_WRITESONIC_UPDATE_MESSAGE;
     procedure OnYouChatUpdateMessage(var Msg: TMessage); message WM_YOUCHAT_UPDATE_MESSAGE;
     {$ENDIF}
+
+    property HistoryGrid: THistoryDBGrid read FHistoryGrid write FHistoryGrid;
   end;
 
 implementation

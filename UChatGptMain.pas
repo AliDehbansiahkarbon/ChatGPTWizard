@@ -60,6 +60,11 @@ type
 {   The IDE calls this interface when the editor is activated in the IDE.                        }
 {                                                                                                }
 {************************************************************************************************}
+  TStylingNotifier = class(TNotifierObject, IOTANotifier, INTAIDEThemingServicesNotifier)
+    procedure ChangingTheme();
+    procedure ChangedTheme();
+  end;
+
   TEditNotifierHelper = class(TNotifierObject, IOTANotifier, INTAEditServicesNotifier)
     procedure OnChatGPTAskSubMenuClick(Sender: TObject);
     procedure OnChatGPTSubMenuClick(Sender: TObject; MenuItem: TMenuItem);
@@ -111,8 +116,11 @@ type
   var
     FMainMenuIndex: Integer = WizardFail;
     FNotifierIndex: Integer = WizardFail;
+    FStylingNotifierIndex: Integer = WizardFail;
     FChatGPTSubMenu: TCpMenuItemDef;
     FChatGPTDockForm: TChatGPTDockForm;
+    FChatGptMenuWizard: TChatGptMenuWizard;
+    FShouldApplyTheme: Boolean = False;
 
     procedure RemoveAferUnInstall;
     procedure register;
@@ -124,8 +132,10 @@ uses
 
 procedure register;
 begin
-  FMainMenuIndex := (BorlandIDEServices as IOTAWizardServices).AddWizard(TChatGptMenuWizard.Create);
+  FChatGptMenuWizard := TChatGptMenuWizard.Create;
+  FMainMenuIndex := (BorlandIDEServices as IOTAWizardServices).AddWizard(FChatGptMenuWizard);
   FNotifierIndex := (BorlandIDEServices as IOTAEditorServices).AddNotifier(TEditNotifierHelper.Create);
+  FStylingNotifierIndex := (BorlandIDEServices as IOTAIDEThemingServices).AddNotifier(TStylingNotifier.Create);
 end;
 
 procedure RemoveAferUnInstall;
@@ -146,6 +156,9 @@ begin
 
   if FNotifierIndex <> WizardFail then
     (BorlandIDEServices as IOTAEditorServices).RemoveNotifier(FNotifierIndex);
+
+  if FStylingNotifierIndex <> WizardFail then
+     (BorlandIDEServices as IOTAIDEThemingServices).RemoveNotifier(FStylingNotifierIndex);
 end;
 
 { TChatGptMenuWizard }
@@ -727,6 +740,45 @@ begin
   Fram_Question.tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
   Fram_Question.tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
   Cs.Leave;
+end;
+
+{ TStylingNotifier }
+procedure TStylingNotifier.ChangedTheme;
+begin
+  if FShouldApplyTheme then
+  begin
+    FShouldApplyTheme := False;
+
+    // Styling does not work properly in Rio after changing the style, the following lines will make it better.
+    if CompilerVersion = 33{Rio} then
+    begin
+      with FChatGPTDockForm.Fram_Question do
+      begin
+        HistoryGrid.ParentColor := False;
+        if (BorlandIDEServices as IOTAIDEThemingServices).ActiveTheme = 'Dark' then
+          HistoryGrid.Color := $006B5E4F
+        else
+          HistoryGrid.Color := $00EBDDCD;
+        tsChatGPT.StyleElements := [seFont, seBorder];
+        pnlTop.StyleElements := [seFont, seBorder];
+        pnlTop.ParentColor := False;
+        pnlTop.Color := FChatGPTDockForm.Color;
+        pnlQuestion.ParentColor := False;
+        pnlQuestion.Color := FChatGPTDockForm.Color;
+      end;
+    end;
+    FChatGptMenuWizard.FAskMenuDockable.Click;
+  end;
+end;
+
+procedure TStylingNotifier.ChangingTheme;
+begin
+  if (Assigned(FChatGPTDockForm)) and (FChatGPTDockForm.Showing) then
+  begin
+    TSingletonSettingObj.RegisterFormClassForTheming(TDockableForm, FChatGPTDockForm);
+    FChatGPTDockForm.Close;
+    FShouldApplyTheme := True;
+  end;
 end;
 
 initialization

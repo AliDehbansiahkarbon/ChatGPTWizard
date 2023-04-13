@@ -21,7 +21,7 @@ object Fram_Question: TFram_Question
         Left = 0
         Top = 0
         Width = 427
-        Height = 371
+        Height = 369
         Align = alClient
         ParentColor = True
         TabOrder = 0
@@ -68,7 +68,7 @@ object Fram_Question: TFram_Question
           Left = 1
           Top = 45
           Width = 425
-          Height = 325
+          Height = 323
           Align = alClient
           BevelOuter = bvNone
           TabOrder = 1
@@ -87,14 +87,14 @@ object Fram_Question: TFram_Question
             Left = 0
             Top = 117
             Width = 425
-            Height = 208
+            Height = 206
             Align = alClient
             TabOrder = 0
             object pgcAnswers: TPageControl
               Left = 1
               Top = 1
               Width = 423
-              Height = 206
+              Height = 204
               ActivePage = tsChatGPTAnswer
               Align = alClient
               Font.Charset = DEFAULT_CHARSET
@@ -118,7 +118,7 @@ object Fram_Question: TFram_Question
                   Left = 0
                   Top = 0
                   Width = 415
-                  Height = 178
+                  Height = 176
                   Align = alClient
                   Font.Charset = DEFAULT_CHARSET
                   Font.Color = clWindowText
@@ -134,10 +134,6 @@ object Fram_Question: TFram_Question
               object tsWriteSonicAnswer: TTabSheet
                 Caption = 'WriteSonic'
                 ImageIndex = 1
-                ExplicitLeft = 0
-                ExplicitTop = 0
-                ExplicitWidth = 0
-                ExplicitHeight = 0
                 object mmoWriteSonicAnswer: TMemo
                   Left = 0
                   Top = 0
@@ -152,10 +148,6 @@ object Fram_Question: TFram_Question
               object tsYouChat: TTabSheet
                 Caption = 'YouChat'
                 ImageIndex = 2
-                ExplicitLeft = 0
-                ExplicitTop = 0
-                ExplicitWidth = 0
-                ExplicitHeight = 0
                 object mmoYouChatAnswer: TMemo
                   Left = 0
                   Top = 0
@@ -220,10 +212,6 @@ object Fram_Question: TFram_Question
     object tsClassView: TTabSheet
       Caption = 'Class View'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object splClassView: TSplitter
         Left = 0
         Top = 137
@@ -293,10 +281,6 @@ object Fram_Question: TFram_Question
     object tsHistory: TTabSheet
       Caption = 'History'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object splHistory: TSplitter
         Left = 0
         Top = 185
@@ -381,9 +365,10 @@ object Fram_Question: TFram_Question
         Left = 0
         Top = 188
         Width = 427
-        Height = 183
+        Height = 181
         Align = alClient
         TabOrder = 1
+        ExplicitHeight = 183
         object mmoHistoryDetail: TMemo
           Left = 1
           Top = 1

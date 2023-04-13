@@ -12,18 +12,16 @@ object Frm_Setting: TFrm_Setting
   Font.Name = 'Segoe UI'
   Font.Style = []
   KeyPreview = True
-  OldCreateOrder = True
   Position = poMainFormCenter
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
-  PixelsPerInch = 96
   TextHeight = 15
   object pgcSetting: TPageControl
     Left = 0
     Top = 0
     Width = 461
     Height = 538
-    ActivePage = tsOtherAiServices
+    ActivePage = tsMainSetting
     Align = alClient
     TabOrder = 0
     OnChange = pgcSettingChange
@@ -234,6 +232,7 @@ object Frm_Setting: TFrm_Setting
                 EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 1
+                Text = ''
                 OnChange = edt_UrlChange
               end
               object Btn_HistoryPathBuilder: TButton
@@ -290,6 +289,7 @@ object Frm_Setting: TFrm_Setting
                 EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 0
+                Text = ''
                 OnChange = edt_UrlChange
               end
               object lbEdt_ProxyPort: TLabeledEdit
@@ -304,6 +304,7 @@ object Frm_Setting: TFrm_Setting
                 LabelPosition = lpLeft
                 NumbersOnly = True
                 TabOrder = 1
+                Text = ''
                 OnChange = edt_UrlChange
               end
               object chk_ProxyActive: TCheckBox
@@ -326,6 +327,7 @@ object Frm_Setting: TFrm_Setting
                 EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 3
+                Text = ''
                 OnChange = edt_UrlChange
               end
               object lbEdt_ProxyPassword: TLabeledEdit
@@ -339,6 +341,7 @@ object Frm_Setting: TFrm_Setting
                 EditLabel.Layout = tlCenter
                 LabelPosition = lpLeft
                 TabOrder = 4
+                Text = ''
                 OnChange = edt_UrlChange
               end
             end
@@ -472,10 +475,6 @@ object Frm_Setting: TFrm_Setting
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 0
-        ExplicitLeft = 136
-        ExplicitTop = 328
-        ExplicitWidth = 185
-        ExplicitHeight = 41
         object grp_WriteSonic: TGroupBox
           AlignWithMargins = True
           Left = 3
@@ -485,7 +484,6 @@ object Frm_Setting: TFrm_Setting
           Align = alTop
           Caption = 'Writesonic'
           TabOrder = 0
-          ExplicitTop = 3
           object pnlWriteSonic: TPanel
             AlignWithMargins = True
             Left = 5
@@ -516,6 +514,7 @@ object Frm_Setting: TFrm_Setting
               LabelSpacing = 5
               PasswordChar = '*'
               TabOrder = 1
+              Text = ''
             end
             object lbEdt_WriteSonicBaseURL: TLabeledEdit
               Left = 74
@@ -528,6 +527,7 @@ object Frm_Setting: TFrm_Setting
               LabelPosition = lpLeft
               LabelSpacing = 5
               TabOrder = 2
+              Text = ''
             end
           end
         end
@@ -570,6 +570,7 @@ object Frm_Setting: TFrm_Setting
               LabelSpacing = 5
               PasswordChar = '*'
               TabOrder = 1
+              Text = ''
             end
             object lbEdt_YouChatBaseURL: TLabeledEdit
               Left = 74
@@ -582,6 +583,7 @@ object Frm_Setting: TFrm_Setting
               LabelPosition = lpLeft
               LabelSpacing = 5
               TabOrder = 2
+              Text = ''
             end
           end
         end
