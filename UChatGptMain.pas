@@ -60,11 +60,12 @@ type
 {   The IDE calls this interface when the editor is activated in the IDE.                        }
 {                                                                                                }
 {************************************************************************************************}
+  {$IF CompilerVersion >= 32.0}
   TStylingNotifier = class(TNotifierObject, IOTANotifier, INTAIDEThemingServicesNotifier)
     procedure ChangingTheme();
     procedure ChangedTheme();
   end;
-
+  {$ENDIF}
   TEditNotifierHelper = class(TNotifierObject, IOTANotifier, INTAEditServicesNotifier)
     procedure OnChatGPTAskSubMenuClick(Sender: TObject);
     procedure OnChatGPTSubMenuClick(Sender: TObject; MenuItem: TMenuItem);
@@ -135,7 +136,9 @@ begin
   FChatGptMenuWizard := TChatGptMenuWizard.Create;
   FMainMenuIndex := (BorlandIDEServices as IOTAWizardServices).AddWizard(FChatGptMenuWizard);
   FNotifierIndex := (BorlandIDEServices as IOTAEditorServices).AddNotifier(TEditNotifierHelper.Create);
+  {$IF CompilerVersion >= 32.0}
   FStylingNotifierIndex := (BorlandIDEServices as IOTAIDEThemingServices).AddNotifier(TStylingNotifier.Create);
+  {$ENDIF}
 end;
 
 procedure RemoveAferUnInstall;
@@ -157,8 +160,10 @@ begin
   if FNotifierIndex <> WizardFail then
     (BorlandIDEServices as IOTAEditorServices).RemoveNotifier(FNotifierIndex);
 
+  {$IF CompilerVersion >= 32.0}
   if FStylingNotifierIndex <> WizardFail then
      (BorlandIDEServices as IOTAIDEThemingServices).RemoveNotifier(FStylingNotifierIndex);
+  {$ENDIF}
 end;
 
 { TChatGptMenuWizard }
@@ -742,6 +747,7 @@ begin
   Cs.Leave;
 end;
 
+{$IF CompilerVersion >= 32.0}
 { TStylingNotifier }
 procedure TStylingNotifier.ChangedTheme;
 begin
@@ -780,6 +786,7 @@ begin
     FShouldApplyTheme := True;
   end;
 end;
+{$ENDIF}
 
 initialization
   FChatGPTSubMenu := nil;
