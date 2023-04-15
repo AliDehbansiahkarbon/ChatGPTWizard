@@ -3,9 +3,27 @@
 <img src="https://user-images.githubusercontent.com/5601608/225608017-be60c550-0413-49db-b4b6-3664da20e82f.png" width=500 heigth=500 style="margin-left:70px;" />
 
 <br />
-<br />
 
-<h2>An OpenAI plug-in for Embarcadero RAD Studio IDE.</h2>
+<a href="https://www.embarcadero.com/products/rad-studio"><img src="https://img.shields.io/badge/Delphi_RAD_Studio-B22222?style=for-the-badge&logo=delphi&logoColor=white" alt="Delphi" /></a>
+&nbsp;
+<a href="https://www.buymeacoffee.com/adehbanr" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+<a href="https://github.com/sponsors/AliDehbansiahkarbon"><img src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" alt="sponsor"/></a>
+&nbsp;
+<a href="https://github.com/AliDehbansiahkarbon"><img src="https://img.shields.io/github/followers/AliDehbansiahkarbon.svg?style=social&label=Follow&maxAge=2592000" alt="github profile"></a>
+<br />
+<img src="https://img.shields.io/github/license/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="license">
+<img src="https://img.shields.io/github/downloads/AliDehbansiahkarbon/ChatGPTWizard/total.svg" alt="downloads">
+<img src="https://img.shields.io/github/forks/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="forks">
+<img src="https://img.shields.io/github/stars/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="stars">
+<img src="https://img.shields.io/github/watchers/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="watchers">
+<br />
+<a href="https://github.com/AliDehbansiahkarbon/ChatGPTWizard/issues"><img src="https://img.shields.io/github/issues-closed/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="issues"></a>
+<a href="https://github.com/AliDehbansiahkarbon/ChatGPTWizard/pulls"><img src="https://img.shields.io/github/issues-pr-closed/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="pulls"></a>
+<img src="https://img.shields.io/github/last-commit/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="last-commit">
+
+
+
+<h2>An AI plug-in for Embarcadero RAD Studio IDE.</h2>
 
 <h3>First Plugin Ever to support ChatGPT, Writesonic, and YouChat!</h3>
 <br /
@@ -55,7 +73,6 @@ This Plugin Supports the following AI Services:
 - It's compatible with Delphi 10.1 Berlin and later versions.
 - Uses XSuperObject library which is included in the project files. you can also find the latest version [here](https://github.com/onryldz/x-superobject/blob/master/XSuperObject.pas)
 - Settings are stored in registry which can be found here: `Computer\HKEY_CURRENT_USER\Software\ChatGPTWizard`
-- Consider that if you run it in the IDE without opening any project it will raise a message that it cannot load the SSL library. for more details see [here](#issues-with-ssl)
 
 <br />
 
@@ -75,14 +92,16 @@ Click on the newly added ChatGPT menu on the IDE(or press Ctrl+Shidt+Alt+C) to o
 
 <br />
 
-![image](https://user-images.githubusercontent.com/5601608/220568940-7eba2b94-f091-4400-a031-49b35d1f0d5e.png)
-![image](https://user-images.githubusercontent.com/5601608/220568742-8ec94dec-ca44-4331-b245-202d64181fa5.png)
+<div style="display:inline">
+<img width="350" height="500" src="https://user-images.githubusercontent.com/5601608/220568940-7eba2b94-f091-4400-a031-49b35d1f0d5e.png" alt="how-to-use1"/>
+<img width="350" height="500" src="https://user-images.githubusercontent.com/5601608/220568742-8ec94dec-ca44-4331-b245-202d64181fa5.png" alt="how-to-use2"/>
+</div>
 
 <br />
 
-**Two New Tab has been added to get separate results for Writesonic and YouChat.**
+**Two New Tabs has been added to get separate results for Writesonic and YouChat.**
 
-So now you are able to get two different answers based on any question, compare, merge and get the best quality with codes.
+So now you are able to get multiple different answers based on any question, compare, merge and get the best quality and accuracy for your code.
 
 <br />
 
@@ -104,26 +123,48 @@ So now you are able to get two different answers based on any question, compare,
 
 ## Inline Questions
 
-If you need to use the ChatGPT inside the editor you need to type a question directly inside the code editor and surround it with "cpt:" at the beginning and ":cpt" at the end of the question then press Ctrl+Shift+Alt+A or simply select "Ask" from the editor's context menu by right-clicking on the selected text.
+If you need to use the ChatGPT inside the editor you need to type a question directly inside the code editor and surround it with `cpt:` at the beginning and `:cpt` at the end of the question then press `Ctrl+Shift+Alt+A` or simply select "Ask" from the editor's context menu by right-clicking on the selected text.
+
+
+
+**Usage Scenario for Inline Questions**
+
+Open a new `vcl` applicatiopn project, add a new unit and remove all the code from it! and type the following line, 
+select all and press `Ctrl+Shift+Alt+A`.
+
+`cpt:Create a full unit in Delphi including a class to create an XML file.:cpt`
+
+<br />
+
+![image](https://user-images.githubusercontent.com/5601608/215461813-7ecf4555-b3a2-4c0e-b85e-6069ead6a3d9.png)
 
 <br />
 
 ## Dockable Form
 
-Use the "ChatGPT Dockable" menu from the main menu to show the dockable form and try to dock the form to the left or right side panel of the IDE, and enjoy with your new Google killer assistant!
 <br />
 
-![image](https://user-images.githubusercontent.com/5601608/220598235-a1dbd0bd-400c-4284-9017-a3ff50cb0d4c.png)
-![image](https://user-images.githubusercontent.com/5601608/220598309-1aef8789-5670-487a-b5f7-817fa7a099ef.png)
+<div style="display:inline">
+<img width="350" height="500" src="https://user-images.githubusercontent.com/24512608/232242537-e2d7737b-4044-4ba9-a76e-c466ade7e6d7.png" alt="dockable-form1"/>
+<img width="350" height="500" src="https://user-images.githubusercontent.com/24512608/232242545-5af9612b-27d0-4cf6-b5b2-3d3f187e5fe0.png" alt="dockable-form2"/>
+</div>
+
+<br />
+
+
+Use the **"ChatGPT Dockable"** menu from the main menu to show the dockable form and try to dock the form to the left or right side panel of the IDE, and enjoy with your new Google killer assistant!
+<br />
+
+
 
 <br />
 
 ## Class View
 
 Using the class view you have your class list with some functionalitis in a popup menu.
-It is also possible to use your custom command based on the selected class in the TreeView, in this case @Class will represent the selected class
-in your custom command, if you don's use @Class the selected class' source will be attached to the end of your command, just pay attention there will be 
-some limitations, because at the moment it's not possible to send thousand of lines through the API request.
+It is also possible to use your custom command based on the selected class in the TreeView, in this case `@Class` will represent the selected class
+in your custom command, if you don's use `@Class` the selected class' source will be attached to the end of your command, just pay attention there will be 
+some limitations, because at the moment it's not possible to send thousands of lines through the API request.
 
 Please mind that it is best to use this feature for small classes. due to API limitation you cannot send a class with several thousand lines of code in a question.
 
@@ -136,7 +177,7 @@ Please mind that it is best to use this feature for small classes. due to API li
 ## History
 
 History is available if you enable it in the setting form, it's using SQLite as a simple file base database.
-You can find an empty database in Resource\DB that named "History.sdb", copy this file to any place in the disk and address to the folder in the setting.
+You can find an empty database in `Resource\DB` that named `"History.sdb"`, copy this file to any place in the disk and address to the folder in the setting.
 
 <br />
 
@@ -152,7 +193,7 @@ You can find an empty database in Resource\DB that named "History.sdb", copy thi
 ## Search in History
 
 Right click on the History grid and check search item to the search bar appears, it's not visibile by default to save some space, finally type the keyword
-to search and filter, there are two checkboxes as extra options like case sensitive and fuzy match string search.
+to search and filter, there are two checkboxes as extra options like case sensitive and fuzzy match string search.
 
 <br />
 
@@ -176,22 +217,23 @@ Another thing is, You don't have to do that because it will work fine when you o
 
 <br />
 
-## Usage Scenario
-
-Open a new `vcl` applicatiopn project, add a new unit and remove all the code from it! and type the following line, 
-select all and press `Ctrl+Shift+Alt+A`.
-
-`cpt:Create a full unit in Delphi including a class to create an XML file.:cpt`
-
-<br />
-
-![image](https://user-images.githubusercontent.com/5601608/215461813-7ecf4555-b3a2-4c0e-b85e-6069ead6a3d9.png)
-
-<br />
-
-
+## Miscellaneous
 
 **Presentation: [ChatGPT wizard.pptx](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/files/10612086/CHAtGPT.wizard.pptx)**
 
+<br />
+
+
+## Contributors
+
+**Special Thanks to**
+
+- [Ali Sawari](https://github.com/AliSawari)
+
+
+<br />
+
+
+all PRs and Issues are welcome!
 
 **Good luck!**
