@@ -138,13 +138,16 @@ select all and press `Ctrl+Shift+Alt+A`.
 
 <br />
 
+## Dockable Form
+![image_2023-04-15_19-52-03](https://user-images.githubusercontent.com/24512608/232242537-e2d7737b-4044-4ba9-a76e-c466ade7e6d7.png)
+![image_2023-04-15_19-51-10](https://user-images.githubusercontent.com/24512608/232242545-5af9612b-27d0-4cf6-b5b2-3d3f187e5fe0.png)
 
 <br />
 
-## Dockable Form
 
 Use the "ChatGPT Dockable" menu from the main menu to show the dockable form and try to dock the form to the left or right side panel of the IDE, and enjoy with your new Google killer assistant!
 <br />
+
 
 
 <br />
