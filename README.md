@@ -3,7 +3,15 @@
 <img src="https://user-images.githubusercontent.com/5601608/225608017-be60c550-0413-49db-b4b6-3664da20e82f.png" width=500 heigth=500 style="margin-left:70px;" />
 
 <br />
+
+<a href="https://www.embarcadero.com/products/rad-studio"><img src="https://img.shields.io/badge/Delphi_RAD_Studio-B22222?style=for-the-badge&logo=delphi&logoColor=white" alt="Delphi" /></a>
+&nbsp;
+<a href="https://www.buymeacoffee.com/adehbanr" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+&nbsp;
+<a href="https://github.com/sponsors/AliDehbansiahkarbon"><img src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" alt="sponsor"/></a>
+
 <br />
+
 
 <h2>An OpenAI plug-in for Embarcadero RAD Studio IDE.</h2>
 
