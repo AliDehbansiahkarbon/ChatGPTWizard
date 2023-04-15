@@ -23,7 +23,7 @@
 
 
 
-<h2>An OpenAI plug-in for Embarcadero RAD Studio IDE.</h2>
+<h2>An AI plug-in for Embarcadero RAD Studio IDE.</h2>
 
 <h3>First Plugin Ever to support ChatGPT, Writesonic, and YouChat!</h3>
 <br /
@@ -73,7 +73,6 @@ This Plugin Supports the following AI Services:
 - It's compatible with Delphi 10.1 Berlin and later versions.
 - Uses XSuperObject library which is included in the project files. you can also find the latest version [here](https://github.com/onryldz/x-superobject/blob/master/XSuperObject.pas)
 - Settings are stored in registry which can be found here: `Computer\HKEY_CURRENT_USER\Software\ChatGPTWizard`
-- Consider that if you run it in the IDE without opening any project it will raise a message that it cannot load the SSL library. for more details see [here](#issues-with-ssl)
 
 <br />
 
@@ -124,6 +123,22 @@ So now you are able to get multiple different answers based on any question, com
 
 If you need to use the ChatGPT inside the editor you need to type a question directly inside the code editor and surround it with "cpt:" at the beginning and ":cpt" at the end of the question then press Ctrl+Shift+Alt+A or simply select "Ask" from the editor's context menu by right-clicking on the selected text.
 
+
+
+**Usage Scenario for Inline Questions**
+
+Open a new `vcl` applicatiopn project, add a new unit and remove all the code from it! and type the following line, 
+select all and press `Ctrl+Shift+Alt+A`.
+
+`cpt:Create a full unit in Delphi including a class to create an XML file.:cpt`
+
+<br />
+
+![image](https://user-images.githubusercontent.com/5601608/215461813-7ecf4555-b3a2-4c0e-b85e-6069ead6a3d9.png)
+
+<br />
+
+
 <br />
 
 ## Dockable Form
@@ -131,8 +146,6 @@ If you need to use the ChatGPT inside the editor you need to type a question dir
 Use the "ChatGPT Dockable" menu from the main menu to show the dockable form and try to dock the form to the left or right side panel of the IDE, and enjoy with your new Google killer assistant!
 <br />
 
-![image](https://user-images.githubusercontent.com/5601608/220598235-a1dbd0bd-400c-4284-9017-a3ff50cb0d4c.png)
-![image](https://user-images.githubusercontent.com/5601608/220598309-1aef8789-5670-487a-b5f7-817fa7a099ef.png)
 
 <br />
 
@@ -193,20 +206,6 @@ or you can use a build event on the project's properties to copy these two class
 Another thing is, You don't have to do that because it will work fine when you open any project in the IDE before using this plugin! I'm not sure that this behavior depends on the installed components or libraries or if the IDE loads SSL libraries at the moment you open even a new application. although using the plugin when you are working on a project seems more useful anyways.
 
 <br />
-
-## Usage Scenario
-
-Open a new `vcl` applicatiopn project, add a new unit and remove all the code from it! and type the following line, 
-select all and press `Ctrl+Shift+Alt+A`.
-
-`cpt:Create a full unit in Delphi including a class to create an XML file.:cpt`
-
-<br />
-
-![image](https://user-images.githubusercontent.com/5601608/215461813-7ecf4555-b3a2-4c0e-b85e-6069ead6a3d9.png)
-
-<br />
-
 
 
 **Presentation: [ChatGPT wizard.pptx](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/files/10612086/CHAtGPT.wizard.pptx)**
