@@ -92,8 +92,10 @@ Click on the newly added ChatGPT menu on the IDE(or press Ctrl+Shidt+Alt+C) to o
 
 <br />
 
-![image](https://user-images.githubusercontent.com/5601608/220568940-7eba2b94-f091-4400-a031-49b35d1f0d5e.png)
-![image](https://user-images.githubusercontent.com/5601608/220568742-8ec94dec-ca44-4331-b245-202d64181fa5.png)
+<div style="display:inline">
+<img width="350" height="500" src="https://user-images.githubusercontent.com/5601608/220568940-7eba2b94-f091-4400-a031-49b35d1f0d5e.png" alt="how-to-use1"/>
+<img width="350" height="500" src="https://user-images.githubusercontent.com/5601608/220568742-8ec94dec-ca44-4331-b245-202d64181fa5.png" alt="how-to-use2"/>
+</div>
 
 <br />
 
@@ -142,8 +144,10 @@ select all and press `Ctrl+Shift+Alt+A`.
 
 <br />
 
+<div style="display:inline">
 <img width="350" height="500" src="https://user-images.githubusercontent.com/24512608/232242537-e2d7737b-4044-4ba9-a76e-c466ade7e6d7.png" alt="dockable-form1"/>
 <img width="350" height="500" src="https://user-images.githubusercontent.com/24512608/232242545-5af9612b-27d0-4cf6-b5b2-3d3f187e5fe0.png" alt="dockable-form2"/>
+</div>
 
 <br />
 
