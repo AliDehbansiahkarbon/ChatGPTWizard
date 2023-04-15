@@ -123,7 +123,7 @@ So now you are able to get multiple different answers based on any question, com
 
 ## Inline Questions
 
-If you need to use the ChatGPT inside the editor you need to type a question directly inside the code editor and surround it with "cpt:" at the beginning and ":cpt" at the end of the question then press Ctrl+Shift+Alt+A or simply select "Ask" from the editor's context menu by right-clicking on the selected text.
+If you need to use the ChatGPT inside the editor you need to type a question directly inside the code editor and surround it with `cpt:` at the beginning and `:cpt` at the end of the question then press `Ctrl+Shift+Alt+A` or simply select "Ask" from the editor's context menu by right-clicking on the selected text.
 
 
 
@@ -163,8 +163,8 @@ Use the **"ChatGPT Dockable"** menu from the main menu to show the dockable form
 
 Using the class view you have your class list with some functionalitis in a popup menu.
 It is also possible to use your custom command based on the selected class in the TreeView, in this case `@Class` will represent the selected class
-in your custom command, if you don's use @Class the selected class' source will be attached to the end of your command, just pay attention there will be 
-some limitations, because at the moment it's not possible to send thousand of lines through the API request.
+in your custom command, if you don's use `@Class` the selected class' source will be attached to the end of your command, just pay attention there will be 
+some limitations, because at the moment it's not possible to send thousands of lines through the API request.
 
 Please mind that it is best to use this feature for small classes. due to API limitation you cannot send a class with several thousand lines of code in a question.
 
@@ -177,7 +177,7 @@ Please mind that it is best to use this feature for small classes. due to API li
 ## History
 
 History is available if you enable it in the setting form, it's using SQLite as a simple file base database.
-You can find an empty database in Resource\DB that named "History.sdb", copy this file to any place in the disk and address to the folder in the setting.
+You can find an empty database in `Resource\DB` that named `"History.sdb"`, copy this file to any place in the disk and address to the folder in the setting.
 
 <br />
 
@@ -193,7 +193,7 @@ You can find an empty database in Resource\DB that named "History.sdb", copy thi
 ## Search in History
 
 Right click on the History grid and check search item to the search bar appears, it's not visibile by default to save some space, finally type the keyword
-to search and filter, there are two checkboxes as extra options like case sensitive and fuzy match string search.
+to search and filter, there are two checkboxes as extra options like case sensitive and fuzzy match string search.
 
 <br />
 
