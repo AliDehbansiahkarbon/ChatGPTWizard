@@ -234,6 +234,6 @@ Another thing is, You don't have to do that because it will work fine when you o
 <br />
 
 
-all PRs and Issues are welcome!
+All PRs and Issues are welcome!
 
 **Good luck!**
