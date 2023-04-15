@@ -139,13 +139,16 @@ select all and press `Ctrl+Shift+Alt+A`.
 <br />
 
 ## Dockable Form
-![image_2023-04-15_19-52-03](https://user-images.githubusercontent.com/24512608/232242537-e2d7737b-4044-4ba9-a76e-c466ade7e6d7.png)
-![image_2023-04-15_19-51-10](https://user-images.githubusercontent.com/24512608/232242545-5af9612b-27d0-4cf6-b5b2-3d3f187e5fe0.png)
+
+<br />
+
+<img width="350" height="500" src="https://user-images.githubusercontent.com/24512608/232242537-e2d7737b-4044-4ba9-a76e-c466ade7e6d7.png" alt="dockable-form1"/>
+<img width="350" height="500" src="https://user-images.githubusercontent.com/24512608/232242545-5af9612b-27d0-4cf6-b5b2-3d3f187e5fe0.png" alt="dockable-form2"/>
 
 <br />
 
 
-Use the "ChatGPT Dockable" menu from the main menu to show the dockable form and try to dock the form to the left or right side panel of the IDE, and enjoy with your new Google killer assistant!
+Use the **"ChatGPT Dockable"** menu from the main menu to show the dockable form and try to dock the form to the left or right side panel of the IDE, and enjoy with your new Google killer assistant!
 <br />
 
 
@@ -155,7 +158,7 @@ Use the "ChatGPT Dockable" menu from the main menu to show the dockable form and
 ## Class View
 
 Using the class view you have your class list with some functionalitis in a popup menu.
-It is also possible to use your custom command based on the selected class in the TreeView, in this case @Class will represent the selected class
+It is also possible to use your custom command based on the selected class in the TreeView, in this case `@Class` will represent the selected class
 in your custom command, if you don's use @Class the selected class' source will be attached to the end of your command, just pay attention there will be 
 some limitations, because at the moment it's not possible to send thousand of lines through the API request.
 
@@ -210,8 +213,23 @@ Another thing is, You don't have to do that because it will work fine when you o
 
 <br />
 
+## Miscellaneous
 
 **Presentation: [ChatGPT wizard.pptx](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/files/10612086/CHAtGPT.wizard.pptx)**
 
+<br />
+
+
+## Contributors
+
+**Special Thanks to**
+
+- [Ali Sawari](https://github.com/AliSawari)
+
+
+<br />
+
+
+all PRs and Issues are welcome!
 
 **Good luck!**
