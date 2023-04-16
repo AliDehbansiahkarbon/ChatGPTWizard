@@ -620,7 +620,15 @@ begin
   begin
     TSingletonSettingObj.Instance.CurrentActiveViewName := LvCurrentUnitName;
     Cs.Leave;
-    FChatGPTDockForm.Fram_Question.ReloadClassList(FChatGPTDockForm.FDockFormClassListObj);
+
+    if Assigned(FChatGPTDockForm) then
+    begin
+      with FChatGPTDockForm.Fram_Question do
+      begin
+        if (pgcMain.ActivePage = tsClassView) and (not ClassViewIsBusy) then
+          ReloadClassList(FChatGPTDockForm.FDockFormClassListObj);
+      end;
+    end;
   end;
 end;
 

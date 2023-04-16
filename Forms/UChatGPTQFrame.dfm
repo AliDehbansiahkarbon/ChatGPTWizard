@@ -138,7 +138,7 @@ object Fram_Question: TFram_Question
                   Left = 0
                   Top = 0
                   Width = 415
-                  Height = 178
+                  Height = 176
                   Align = alClient
                   ReadOnly = True
                   ScrollBars = ssVertical
@@ -152,7 +152,7 @@ object Fram_Question: TFram_Question
                   Left = 0
                   Top = 0
                   Width = 415
-                  Height = 178
+                  Height = 176
                   Align = alClient
                   ReadOnly = True
                   ScrollBars = ssVertical
@@ -234,13 +234,13 @@ object Fram_Question: TFram_Question
         Left = 0
         Top = 140
         Width = 427
-        Height = 231
+        Height = 229
         Align = alClient
         TabOrder = 1
         object splClassViewResult: TSplitter
           Left = 238
           Top = 1
-          Height = 229
+          Height = 227
           Align = alRight
           Visible = False
           ExplicitLeft = 216
@@ -252,7 +252,7 @@ object Fram_Question: TFram_Question
           Left = 4
           Top = 4
           Width = 231
-          Height = 223
+          Height = 221
           Align = alClient
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
@@ -269,9 +269,10 @@ object Fram_Question: TFram_Question
           Left = 241
           Top = 1
           Width = 185
-          Height = 229
+          Height = 227
           Align = alRight
           ReadOnly = True
+          ScrollBars = ssVertical
           TabOrder = 1
           Visible = False
           OnDblClick = mmoClassViewResultDblClick
@@ -331,7 +332,7 @@ object Fram_Question: TFram_Question
             Left = 7
             Top = 8
             Width = 202
-            Height = 21
+            Height = 23
             Anchors = [akLeft, akTop, akRight]
             TabOrder = 1
             OnChange = Edt_SearchChange
@@ -368,12 +369,11 @@ object Fram_Question: TFram_Question
         Height = 181
         Align = alClient
         TabOrder = 1
-        ExplicitHeight = 183
         object mmoHistoryDetail: TMemo
           Left = 1
           Top = 1
           Width = 425
-          Height = 181
+          Height = 179
           Align = alClient
           ReadOnly = True
           ScrollBars = ssBoth

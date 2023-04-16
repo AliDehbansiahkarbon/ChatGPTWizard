@@ -135,6 +135,7 @@ type
     FCellCloseBtn: TSpeedButton;
     FHistoryGrid: THistoryDBGrid;
     FLastQuestion: string;
+    FClassViewIsBusy: Boolean;
 
     procedure CopyToClipBoard;
     procedure CallThread(APrompt: string; AIsClassView: Boolean = False);
@@ -162,6 +163,7 @@ type
     {$ENDIF}
 
     property HistoryGrid: THistoryDBGrid read FHistoryGrid write FHistoryGrid;
+    property ClassViewIsBusy: Boolean read FClassViewIsBusy write FClassViewIsBusy;
   end;
 
 implementation
@@ -299,6 +301,7 @@ begin
   LvSetting.TaskList.Clear;
   if not AIsClassView then
   begin
+    FClassViewIsBusy := False;
     LvSetting.TaskList.Add('GPT');
     if (CompilerVersion >= 32) and (LvEnableWriteSonic) then
       LvSetting.TaskList.Add('WS');
@@ -307,7 +310,11 @@ begin
       LvSetting.TaskList.Add('YC');
   end
   else
+  begin
     LvSetting.TaskList.Add('CLS');
+    FClassViewIsBusy := True;
+  end;
+
   Cs.Leave;
 
   FChatGPTTrd := TExecutorTrd.Create(Self.Handle, LvChatGPTApiKey, LvModel, LvQuestion, LvChatGPTBaseUrl,
@@ -316,7 +323,7 @@ begin
   FChatGPTTrd.Start;
 
   {$IF CompilerVersion >= 32.0}
-  if MultiAI then
+  if (not AIsClassView) and (MultiAI) then
   begin
     if LvEnableWriteSonic then
     begin
@@ -753,6 +760,7 @@ end;
 procedure TFram_Question.InitialFrame;
 begin
   FLastQuestion := '';
+  FClassViewIsBusy := False;
   Align := alClient;
   tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
   tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
@@ -980,7 +988,7 @@ begin
   else if Msg.LParam = 2 then // Finished.
   begin
     EnableUI('WS');
-    AddToHistory(mmoWriteSonicAnswer.Lines.Text, '***** WriteSonic *****' + #13 + mmoWriteSonicAnswer.Lines.Text);
+    AddToHistory(mmoQuestion.Lines.Text, '***** WriteSonic *****' + #13 + mmoWriteSonicAnswer.Lines.Text);
     Cs.Enter;
     TSingletonSettingObj.Instance.ShouldReloadHistory := True;
     Cs.Leave;
@@ -1009,7 +1017,7 @@ begin
   else if Msg.LParam = 2 then // Finished.
   begin
     EnableUI('YC');
-    AddToHistory(mmoYouChatAnswer.Lines.Text, '***** YouChat *****' + #13 + mmoYouChatAnswer.Lines.Text);
+    AddToHistory(mmoQuestion.Lines.Text, '***** YouChat *****' + #13 + mmoYouChatAnswer.Lines.Text);
     Cs.TryEnter;
     TSingletonSettingObj.Instance.ShouldReloadHistory := True;
     Cs.Leave;
@@ -1025,18 +1033,22 @@ end;
 
 procedure TFram_Question.pgcAnswersChange(Sender: TObject);
 begin
-  case pgcAnswers.ActivePageIndex of
-    0: Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
-    1: Clipboard.SetTextBuf(pwidechar(mmoWriteSonicAnswer.Lines.Text));
-    2: Clipboard.SetTextBuf(pwidechar(mmoYouChatAnswer.Lines.Text));
+  if chk_AutoCopy.Checked then
+  begin
+    case pgcAnswers.ActivePageIndex of
+      0: Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
+      1: Clipboard.SetTextBuf(pwidechar(mmoWriteSonicAnswer.Lines.Text));
+      2: Clipboard.SetTextBuf(pwidechar(mmoYouChatAnswer.Lines.Text));
+    end;
   end;
+  ActivityIndicator1.Visible := TSingletonSettingObj.Instance.TaskList.Count > 0;
 end;
 
 procedure TFram_Question.pgcMainChange(Sender: TObject);
 var
   LvShouldReloadHistory: Boolean;
 begin
-  if pgcMain.ActivePage = tsClassView then
+  if (pgcMain.ActivePage = tsClassView) and (not FClassViewIsBusy) then
     ReloadClassList(FClassList);
 
   if pgcMain.ActivePage = tsHistory then
