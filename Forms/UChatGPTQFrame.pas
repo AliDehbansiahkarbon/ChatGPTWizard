@@ -509,6 +509,7 @@ begin
     Btn_Ask.Enabled := True;
     if ATaskName = 'CLS' then
     begin
+      FClassViewIsBusy := False;
       mmoClassViewResult.Visible := True;
       splClassViewResult.Visible := True;
     end;
