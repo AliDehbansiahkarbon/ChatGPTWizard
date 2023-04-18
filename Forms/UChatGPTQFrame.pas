@@ -175,13 +175,17 @@ begin
   if (TSingletonSettingObj.Instance.HistoryEnabled) then
   begin
     if not FDConnection.Connected then
-    if LoadHistory then
+      LoadHistory;
+
+    if FDConnection.Connected then
     begin
       FDQryHistory.Append;
       FDQryHistoryQuestion.AsString := AQuestion;
       FDQryHistoryAnswer.AsString := AAnswer;
       FDQryHistoryDate.AsLargeInt := DateTimeToUnix(Date);
       FDQryHistory.Post;
+
+      TSingletonSettingObj.Instance.ShouldReloadHistory := True;
     end;
   end;
 end;
