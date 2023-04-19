@@ -197,7 +197,7 @@ object Fram_Question: TFram_Question
               Font.Name = 'Segoe UI'
               Font.Style = [fsBold]
               Lines.Strings = (
-                'Create a class to make a Zip file in Delphi.')
+                '')
               ParentFont = False
               ParentShowHint = False
               ScrollBars = ssVertical
@@ -472,14 +472,18 @@ object Fram_Question: TFram_Question
   object pmGrdHistory: TPopupMenu
     Left = 160
     Top = 304
-    object ReloadHistory1: TMenuItem
-      Caption = 'Reload History'
-      OnClick = ReloadHistory1Click
+    object GetQuestion: TMenuItem
+      Caption = 'Use the Question'
+      OnClick = GetQuestionClick
     end
-    object Search1: TMenuItem
+    object ReloadHistory: TMenuItem
+      Caption = 'Reload History'
+      OnClick = ReloadHistoryClick
+    end
+    object SearchMnu: TMenuItem
       AutoCheck = True
       Caption = 'Search'
-      OnClick = Search1Click
+      OnClick = SearchMnuClick
     end
   end
 end

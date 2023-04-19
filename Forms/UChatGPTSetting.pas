@@ -65,6 +65,7 @@ type
     FPredefinedQuestions: TQuestionPairs;
     FAnimatedLetters: Boolean;
     FTimeOut: Integer;
+    FMainFormLastQuestion: string;
 
     FEnableWriteSonic: Boolean;
     FWriteSonicAPIKey: string;
@@ -117,6 +118,7 @@ type
     property PredefinedQuestions: TQuestionPairs read FPredefinedQuestions write FPredefinedQuestions;
     property AnimatedLetters: Boolean read FAnimatedLetters write FAnimatedLetters;
     property TimeOut: Integer read FTimeOut write FTimeOut;
+    property MainFormLastQuestion: string read FMainFormLastQuestion write FMainFormLastQuestion;
 
     property EnableWriteSonic: Boolean read FEnableWriteSonic write FEnableWriteSonic;
     property WriteSonicAPIKey: string read FWriteSonicAPIKey write FWriteSonicAPIKey;
@@ -340,6 +342,7 @@ begin
   FHighlightColor := clRed;
   FAnimatedLetters := True;
   FTimeOut := 20;
+  FMainFormLastQuestion := 'Create a class to make a Zip file in Delphi.';
 
   FEnableWriteSonic := False;
   FWriteSonicAPIKey := '';
@@ -468,6 +471,11 @@ begin
             FTimeOut := ReadInteger('ChatGPTTimeOut')
           else
             FTimeOut := 20;
+
+          if ValueExists('ChatGPTMainFormLastQuestion') then
+            FMainFormLastQuestion := ReadString('ChatGPTMainFormLastQuestion')
+          else
+            FMainFormLastQuestion := 'Create a class to make a Zip file in Delphi.';
 
           //==============================WriteSonic=======================begin
           if ValueExists('ChatGPTEnableWriteSonic') then
@@ -602,6 +610,7 @@ begin
         WriteInteger('ChatGPTHighlightColor', FHighlightColor);
         WriteBool('ChatGPTAnimatedLetters', FAnimatedLetters);
         WriteInteger('ChatGPTTimeOut', FTimeOut);
+        WriteString('ChatGPTMainFormLastQuestion', FMainFormLastQuestion);
 
         WriteBool('ChatGPTEnableWriteSonic', FEnableWriteSonic);
         WriteString('ChatGPTWriteSonicAPIKey', FWriteSonicAPIKey);

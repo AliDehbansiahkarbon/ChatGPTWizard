@@ -12,7 +12,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls, Vcl.ExtCtrls, UChatGPTThread,
-  Vcl.Menus, UChatGPTSetting, Vcl.Clipbrd, UChatGPTQFrame;
+  Vcl.Menus, UChatGPTSetting, Vcl.Clipbrd, UChatGPTQFrame, System.Win.Registry;
 
 type
   TFrmChatGPT = class(TForm)
@@ -20,6 +20,8 @@ type
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    procedure SaveLastQuestion;
   end;
 
 var
@@ -31,6 +33,7 @@ implementation
 
 procedure TFrmChatGPT.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  SaveLastQuestion;
   Fram_Question.TerminateAll;
 end;
 
@@ -52,9 +55,29 @@ begin
     Cs.Enter;
     tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
     tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
+    mmoQuestion.Lines.Clear;
+    mmoQuestion.Lines.Add(TSingletonSettingObj.Instance.MainFormLastQuestion);
     Cs.Leave;
     ActivityIndicator1.Visible := False;
     FreeAndNil(pgcMain);
+  end;
+end;
+
+procedure TFrmChatGPT.SaveLastQuestion;
+var
+  LvRegKey: TRegistry;
+begin
+  try
+    LvRegKey := TRegistry.Create;
+    try
+      LvRegKey.CloseKey;
+      LvRegKey.RootKey := HKEY_CURRENT_USER;
+      if LvRegKey.OpenKey('\SOFTWARE\ChatGPTWizard', True) then
+        LvRegKey.WriteString('ChatGPTMainFormLastQuestion', Fram_Question.mmoQuestion.text);
+    finally
+      LvRegKey.Free;
+    end;
+  except
   end;
 end;
 
