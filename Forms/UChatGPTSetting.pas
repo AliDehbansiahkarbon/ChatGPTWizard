@@ -88,16 +88,17 @@ type
     procedure LoadDefaults;
     procedure LoadDefaultQuestions;
     function GetMuliAI: Boolean;
+
   public
     procedure ReadRegistry;
     procedure WriteToRegistry;
     function GetSetting: string;
     function GetHistoryFullPath: string;
     function TryFindQuestion(ACaption: string; var AQuestion: string): Integer;
-    Class Procedure RegisterFormClassForTheming(Const AFormClass: TCustomFormClass; Const Component: TComponent = Nil);
+    class Procedure RegisterFormClassForTheming(Const AFormClass: TCustomFormClass; Const Component: TComponent = Nil);
     class function IsValidJson(const AJsonString: string): Boolean;
-
     class property Instance: TSingletonSettingObj read GetInstance;
+
     property ApiKey: string read FApiKey write FApiKey;
     property URL: string read FURL write FURL;
     property Model: string read FModel write FModel;
@@ -643,6 +644,8 @@ begin
     LvRegKey.Free;
   end;
 end;
+
+{TFrm_Setting}
 
 procedure TFrm_Setting.Btn_AddQuestionClick(Sender: TObject);
 begin
