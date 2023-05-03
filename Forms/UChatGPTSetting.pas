@@ -474,7 +474,7 @@ begin
             FTimeOut := 20;
 
           if ValueExists('ChatGPTMainFormLastQuestion') then
-            FMainFormLastQuestion := ReadString('ChatGPTMainFormLastQuestion')
+            FMainFormLastQuestion := ReadString('ChatGPTMainFormLastQuestion').Trim
           else
             FMainFormLastQuestion := 'Create a class to make a Zip file in Delphi.';
 
@@ -611,7 +611,7 @@ begin
         WriteInteger('ChatGPTHighlightColor', FHighlightColor);
         WriteBool('ChatGPTAnimatedLetters', FAnimatedLetters);
         WriteInteger('ChatGPTTimeOut', FTimeOut);
-        WriteString('ChatGPTMainFormLastQuestion', FMainFormLastQuestion);
+        WriteString('ChatGPTMainFormLastQuestion', FMainFormLastQuestion.Trim);
 
         WriteBool('ChatGPTEnableWriteSonic', FEnableWriteSonic);
         WriteString('ChatGPTWriteSonicAPIKey', FWriteSonicAPIKey);
@@ -902,7 +902,7 @@ end;
 procedure TFrm_Setting.AddQuestion(AQuestionpair: TQuestionPair);
 var
   LvPanel: Tpanel;
-  LvLabeledEditCaption, LvLabeledEditQuestion: TLabeledEdit;
+  LvLabeledEditCaption: TLabeledEdit;
   I, LvCounter: Integer;
   LvH: Integer;
 begin

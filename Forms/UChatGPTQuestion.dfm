@@ -119,10 +119,6 @@ object FrmChatGPT: TFrmChatGPT
         Left = 281
         ExplicitLeft = 281
       end
-      inherited ActivityIndicator1: TActivityIndicator
-        ExplicitWidth = 24
-        ExplicitHeight = 24
-      end
     end
   end
 end
