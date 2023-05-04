@@ -56,7 +56,8 @@ begin
     tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
     tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
     mmoQuestion.Lines.Clear;
-    mmoQuestion.Lines.Add(TSingletonSettingObj.Instance.MainFormLastQuestion);
+    if not TSingletonSettingObj.Instance.MainFormLastQuestion.Trim.IsEmpty then
+      mmoQuestion.Lines.Add(TSingletonSettingObj.Instance.MainFormLastQuestion);
     Cs.Leave;
     ActivityIndicator1.Visible := False;
     FreeAndNil(pgcMain);
@@ -72,7 +73,7 @@ begin
     try
       LvRegKey.CloseKey;
       LvRegKey.RootKey := HKEY_CURRENT_USER;
-      if LvRegKey.OpenKey('\SOFTWARE\ChatGPTWizard', True) then
+      if (LvRegKey.OpenKey('\SOFTWARE\ChatGPTWizard', True)) and (not Trim(Fram_Question.mmoQuestion.Text).IsEmpty) then
         LvRegKey.WriteString('ChatGPTMainFormLastQuestion', Fram_Question.mmoQuestion.text);
     finally
       LvRegKey.Free;
