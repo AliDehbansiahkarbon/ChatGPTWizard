@@ -126,7 +126,6 @@ So now you are able to get multiple different answers based on any question, com
 If you need to use the ChatGPT inside the editor you need to type a question directly inside the code editor and surround it with `cpt:` at the beginning and `:cpt` at the end of the question then press `Ctrl+Shift+Alt+A` or simply select "Ask" from the editor's context menu by right-clicking on the selected text.
 
 
-
 **Usage Scenario for Inline Questions**
 
 Open a new `vcl` applicatiopn project, add a new unit and remove all the code from it! and type the following line, 
@@ -134,9 +133,6 @@ select all and press `Ctrl+Shift+Alt+A`.
 
 `cpt:Create a full unit in Delphi including a class to create an XML file.:cpt`
 
-<br />
-
-![image](https://user-images.githubusercontent.com/5601608/215461813-7ecf4555-b3a2-4c0e-b85e-6069ead6a3d9.png)
 
 <br />
 
@@ -155,6 +151,32 @@ select all and press `Ctrl+Shift+Alt+A`.
 Use the **"ChatGPT Dockable"** menu from the main menu to show the dockable form and try to dock the form to the left or right side panel of the IDE, and enjoy with your new Google killer assistant!
 <br />
 
+
+
+<br />
+
+
+## Context Menu
+
+Context Menu for Selected text or a block of code. The Result will be inserted after the selected text as a multi line comment between two brackets `{}`
+
+**Options**
+
+- Ask
+- Add Test  - Will try to create unit test for the selected text
+- Find Bugs - Find fugs in the selected text
+- Optimize - Will Optimize the selected text
+- Add Comments - Will add necessary comments to the selected code
+- Complete code - Will try to add any missing code to the selected code
+
+<br />
+<br />
+
+![image_2023-04-25_15-59-25](https://user-images.githubusercontent.com/24512608/236583960-d584de08-6924-4b42-9e0a-c028a36d919f.png)
+
+<br />
+
+![image_2023-04-25_16-08-40](https://user-images.githubusercontent.com/24512608/236584029-c3982eb3-1824-4146-a611-7c861b034e28.png)
 
 
 <br />
