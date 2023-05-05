@@ -169,8 +169,14 @@ Context Menu for Selected text or a block of code. The Result will be inserted a
 - Add Comments - Will add necessary comments to the selected code
 - Complete code - Will try to add any missing code to the selected code
 
-Image1 here
-Image2 here
+<br />
+
+![image_2023-04-25_15-59-25](https://user-images.githubusercontent.com/24512608/236583960-d584de08-6924-4b42-9e0a-c028a36d919f.png)
+
+<br />
+
+![image_2023-04-25_16-08-40](https://user-images.githubusercontent.com/24512608/236584029-c3982eb3-1824-4146-a611-7c861b034e28.png)
+
 
 <br />
 
