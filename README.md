@@ -229,11 +229,12 @@ Another thing is, You don't have to do that because it will work fine when you o
 **Special Thanks to**
 
 - [Ali Sawari](https://github.com/AliSawari)
+- [limelect](https://github.com/limelect)
 
 
 <br />
 
-
-all PRs and Issues are welcome!
+Do not hesitate to star! if you like it take a leap of faith, and hit that 'Star' button, also watch the repository to stay tune with the latest updates, debugs, features, and etc.
+All PRs, disscutions, and issues are welcome but please read check the closed issues before opening a new one to avoid duplicates!
 
 **Good luck!**

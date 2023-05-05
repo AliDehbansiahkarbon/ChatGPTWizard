@@ -70,11 +70,11 @@ type
     FDQryHistoryAnswer: TWideMemoField;
     FDQryHistoryDate: TLargeintField;
     pmGrdHistory: TPopupMenu;
-    ReloadHistory1: TMenuItem;
+    ReloadHistory: TMenuItem;
     pnlSearchHistory: TPanel;
     Chk_CaseSensitive: TCheckBox;
     Edt_Search: TEdit;
-    Search1: TMenuItem;
+    SearchMnu: TMenuItem;
     Chk_FuzzyMatch: TCheckBox;
     mmoClassViewResult: TMemo;
     splClassViewResult: TSplitter;
@@ -85,6 +85,12 @@ type
     tsYouChat: TTabSheet;
     mmoYouChatAnswer: TMemo;
     ActivityIndicator1: TActivityIndicator;
+    GetQuestion: TMenuItem;
+    pmClear: TPopupMenu;
+    ClearQuestion1: TMenuItem;
+    ClearAnswer1: TMenuItem;
+    Clearallhistoryitems1: TMenuItem;
+    N1: TMenuItem;
     procedure Btn_AskClick(Sender: TObject);
     procedure Btn_ClipboardClick(Sender: TObject);
     procedure CopytoClipboard1Click(Sender: TObject);
@@ -99,8 +105,8 @@ type
     procedure GridResize(Sender: TObject);
     procedure DrawColumnCell(Sender: TObject; const Rect: TRect; DataCol: Integer; Column: TColumn; State: TGridDrawState);
     procedure CloseBtnClick(Sender: TObject);
-    procedure ReloadHistory1Click(Sender: TObject);
-    procedure Search1Click(Sender: TObject);
+    procedure ReloadHistoryClick(Sender: TObject);
+    procedure SearchMnuClick(Sender: TObject);
     procedure Edt_SearchChange(Sender: TObject);
     procedure FDQryHistoryFilterRecord(DataSet: TDataSet; var Accept: Boolean);
     procedure Chk_CaseSensitiveClick(Sender: TObject);
@@ -124,6 +130,11 @@ type
     procedure CustomCommandClick(Sender: TObject);
     procedure pgcMainChanging(Sender: TObject; var AllowChange: Boolean);
     procedure pgcAnswersChange(Sender: TObject);
+    procedure GetQuestionClick(Sender: TObject);
+    procedure ClearQuestion1Click(Sender: TObject);
+    procedure ClearAnswer1Click(Sender: TObject);
+    procedure HistoryDBGridDblClick(Sender: TObject);
+    procedure Clearallhistoryitems1Click(Sender: TObject);
   private
     FChatGPTTrd: TExecutorTrd;
     {$IF CompilerVersion >= 32.0}
@@ -135,6 +146,7 @@ type
     FCellCloseBtn: TSpeedButton;
     FHistoryGrid: THistoryDBGrid;
     FLastQuestion: string;
+    FClassViewIsBusy: Boolean;
 
     procedure CopyToClipBoard;
     procedure CallThread(APrompt: string; AIsClassView: Boolean = False);
@@ -146,6 +158,7 @@ type
     procedure HighlightCellTextFuzzy(AGrid: TDbGrid; const ARect: TRect; AField: TField; AMatchedIndexes : TList; AState: TGridDrawState ;
                                 ACaseSensitive: Boolean; ABkColor: TColor; ASelectedBkColor: TColor);
     procedure EnableUI(ATaskName: string);
+    procedure ClearAnswers;
   public
     procedure InitialFrame;
     procedure InitialClassViewMenueItems(AClassList: TClassList);
@@ -162,6 +175,7 @@ type
     {$ENDIF}
 
     property HistoryGrid: THistoryDBGrid read FHistoryGrid write FHistoryGrid;
+    property ClassViewIsBusy: Boolean read FClassViewIsBusy write FClassViewIsBusy;
   end;
 
 implementation
@@ -175,11 +189,16 @@ begin
     if not FDConnection.Connected then
       LoadHistory;
 
-    FDQryHistory.Append;
-    FDQryHistoryQuestion.AsString := AQuestion;
-    FDQryHistoryAnswer.AsString := AAnswer;
-    FDQryHistoryDate.AsLargeInt := DateTimeToUnix(Date);
-    FDQryHistory.Post;
+    if FDConnection.Connected then
+    begin
+      FDQryHistory.Append;
+      FDQryHistoryQuestion.AsString := AQuestion;
+      FDQryHistoryAnswer.AsString := AAnswer;
+      FDQryHistoryDate.AsLargeInt := DateTimeToUnix(Date);
+      FDQryHistory.Post;
+
+      TSingletonSettingObj.Instance.ShouldReloadHistory := True;
+    end;
   end;
 end;
 
@@ -299,6 +318,7 @@ begin
   LvSetting.TaskList.Clear;
   if not AIsClassView then
   begin
+    FClassViewIsBusy := False;
     LvSetting.TaskList.Add('GPT');
     if (CompilerVersion >= 32) and (LvEnableWriteSonic) then
       LvSetting.TaskList.Add('WS');
@@ -307,7 +327,11 @@ begin
       LvSetting.TaskList.Add('YC');
   end
   else
+  begin
     LvSetting.TaskList.Add('CLS');
+    FClassViewIsBusy := True;
+  end;
+
   Cs.Leave;
 
   FChatGPTTrd := TExecutorTrd.Create(Self.Handle, LvChatGPTApiKey, LvModel, LvQuestion, LvChatGPTBaseUrl,
@@ -316,7 +340,7 @@ begin
   FChatGPTTrd.Start;
 
   {$IF CompilerVersion >= 32.0}
-  if MultiAI then
+  if (not AIsClassView) and (MultiAI) then
   begin
     if LvEnableWriteSonic then
     begin
@@ -367,9 +391,42 @@ begin
   end;
 end;
 
+procedure TFram_Question.Clearallhistoryitems1Click(Sender: TObject);
+begin
+  if FDQryHistory.IsEmpty then
+    Exit;
+
+  if MessageDlg('Are you sure you want to clear all history items?', TMsgDlgType.mtWarning, [mbYes, mbNo], 0, mbNo) = mrYes then
+  begin
+    FDConnection.ExecSQL('Delete from TbHistory');
+    FDQryHistory.Close;
+    FDQryHistory.Open;
+    mmoHistoryDetail.Clear;
+    FCellCloseBtn.Parent := Self;
+  end;
+end;
+
+procedure TFram_Question.ClearAnswer1Click(Sender: TObject);
+begin
+  ClearAnswers;
+end;
+
+procedure TFram_Question.ClearAnswers;
+begin
+  mmoAnswer.Lines.Clear;
+  mmoWriteSonicAnswer.Lines.Clear;
+  mmoYouChatAnswer.Lines.Clear;
+end;
+
+procedure TFram_Question.ClearQuestion1Click(Sender: TObject);
+begin
+  mmoQuestion.Clear;
+end;
+
 procedure TFram_Question.CloseBtnClick(Sender: TObject);
 begin
-  FDQryHistory.Delete;
+  if FDQryHistory.RecordCount > 0 then
+    FDQryHistory.Delete;
 end;
 
 procedure TFram_Question.CopyToClipBoard;
@@ -420,7 +477,7 @@ Var
   LvMatchedIndexes: TList;
 begin
   //================= Drawing delete button ============================
-  if (not FDQryHistoryHID.IsNull) and (Column.Title.Caption = '^_^') Then
+  if (not FDQryHistory.IsEmpty) and (not FDQryHistoryHID.IsNull) and (Column.Title.Caption = '^_^') Then
   begin
     DataRect := FHistoryGrid.CellRect(Column.Index + 1, FHistoryGrid.Row);
     If FCellCloseBtn.Parent <> FHistoryGrid Then
@@ -502,6 +559,7 @@ begin
     Btn_Ask.Enabled := True;
     if ATaskName = 'CLS' then
     begin
+      FClassViewIsBusy := False;
       mmoClassViewResult.Visible := True;
       splClassViewResult.Visible := True;
     end;
@@ -578,6 +636,16 @@ begin
     end;
   end;
   Result := PIdx > Length(APattern);
+end;
+
+procedure TFram_Question.GetQuestionClick(Sender: TObject);
+begin
+  if (FDQryHistory.Active) and (FDQryHistory.RecordCount > 0) and (not FDQryHistoryQuestion.IsNull) then
+  begin
+    mmoQuestion.Lines.Clear;
+    mmoQuestion.Lines.Add(FDQryHistoryQuestion.AsString);
+    pgcMain.TabIndex := 0;
+  end;
 end;
 
 procedure TFram_Question.GoClick(Sender: TObject);
@@ -695,6 +763,16 @@ begin
   end;
 end;
 
+procedure TFram_Question.HistoryDBGridDblClick(Sender: TObject);
+begin
+  if (FDQryHistory.Active) and (FDQryHistory.RecordCount > 0) then
+  begin
+    mmoQuestion.Lines.Clear;
+    mmoQuestion.Lines.Add(FDQryHistory.FieldByName('Question').AsString);
+    pgcMain.ActivePageIndex := 0;
+  end;
+end;
+
 procedure TFram_Question.InitialClassViewMenueItems(AClassList: TClassList);
 var
   LvKey: Integer;
@@ -730,29 +808,30 @@ begin
     AddMenuItem(TSingletonSettingObj.Instance.PredefinedQuestions.Items[LvKey].Caption);
 
   // Add Convert commands
-    LvMenuItem := TMenuItem.Create(Self);
-    LvMenuItem.Caption := 'Convert to';
-    pmClassOperations.Items.Add(LvMenuItem);
+  LvMenuItem := TMenuItem.Create(Self);
+  LvMenuItem.Caption := 'Convert to';
+  pmClassOperations.Items.Add(LvMenuItem);
 
-    AddSubMenu('C#', LvMenuItem, CSharpClick);
-    AddSubMenu('Java', LvMenuItem, JavaClick);
-    AddSubMenu('Python', LvMenuItem, PythonClick);
-    AddSubMenu('Javascript', LvMenuItem, JavascriptClick);
-    AddSubMenu('C', LvMenuItem, CClick);
-    AddSubMenu('C++', LvMenuItem, CPlusPlusClick);
-    AddSubMenu('Go', LvMenuItem, GoClick);
-    AddSubMenu('Rust', LvMenuItem, RustClick);
+  AddSubMenu('C#', LvMenuItem, CSharpClick);
+  AddSubMenu('Java', LvMenuItem, JavaClick);
+  AddSubMenu('Python', LvMenuItem, PythonClick);
+  AddSubMenu('Javascript', LvMenuItem, JavascriptClick);
+  AddSubMenu('C', LvMenuItem, CClick);
+  AddSubMenu('C++', LvMenuItem, CPlusPlusClick);
+  AddSubMenu('Go', LvMenuItem, GoClick);
+  AddSubMenu('Rust', LvMenuItem, RustClick);
 
   // Add Custom Commands
-    LvMenuItem := TMenuItem.Create(Self);
-    LvMenuItem.Caption := 'Custom Command';
-    LvMenuItem.OnClick := CustomCommandClick;
-    pmClassOperations.Items.Add(LvMenuItem);
+  LvMenuItem := TMenuItem.Create(Self);
+  LvMenuItem.Caption := 'Custom Command';
+  LvMenuItem.OnClick := CustomCommandClick;
+  pmClassOperations.Items.Add(LvMenuItem);
 end;
 
 procedure TFram_Question.InitialFrame;
 begin
   FLastQuestion := '';
+  FClassViewIsBusy := False;
   Align := alClient;
   tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
   tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
@@ -768,6 +847,7 @@ begin
     Parent := pnlHistoryTop;
     Align := alClient;
     DataSource := DSHistory;
+    OnDblClick := HistoryDBGridDblClick;
     Options := [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack];
 
     with Columns.Add do
@@ -887,10 +967,7 @@ begin
       end
       else if Msg.LParam = 1 then // Char by Char.
       begin
-        if Msg.WParam = 13 then
-          mmoAnswer.Lines.Add('')
-        else
-          mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] := mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] + char(Msg.WParam);
+        mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] := mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] + char(Msg.WParam);
       end
       else if Msg.LParam = 2 then // Finished.
       begin
@@ -913,10 +990,7 @@ begin
       end
       else if Msg.LParam = 1 then // Char by Char.
       begin
-        if Msg.WParam = 13 then // (Equals to the Enter key or CRLF)
-          mmoClassViewResult.Lines.Add('')
-        else
-          mmoClassViewResult.Lines[Pred(mmoClassViewResult.Lines.Count)] := mmoClassViewResult.Lines[Pred(mmoClassViewResult.Lines.Count)] + char(Msg.WParam);
+        mmoClassViewResult.Lines[Pred(mmoClassViewResult.Lines.Count)] := mmoClassViewResult.Lines[Pred(mmoClassViewResult.Lines.Count)] + char(Msg.WParam);
       end
       else if Msg.LParam = 2 then // Finished.
       begin
@@ -940,10 +1014,7 @@ begin
     end
     else if Msg.LParam = 1 then // Char by Char.
     begin
-      if Msg.WParam = 13 then
-        mmoAnswer.Lines.Add('')
-      else
-        mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] := mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] + char(Msg.WParam);
+      mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] := mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] + char(Msg.WParam);
     end
     else if Msg.LParam = 2 then // Finished.
     begin
@@ -980,7 +1051,7 @@ begin
   else if Msg.LParam = 2 then // Finished.
   begin
     EnableUI('WS');
-    AddToHistory(mmoWriteSonicAnswer.Lines.Text, '***** WriteSonic *****' + #13 + mmoWriteSonicAnswer.Lines.Text);
+    AddToHistory(mmoQuestion.Lines.Text, '***** WriteSonic *****' + #13 + mmoWriteSonicAnswer.Lines.Text);
     Cs.Enter;
     TSingletonSettingObj.Instance.ShouldReloadHistory := True;
     Cs.Leave;
@@ -1009,7 +1080,7 @@ begin
   else if Msg.LParam = 2 then // Finished.
   begin
     EnableUI('YC');
-    AddToHistory(mmoYouChatAnswer.Lines.Text, '***** YouChat *****' + #13 + mmoYouChatAnswer.Lines.Text);
+    AddToHistory(mmoQuestion.Lines.Text, '***** YouChat *****' + #13 + mmoYouChatAnswer.Lines.Text);
     Cs.TryEnter;
     TSingletonSettingObj.Instance.ShouldReloadHistory := True;
     Cs.Leave;
@@ -1025,18 +1096,22 @@ end;
 
 procedure TFram_Question.pgcAnswersChange(Sender: TObject);
 begin
-  case pgcAnswers.ActivePageIndex of
-    0: Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
-    1: Clipboard.SetTextBuf(pwidechar(mmoWriteSonicAnswer.Lines.Text));
-    2: Clipboard.SetTextBuf(pwidechar(mmoYouChatAnswer.Lines.Text));
+  if chk_AutoCopy.Checked then
+  begin
+    case pgcAnswers.ActivePageIndex of
+      0: Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
+      1: Clipboard.SetTextBuf(pwidechar(mmoWriteSonicAnswer.Lines.Text));
+      2: Clipboard.SetTextBuf(pwidechar(mmoYouChatAnswer.Lines.Text));
+    end;
   end;
+  ActivityIndicator1.Visible := TSingletonSettingObj.Instance.TaskList.Count > 0;
 end;
 
 procedure TFram_Question.pgcMainChange(Sender: TObject);
 var
   LvShouldReloadHistory: Boolean;
 begin
-  if pgcMain.ActivePage = tsClassView then
+  if (pgcMain.ActivePage = tsClassView) and (not FClassViewIsBusy) then
     ReloadClassList(FClassList);
 
   if pgcMain.ActivePage = tsHistory then
@@ -1111,7 +1186,7 @@ begin
   end;
 end;
 
-procedure TFram_Question.ReloadHistory1Click(Sender: TObject);
+procedure TFram_Question.ReloadHistoryClick(Sender: TObject);
 begin
   LoadHistory;
 end;
@@ -1158,9 +1233,11 @@ begin
   end;
 end;
 
-procedure TFram_Question.Search1Click(Sender: TObject);
+procedure TFram_Question.SearchMnuClick(Sender: TObject);
 begin
-  pnlSearchHistory.Visible := Search1.Checked;
+  pnlSearchHistory.Visible := SearchMnu.Checked;
+  if not SearchMnu.Checked then
+    Edt_Search.Clear;
 end;
 
 procedure TFram_Question.TerminateAll;

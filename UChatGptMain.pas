@@ -11,8 +11,8 @@ interface
 uses
   System.Classes, System.SysUtils, Vcl.Controls, Vcl.Menus, Vcl.Dialogs, Winapi.Windows,
   {$IFNDEF NEXTGEN}System.StrUtils{$ELSE}AnsiStrings{$ENDIF !NEXTGEN}, ToolsAPI, StructureViewAPI,
-  DockForm, System.Generics.Collections, Vcl.Forms, System.IOUtils,
-  UChatGPTMenuHook, UChatGPTSetting, UChatGPTQFrame, UChatGPTQuestion;
+  DockForm, System.Generics.Collections, Vcl.Forms, System.IOUtils, UConsts,
+  UChatGPTMenuHook, UChatGPTSetting, UChatGPTQFrame, UChatGPTQuestion, UEditorHelpers;
 
 type
   TTStringListHelper = class helper for TStringList
@@ -20,6 +20,8 @@ type
   end;
 
   TChatGPTOnCliskType = procedure(Sender: TObject) of Object;
+  TMsgType = (mtNone, mtNormalQuestion, mtAddTest, mtFindBugs, mtAddComment, mtOptimize, mtCompleteCode);
+
 {*********************************************************}
 {                                                         }
 {           This menu item will be added                  }
@@ -30,9 +32,11 @@ type
   private
     FRoot, FAskMenu,
     FSettingMenu, FAskMenuDockable: TMenuItem;
-    FAskSubmenuHidden: TMenuItem;
     FSetting: TSingletonSettingObj;
-    
+
+    FAskSubMenuH, FAddTestH, FFindBugsH, //These hidden menues usre used for better Ux expreince with shortcuts.
+    FOptimizeH, FAddCommentsH, FCompleteCodeH: TMenuItem;
+
     procedure AskMenuClick(Sender: TObject);
     procedure ChatGPTDockableMenuClick(Sender: TObject);
     procedure ChatGPTSettingMenuClick(Sender: TObject);
@@ -67,17 +71,27 @@ type
   end;
   {$ENDIF}
   TEditNotifierHelper = class(TNotifierObject, IOTANotifier, INTAEditServicesNotifier)
-    procedure OnChatGPTAskSubMenuClick(Sender: TObject);
     procedure OnChatGPTSubMenuClick(Sender: TObject; MenuItem: TMenuItem);
+    procedure OnChatGPTContextMenuFixedQuestionClick(Sender: TObject);
   private
     FMenuHook: TCpMenuHook;
     class function GetQuestion(AStr: string): string;
-    class function CreateMsg: string;
+    class function CreateMsg(AType: TMsgType): string;
     class procedure FormatSource;
     function GetCurrentUnitPath: string;
+    class function GetSelectedText: string;
+    class procedure RunInlineQuestion(AEditView: IOTAEditView; AQuestion: string; AMsgType: TMsgType; ASelectedText: string = '');
+    class procedure DoAskSubMenu;
+    class procedure DoAddTest;
+    class procedure DoFindBugs;
+    class procedure DoOptimize;
+    class procedure DoAddComments;
+    class procedure DoCompleteCode;
+    class function RefineText(AInput: TStringList; AMsgType: TMsgType = mtNone): string;
+    class procedure WriteIntoEditor(AText: string);
   public
     constructor Create;
-    destructor Destroy;override;
+    destructor Destroy; override;
     procedure WindowShow(const EditWindow: INTAEditWindow; Show, LoadedFromDesktop: Boolean);
     procedure WindowNotification(const EditWindow: INTAEditWindow; Operation: TOperation);
     procedure WindowActivated(const EditWindow: INTAEditWindow);
@@ -88,7 +102,7 @@ type
     procedure DockFormUpdated(const EditWindow: INTAEditWindow; DockForm: TDockableForm);
     procedure DockFormRefresh(const EditWindow: INTAEditWindow; DockForm: TDockableForm);
     procedure AddEditorContextMenu;
-    function AddMenuItem(AParentMenu: TMenuItem; AName, ACaption: string; AOnClick: TChatGPTOnCliskType; AShortCut: string): TMenuItem;
+    function AddMenuItem(AParentMenu: TMenuItem; AName, ACaption: string; AOnClick: TChatGPTOnCliskType; AShortCut: string; ATag: NativeInt): TMenuItem;
   end;
 
 {*******************************************************}
@@ -257,14 +271,61 @@ begin
     FSettingMenu.OnClick := ChatGPTSettingMenuClick;
     FSettingMenu.ImageIndex := 36;
   end;
-
-  if not Assigned(FAskSubmenuHidden) then
+  {$REGION 'Hidden menus, to use shortcuts before creation of the real menu inside the Editor'}
+  if not Assigned(FAskSubMenuH) then
   begin
-    FAskSubmenuHidden := TMenuItem.Create(nil);
-    FAskSubmenuHidden.ShortCut := TextToShortCut('Ctrl+Alt+Shift+A');
-    FAskSubmenuHidden.OnClick := AskSubmenuHiddenOnClick;
-    FAskSubmenuHidden.Visible := False;
+    FAskSubMenuH := TMenuItem.Create(nil);
+    FAskSubMenuH.Tag := 0;
+    FAskSubMenuH.ShortCut := TextToShortCut('Ctrl+Alt+Shift+A');
+    FAskSubMenuH.OnClick := AskSubmenuHiddenOnClick;
+    FAskSubMenuH.Visible := False;
   end;
+
+  if not Assigned(FAddTestH) then
+  begin
+    FAddTestH := TMenuItem.Create(nil);
+    FAddTestH.Tag := 1;
+    FAddTestH.ShortCut := TextToShortCut('Ctrl+Alt+Shift+T');
+    FAddTestH.OnClick := AskSubmenuHiddenOnClick;
+    FAddTestH.Visible := False;
+  end;
+
+  if not Assigned(FFindBugsH) then
+  begin
+    FFindBugsH := TMenuItem.Create(nil);
+    FFindBugsH.Tag := 2;
+    FFindBugsH.ShortCut := TextToShortCut('Ctrl+Alt+Shift+B');
+    FFindBugsH.OnClick := AskSubmenuHiddenOnClick;
+    FFindBugsH.Visible := False;
+  end;
+
+  if not Assigned(FOptimizeH) then
+  begin
+    FOptimizeH := TMenuItem.Create(nil);
+    FOptimizeH.Tag := 3;
+    FOptimizeH.ShortCut := TextToShortCut('Ctrl+Alt+Shift+O');
+    FOptimizeH.OnClick := AskSubmenuHiddenOnClick;
+    FOptimizeH.Visible := False;
+  end;
+
+  if not Assigned(FAddCommentsH) then
+  begin
+    FAddCommentsH := TMenuItem.Create(nil);
+    FAddCommentsH.Tag := 4;
+    FAddCommentsH.ShortCut := TextToShortCut('Ctrl+Alt+Shift+M');
+    FAddCommentsH.OnClick := AskSubmenuHiddenOnClick;
+    FAddCommentsH.Visible := False;
+  end;
+
+  if not Assigned(FCompleteCodeH) then
+  begin
+    FCompleteCodeH := TMenuItem.Create(nil);
+    FCompleteCodeH.Tag := 5;
+    FCompleteCodeH.ShortCut := TextToShortCut('Ctrl+Alt+Shift+K');
+    FCompleteCodeH.OnClick := AskSubmenuHiddenOnClick;
+    FCompleteCodeH.Visible := False;
+  end;
+  {$ENDREGION}
 
   if not Assigned(FAskMenuDockable) then
   begin
@@ -283,7 +344,12 @@ begin
     FRoot.Add(FAskMenu);
     FRoot.Add(FAskMenuDockable);
     FRoot.Add(FSettingMenu);
-    FRoot.Add(FAskSubmenuHidden);
+    FRoot.Add(FAskSubMenuH);
+    FRoot.Add(FAddTestH);
+    FRoot.Add(FFindBugsH);
+    FRoot.Add(FOptimizeH);
+    FRoot.Add(FAddCommentsH);
+    FRoot.Add(FCompleteCodeH);
   end;
 
   if not Assigned((BorlandIDEServices as INTAServices).MainMenu.Items.Find('ChatGPTRootMenu')) then
@@ -328,58 +394,21 @@ begin
 end;
 
 procedure TChatGptMenuWizard.AskSubmenuHiddenOnClick(Sender: TObject);
-var
-  LvEditView: IOTAEditView;
-  LvEditBlock: IOTAEditBlock;
-  LvSelectedText: string;
 begin
-  TSingletonSettingObj.Instance.ReadRegistry;
-  if TSingletonSettingObj.Instance.ApiKey = '' then
+  if Sender is TMenuItem then
   begin
-    if TSingletonSettingObj.Instance.GetSetting.Trim.IsEmpty then
-      Exit;
-  end;
-
-  LvEditView := (BorlandIDEServices as IOTAEditorServices).TopView;
-
-  if not Assigned(LvEditView) then
-    Exit;
-
-  // Get the selected text in the edit view
-  LvEditBlock := LvEditView.GetBlock;
-
-  // If there is a selection of text, get it via editblock.Text
-  if (LvEditBlock.StartingColumn <> LvEditBlock.EndingColumn) or (LvEditBlock.StartingRow <> LvEditBlock.EndingRow) then
-  begin
-    LvSelectedText := LvEditBlock.Text;
-
-    //If it is a ChatGPT question
-    if (SameStr(LeftStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.LeftIdentifier)) and (SameStr(RightStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.RightIdentifier)) then
+    with TEditNotifierHelper do
     begin
-      if not TSingletonSettingObj.Instance.ApiKey.Trim.IsEmpty then
-      begin
-        Frm_Progress := TFrm_Progress.Create(nil);
-        try
-          frm_Progress.SelectedText := TEditNotifierHelper.GetQuestion(LvEditBlock.Text);
-          TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Progress, Frm_Progress); //Apply Theme
-          Frm_Progress.ShowModal;
-          if not Frm_Progress.Answer.Text.Trim.IsEmpty then
-          begin
-            LvEditView.Buffer.EditPosition.InsertText(Frm_Progress.Answer.TrimLineText);
-
-            if not (Frm_Progress.HasError) and (TSingletonSettingObj.Instance.CodeFormatter) then
-              TEditNotifierHelper.FormatSource;
-          end;
-        finally
-          FreeAndNil(Frm_Progress);
-        end;
+      case TMenuItem(Sender).Tag of
+        0: DoAskSubMenu;
+        1: DoAddTest;
+        2: DoFindBugs;
+        3: DoOptimize;
+        4: DoAddComments;
+        5: DoCompleteCode;
       end;
-    end
-    else
-      ShowMessage(TEditNotifierHelper.CreateMsg);
-  end
-  else
-    ShowMessage(TEditNotifierHelper.CreateMsg);
+    end;
+  end;
 end;
 
 procedure TChatGptMenuWizard.BeforeSave;
@@ -473,82 +502,97 @@ end;
 
 { TEditNotifierHelper }
 
-function TEditNotifierHelper.AddMenuItem(AParentMenu: TMenuItem; AName, ACaption: string; AOnClick: TChatGPTOnCliskType; AShortCut: string): TMenuItem;
+function TEditNotifierHelper.AddMenuItem(AParentMenu: TMenuItem; AName, ACaption: string; AOnClick: TChatGPTOnCliskType; AShortCut: string; ATag: NativeInt): TMenuItem;
 var
   LvItem: TMenuItem;
 begin
   LvItem := TMenuItem.Create(nil);
   LvItem.Name := AName;
-  LvItem.Caption := ACaption + '  ' + AShortCut;
+  LvItem.Tag := ATag;
+  LvItem.Caption := ACaption + IfThen(AShortCut.IsEmpty, '', '  (' + AShortCut + ')');
   LvItem.OnClick := AOnClick;
-  //LvItem.ShortCut := TextToShortCut(AShortCut);
   AParentMenu.Add(LvItem);
   Result := LvItem;
 end;
 
-procedure TEditNotifierHelper.OnChatGPTAskSubMenuClick(Sender: TObject);
-var
-  LvEditView: IOTAEditView;
-  LvEditBlock: IOTAEditBlock;
-  LvSelectedText: string;
+procedure TEditNotifierHelper.OnChatGPTContextMenuFixedQuestionClick(Sender: TObject);
 begin
-  TSingletonSettingObj.Instance.ReadRegistry;
-  if TSingletonSettingObj.Instance.ApiKey = '' then
+  if Sender is TMenuItem then
   begin
-    if TSingletonSettingObj.Instance.GetSetting.Trim.IsEmpty then
-      Exit;
+    case TMenuItem(Sender).Tag of
+      0: DoAskSubMenu;
+      1: DoAddTest;
+      2: DoFindBugs;
+      3: DoOptimize;
+      4: DoAddComments;
+      5: DoCompleteCode;
+    end;
   end;
-  LvEditView := (BorlandIDEServices as IOTAEditorServices).TopView;
-
-  // Get the selected text in the edit view
-  LvEditBlock := LvEditView.GetBlock;
-
-  // If there is a selection of text, get it via editblock.Text
-  if (LvEditBlock.StartingColumn <> LvEditBlock.EndingColumn) or (LvEditBlock.StartingRow <> LvEditBlock.EndingRow) then
-  begin
-    LvSelectedText := LvEditBlock.Text;
-
-    //If it is a ChatGPT question
-    if (SameStr(LeftStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.LeftIdentifier)) and (SameStr(RightStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.RightIdentifier)) then
-    begin
-      if not TSingletonSettingObj.Instance.ApiKey.Trim.IsEmpty then
-      begin
-        Frm_Progress := TFrm_Progress.Create(nil);
-        try
-          frm_Progress.SelectedText := GetQuestion(LvEditBlock.Text);
-          TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Progress, Frm_Progress); //Apply Theme
-          Frm_Progress.ShowModal;
-          if not Frm_Progress.Answer.Text.Trim.IsEmpty then
-          begin
-            LvEditView.Buffer.EditPosition.InsertText(Frm_Progress.Answer.TrimLineText);
-            if not (Frm_Progress.HasError) and (TSingletonSettingObj.Instance.CodeFormatter) then
-              TEditNotifierHelper.FormatSource;
-          end;
-        finally
-          FreeAndNil(Frm_Progress);
-        end;
-      end;
-    end
-    else
-      ShowMessage(CreateMsg);
-  end
-  else
-    ShowMessage(CreateMsg);
 end;
 
 procedure TEditNotifierHelper.OnChatGPTSubMenuClick(Sender: TObject; MenuItem: TMenuItem);
 begin
+  TSingletonSettingObj.Instance.ReadRegistry;
   if not Assigned(MenuItem.Find('Ask')) then
-    AddMenuItem(MenuItem, 'ChatGPTAskSubMenu', 'Ask', OnChatGPTAskSubMenuClick, 'CTRL+ALT+SHIFT+A');
+  begin
+    AddMenuItem(MenuItem, 'ChatGPTAskSubMenu', 'Ask', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+A', 0);
+    AddMenuItem(MenuItem, 'ChatGPTAddTest', 'Add Test', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+T', 1);
+    AddMenuItem(MenuItem, 'ChatGPTFindBugs', 'Find Bugs', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+B', 2);
+    AddMenuItem(MenuItem, 'ChatGPTOptimize', 'Optimize', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+O', 3);
+    AddMenuItem(MenuItem, 'ChatGPTAddComments', 'Add Comments', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+M', 4);
+    AddMenuItem(MenuItem, 'ChatGPTCompleteCode', 'Complete Code', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+k', 5);
+  end;
+end;
+
+class function TEditNotifierHelper.RefineText(AInput: TStringList; AMsgType: TMsgType): string;
+const
+   LcLeftComment = '//************ ';
+   LcRightComment = ' ***************';
+var
+  LvComment: string;
+begin
+  case AMsgType of
+    mtNone: LvComment := '';
+    mtNormalQuestion: LvComment := '';
+    mtAddTest: LvComment := 'Add Test';
+    mtFindBugs: LvComment := 'Find Bugs';
+    mtAddComment: LvComment := 'Add Comment';
+    mtOptimize: LvComment := 'Optimize Code';
+    mtCompleteCode: LvComment := 'Complete Code';
+  end;
+
+  Result := CRLF + '{' + LcLeftComment + LvComment + LcRightComment + CRLF + AInput.Text + '}';
+end;
+
+class procedure TEditNotifierHelper.RunInlineQuestion(AEditView: IOTAEditView; AQuestion: string; AMsgType: TMsgType; ASelectedText: string);
+begin
+  if not TSingletonSettingObj.Instance.ApiKey.Trim.IsEmpty then
+  begin
+    Frm_Progress := TFrm_Progress.Create(nil);
+    try
+      frm_Progress.SelectedText := AQuestion;
+      TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Progress, Frm_Progress); //Apply Theme
+      Frm_Progress.ShowModal;
+      if not Frm_Progress.Answer.Text.Trim.IsEmpty then
+      begin
+        WriteIntoEditor(RefineText(Frm_Progress.Answer, AMsgType));
+
+        if not (Frm_Progress.HasError) and (TSingletonSettingObj.Instance.CodeFormatter) then
+          TEditNotifierHelper.FormatSource;
+      end;
+    finally
+      FreeAndNil(Frm_Progress);
+    end;
+  end;
 end;
 
 procedure TEditNotifierHelper.AddEditorContextMenu;
 var
-  FEditorPopUpMenu: TPopupMenu;
+  LvEditorPopUpMenu: TPopupMenu;
 begin
-  FEditorPopUpMenu := TPopupMenu((BorlandIDEServices as IOTAEditorServices).TopView.GetEditWindow.Form.FindComponent('EditorLocalMenu'));
-  FMenuHook.HookMenu(FEditorPopUpMenu);
-  if FMenuHook.IsHooked(FEditorPopUpMenu) then
+  LvEditorPopUpMenu := TPopupMenu((BorlandIDEServices as IOTAEditorServices).TopView.GetEditWindow.Form.FindComponent('EditorLocalMenu'));
+  FMenuHook.HookMenu(LvEditorPopUpMenu);
+  if FMenuHook.IsHooked(LvEditorPopUpMenu) then
   begin
     FChatGPTSubMenu := TCpMenuItemDef.Create('ChatGPTSubMenu', 'ChatGPT', nil, ipAfter, 'ChatGPTSubMenu');
     FChatGPTSubMenu.OnCreated := OnChatGPTSubMenuClick;
@@ -562,24 +606,73 @@ begin
   FMenuHook := TCpMenuHook.Create(nil);
 end;
 
-class function TEditNotifierHelper.CreateMsg: string;
+class function TEditNotifierHelper.CreateMsg(AType: TMsgType): string;
 var
   LeftIdentifier: string;
   RightIdentifier: string;
 begin
-  Cs.Enter;
-  LeftIdentifier := TSingletonSettingObj.Instance.LeftIdentifier;
-  RightIdentifier := TSingletonSettingObj.Instance.RightIdentifier;
-  Cs.Leave;
+  case AType of
+    mtNormalQuestion:
+    begin
+      Cs.Enter;
+      LeftIdentifier := TSingletonSettingObj.Instance.LeftIdentifier;
+      RightIdentifier := TSingletonSettingObj.Instance.RightIdentifier;
+      Cs.Leave;
 
-  Result := 'There is no selected text with the ChatGPT Plug-in''s desired format, follow the below sample, please.' +
-               #13 + LeftIdentifier + ' Any Question... ' + RightIdentifier;
+      Result := 'There is no selected text with the ChatGPT Plug-in''s desired format, follow the below sample, please.' +
+                   #13 + LeftIdentifier + ' Any Question... ' + RightIdentifier;
+    end;
+
+    mtAddTest,
+    mtFindBugs,
+    mtOptimize,
+    mtCompleteCode: Result := 'There is no selected text.';
+  end;
 end;
 
 destructor TEditNotifierHelper.Destroy;
 begin
   FMenuHook.Free;
   inherited;
+end;
+
+class procedure TEditNotifierHelper.DoAddComments;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuAddComments + #13 + LvSelectedText, mtAddComment, LvSelectedText)
+  else
+    ShowMessage(CreateMsg(mtAddTest));
+end;
+
+class procedure TEditNotifierHelper.DoAddTest;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuAddTest + #13 + LvSelectedText, mtAddTest, LvSelectedText)
+  else
+    ShowMessage(CreateMsg(mtAddTest));
+end;
+
+class procedure TEditNotifierHelper.DoAskSubMenu;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+  begin
+    //If it is a ChatGPT question
+    if (SameStr(LeftStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.LeftIdentifier)) and (SameStr(RightStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.RightIdentifier)) then
+      RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, GetQuestion(LvSelectedText), mtNormalQuestion, LvSelectedText)
+    else
+      ShowMessage(CreateMsg(mtNormalQuestion));
+  end
+  else
+    ShowMessage(CreateMsg(mtNormalQuestion));
 end;
 
 procedure TEditNotifierHelper.DockFormRefresh(const EditWindow: INTAEditWindow; DockForm: TDockableForm);
@@ -594,15 +687,55 @@ procedure TEditNotifierHelper.DockFormVisibleChanged(const EditWindow: INTAEditW
 begin
 end;
 
+class procedure TEditNotifierHelper.DoCompleteCode;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuCompleteCode + #13 + LvSelectedText, mtCompleteCode, LvSelectedText)
+  else
+    ShowMessage(CreateMsg(mtAddTest));
+end;
+
+class procedure TEditNotifierHelper.DoFindBugs;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuFindBugs + #13 + LvSelectedText, mtFindBugs, LvSelectedText)
+  else
+    ShowMessage(CreateMsg(mtFindBugs));
+end;
+
+class procedure TEditNotifierHelper.DoOptimize;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuOptimize + #13 + LvSelectedText, mtOptimize, LvSelectedText)
+  else
+    ShowMessage(CreateMsg(mtAddTest));
+end;
+
 function TEditNotifierHelper.GetCurrentUnitPath: string;
 var
   ModuleServices: IOTAModuleServices;
   CurrentModule: IOTAModule;
 begin
   Result := '';
-  ModuleServices := BorlandIDEServices as IOTAModuleServices;
-  CurrentModule := ModuleServices.CurrentModule;
-  Result := ExtractFileName(CurrentModule.CurrentEditor.FileName);
+  if Supports(BorlandIDEServices, IOTAModuleServices) then
+  begin
+    try
+      ModuleServices := BorlandIDEServices as IOTAModuleServices;
+      CurrentModule := ModuleServices.CurrentModule;
+      Result := ExtractFileName(CurrentModule.CurrentEditor.FileName);
+    except
+      Result := '';
+    end;
+  end;
 end;
 
 procedure TEditNotifierHelper.EditorViewActivated(const EditWindow: INTAEditWindow; const EditView: IOTAEditView);
@@ -620,7 +753,15 @@ begin
   begin
     TSingletonSettingObj.Instance.CurrentActiveViewName := LvCurrentUnitName;
     Cs.Leave;
-    FChatGPTDockForm.Fram_Question.ReloadClassList(FChatGPTDockForm.FDockFormClassListObj);
+
+    if Assigned(FChatGPTDockForm) then
+    begin
+      with FChatGPTDockForm.Fram_Question do
+      begin
+        if (pgcMain.ActivePage = tsClassView) and (not ClassViewIsBusy) then
+          ReloadClassList(FChatGPTDockForm.FDockFormClassListObj);
+      end;
+    end;
   end;
 end;
 
@@ -630,10 +771,11 @@ end;
 
 class procedure TEditNotifierHelper.FormatSource;
 var
-  FEditorPopUpMenu: TPopupMenu;
+  LvEditorPopUpMenu: TPopupMenu;
 begin
-  FEditorPopUpMenu := TPopupMenu((BorlandIDEServices as IOTAEditorServices).TopView.GetEditWindow.Form.FindComponent('EditorLocalMenu'));
-  FEditorPopUpMenu.Items.Find('Format Source').Click;
+  LvEditorPopUpMenu := TPopupMenu((BorlandIDEServices as IOTAEditorServices).TopView.GetEditWindow.Form.FindComponent('EditorLocalMenu'));
+  if LvEditorPopUpMenu <> nil then
+    LvEditorPopUpMenu.Items.Find('Format Source').Click;
 end;
 
 class function TEditNotifierHelper.GetQuestion(AStr: string): string;
@@ -646,6 +788,30 @@ begin
 
   LvTmpStr := RightStr(AStr.Trim, AStr.Length - 4);
   Result := LeftStr(LvTmpStr, LvTmpStr.Length - 4);
+end;
+
+class function TEditNotifierHelper.GetSelectedText: string;
+var
+  LvEditView: IOTAEditView;
+  LvEditBlock: IOTAEditBlock;
+begin
+  Result := '';
+  if TSingletonSettingObj.Instance.ApiKey = '' then
+  begin
+    if TSingletonSettingObj.Instance.GetSetting.Trim.IsEmpty then
+      Exit;
+  end;
+
+  if Supports(BorlandIDEServices, IOTAEditorServices) then
+  begin
+    LvEditView := (BorlandIDEServices as IOTAEditorServices).TopView;
+
+    // Get the selected text in the edit view
+    LvEditBlock := LvEditView.GetBlock;
+
+    if (LvEditBlock.StartingColumn <> LvEditBlock.EndingColumn) or (LvEditBlock.StartingRow <> LvEditBlock.EndingRow) then
+      Result := LvEditBlock.Text;
+  end;
 end;
 
 procedure TEditNotifierHelper.WindowActivated(const EditWindow: INTAEditWindow);
@@ -662,6 +828,42 @@ end;
 
 procedure TEditNotifierHelper.WindowShow(const EditWindow: INTAEditWindow; Show, LoadedFromDesktop: Boolean);
 begin
+end;
+
+class procedure TEditNotifierHelper.WriteIntoEditor(AText: string);
+var
+  LvEditView: IOTAEditView;
+  LvTextLen: Integer;
+  LvStartPos: Integer;
+  LvEndPos: Integer;
+  LvLineNo: Integer;
+  LvCharIndex: Integer;
+  LvLineText: String;
+begin
+  LvEditView := GetTopMostEditView;
+  if IsEditControl(Screen.ActiveControl) and Assigned(LvEditView) then
+  begin
+    if LvEditView.Block.IsValid then
+    begin
+      LvStartPos := EditPosToLinePos(OTAEditPos(LvEditView.Block.StartingColumn, LvEditView.Block.StartingRow), LvEditView);
+      LvEndPos := EditPosToLinePos(OTAEditPos(LvEditView.Block.EndingColumn, LvEditView.Block.EndingRow), LvEditView);
+      LvTextLen := LvEditView.Block.Size;
+
+      InsertTextIntoEditorAtPos(AText , LvEndPos, LvEditView.Buffer);
+      LvEditView.CursorPos := LinePosToEditPos(LvStartPos + LvTextLen);
+      LvEditView.Block.BeginBlock;
+      LvEditView.CursorPos := LinePosToEditPos(LvEndPos + LvTextLen);
+      LvEditView.Block.EndBlock;
+
+      LvEditView.Paint;
+    end
+    else
+    begin
+      GetCurrLineText(LvLineText, LvLineNo, LvCharIndex);
+      Inc(LvLineNo);
+      InsertSingleLine(LvLineNo, LvLineText, LvEditView);
+    end;
+  end;
 end;
 
 { TTStringListHelper }

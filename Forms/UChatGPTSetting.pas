@@ -65,6 +65,7 @@ type
     FPredefinedQuestions: TQuestionPairs;
     FAnimatedLetters: Boolean;
     FTimeOut: Integer;
+    FMainFormLastQuestion: string;
 
     FEnableWriteSonic: Boolean;
     FWriteSonicAPIKey: string;
@@ -87,16 +88,17 @@ type
     procedure LoadDefaults;
     procedure LoadDefaultQuestions;
     function GetMuliAI: Boolean;
+
   public
     procedure ReadRegistry;
     procedure WriteToRegistry;
     function GetSetting: string;
     function GetHistoryFullPath: string;
     function TryFindQuestion(ACaption: string; var AQuestion: string): Integer;
-    Class Procedure RegisterFormClassForTheming(Const AFormClass: TCustomFormClass; Const Component: TComponent = Nil);
+    class Procedure RegisterFormClassForTheming(Const AFormClass: TCustomFormClass; Const Component: TComponent = Nil);
     class function IsValidJson(const AJsonString: string): Boolean;
-
     class property Instance: TSingletonSettingObj read GetInstance;
+
     property ApiKey: string read FApiKey write FApiKey;
     property URL: string read FURL write FURL;
     property Model: string read FModel write FModel;
@@ -117,6 +119,7 @@ type
     property PredefinedQuestions: TQuestionPairs read FPredefinedQuestions write FPredefinedQuestions;
     property AnimatedLetters: Boolean read FAnimatedLetters write FAnimatedLetters;
     property TimeOut: Integer read FTimeOut write FTimeOut;
+    property MainFormLastQuestion: string read FMainFormLastQuestion write FMainFormLastQuestion;
 
     property EnableWriteSonic: Boolean read FEnableWriteSonic write FEnableWriteSonic;
     property WriteSonicAPIKey: string read FWriteSonicAPIKey write FWriteSonicAPIKey;
@@ -340,6 +343,7 @@ begin
   FHighlightColor := clRed;
   FAnimatedLetters := True;
   FTimeOut := 20;
+  FMainFormLastQuestion := 'Create a class to make a Zip file in Delphi.';
 
   FEnableWriteSonic := False;
   FWriteSonicAPIKey := '';
@@ -468,6 +472,11 @@ begin
             FTimeOut := ReadInteger('ChatGPTTimeOut')
           else
             FTimeOut := 20;
+
+          if ValueExists('ChatGPTMainFormLastQuestion') then
+            FMainFormLastQuestion := ReadString('ChatGPTMainFormLastQuestion').Trim
+          else
+            FMainFormLastQuestion := 'Create a class to make a Zip file in Delphi.';
 
           //==============================WriteSonic=======================begin
           if ValueExists('ChatGPTEnableWriteSonic') then
@@ -602,6 +611,7 @@ begin
         WriteInteger('ChatGPTHighlightColor', FHighlightColor);
         WriteBool('ChatGPTAnimatedLetters', FAnimatedLetters);
         WriteInteger('ChatGPTTimeOut', FTimeOut);
+        WriteString('ChatGPTMainFormLastQuestion', FMainFormLastQuestion.Trim);
 
         WriteBool('ChatGPTEnableWriteSonic', FEnableWriteSonic);
         WriteString('ChatGPTWriteSonicAPIKey', FWriteSonicAPIKey);
@@ -634,6 +644,8 @@ begin
     LvRegKey.Free;
   end;
 end;
+
+{TFrm_Setting}
 
 procedure TFrm_Setting.Btn_AddQuestionClick(Sender: TObject);
 begin
@@ -890,7 +902,7 @@ end;
 procedure TFrm_Setting.AddQuestion(AQuestionpair: TQuestionPair);
 var
   LvPanel: Tpanel;
-  LvLabeledEditCaption, LvLabeledEditQuestion: TLabeledEdit;
+  LvLabeledEditCaption: TLabeledEdit;
   I, LvCounter: Integer;
   LvH: Integer;
 begin

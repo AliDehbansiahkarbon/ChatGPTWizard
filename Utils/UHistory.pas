@@ -20,7 +20,7 @@ type
   Public
     // The inherited method is declared as protected.
     // Used Reintroduce to hide compiler warnings.
-    Function CellRect(ACol,Arow : Longint): TRect; Reintroduce;
+    function CellRect(ACol,Arow : Longint): TRect; Reintroduce;
 
     //Fit columns.
     procedure FitGrid;
@@ -28,7 +28,6 @@ type
     // Expose Row and Col properties
     Property Row;
     Property Col;
-
   Published
     Property RowHeight : Integer Read FRowHeight Write SetRowHeight ;
   end;

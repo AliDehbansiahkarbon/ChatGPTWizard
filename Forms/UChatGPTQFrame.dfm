@@ -57,9 +57,11 @@ object Fram_Question: TFram_Question
           object Btn_Clear: TButton
             Left = 271
             Top = 8
-            Width = 74
+            Width = 78
             Height = 27
             Caption = 'Clear All'
+            DropDownMenu = pmClear
+            Style = bsSplitButton
             TabOrder = 2
             OnClick = Btn_ClearClick
           end
@@ -138,7 +140,7 @@ object Fram_Question: TFram_Question
                   Left = 0
                   Top = 0
                   Width = 415
-                  Height = 178
+                  Height = 176
                   Align = alClient
                   ReadOnly = True
                   ScrollBars = ssVertical
@@ -152,7 +154,7 @@ object Fram_Question: TFram_Question
                   Left = 0
                   Top = 0
                   Width = 415
-                  Height = 178
+                  Height = 176
                   Align = alClient
                   ReadOnly = True
                   ScrollBars = ssVertical
@@ -196,8 +198,6 @@ object Fram_Question: TFram_Question
               Font.Height = -13
               Font.Name = 'Segoe UI'
               Font.Style = [fsBold]
-              Lines.Strings = (
-                'Create a class to make a Zip file in Delphi.')
               ParentFont = False
               ParentShowHint = False
               ScrollBars = ssVertical
@@ -234,13 +234,13 @@ object Fram_Question: TFram_Question
         Left = 0
         Top = 140
         Width = 427
-        Height = 231
+        Height = 229
         Align = alClient
         TabOrder = 1
         object splClassViewResult: TSplitter
           Left = 238
           Top = 1
-          Height = 229
+          Height = 227
           Align = alRight
           Visible = False
           ExplicitLeft = 216
@@ -252,7 +252,7 @@ object Fram_Question: TFram_Question
           Left = 4
           Top = 4
           Width = 231
-          Height = 223
+          Height = 221
           Align = alClient
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
@@ -269,9 +269,10 @@ object Fram_Question: TFram_Question
           Left = 241
           Top = 1
           Width = 185
-          Height = 229
+          Height = 227
           Align = alRight
           ReadOnly = True
+          ScrollBars = ssVertical
           TabOrder = 1
           Visible = False
           OnDblClick = mmoClassViewResultDblClick
@@ -331,7 +332,7 @@ object Fram_Question: TFram_Question
             Left = 7
             Top = 8
             Width = 202
-            Height = 21
+            Height = 23
             Anchors = [akLeft, akTop, akRight]
             TabOrder = 1
             OnChange = Edt_SearchChange
@@ -368,12 +369,11 @@ object Fram_Question: TFram_Question
         Height = 181
         Align = alClient
         TabOrder = 1
-        ExplicitHeight = 183
         object mmoHistoryDetail: TMemo
           Left = 1
           Top = 1
           Width = 425
-          Height = 181
+          Height = 179
           Align = alClient
           ReadOnly = True
           ScrollBars = ssBoth
@@ -472,14 +472,46 @@ object Fram_Question: TFram_Question
   object pmGrdHistory: TPopupMenu
     Left = 160
     Top = 304
-    object ReloadHistory1: TMenuItem
-      Caption = 'Reload History'
-      OnClick = ReloadHistory1Click
+    object GetQuestion: TMenuItem
+      Caption = 'Use the Question'
+      OnClick = GetQuestionClick
     end
-    object Search1: TMenuItem
+    object ReloadHistory: TMenuItem
+      Caption = 'Reload History'
+      OnClick = ReloadHistoryClick
+    end
+    object SearchMnu: TMenuItem
       AutoCheck = True
       Caption = 'Search'
-      OnClick = Search1Click
+      OnClick = SearchMnuClick
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object Clearallhistoryitems1: TMenuItem
+      Bitmap.Data = {
+        F6000000424DF600000000000000760000002800000010000000100000000100
+        0400000000008000000000000000000000001000000000000000000000000000
+        80000080000000808000800000008000800080800000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00777777777777
+        7777777777777777777777778777777777777777177777777777777711777781
+        7777777781877818777777777118711777777777781111777777777778111777
+        7777777781111877777777771187118777777777777771187777777777777711
+        8777777777777777777777777777777777777777777777777777}
+      Caption = 'Clear all the history items!'
+      OnClick = Clearallhistoryitems1Click
+    end
+  end
+  object pmClear: TPopupMenu
+    Left = 336
+    Top = 232
+    object ClearQuestion1: TMenuItem
+      Caption = 'Clear Question'
+      OnClick = ClearQuestion1Click
+    end
+    object ClearAnswer1: TMenuItem
+      Caption = 'Clear Answers'
+      OnClick = ClearAnswer1Click
     end
   end
 end
