@@ -170,6 +170,7 @@ Context Menu for Selected text or a block of code. The Result will be inserted a
 - Complete code - Will try to add any missing code to the selected code
 
 <br />
+<br />
 
 ![image_2023-04-25_15-59-25](https://user-images.githubusercontent.com/24512608/236583960-d584de08-6924-4b42-9e0a-c028a36d919f.png)
 
