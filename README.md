@@ -24,6 +24,22 @@
 <h3>First Plugin Ever to support ChatGPT, Writesonic, and YouChat!</h3>
 <br /
 
+## Keyfeatures:
+
+- Free text question form.
+- Dockable question form.
+- Inline questions(in the editor).
+- Context menu options to help you to find bugs, write tests, optimize code, add comments, etc...
+- Class view.
+- Predefined Questions for class view.
+- History to save your tokens on OpenAI !
+- Fuzzy string match searches in the history.
+- Animated letters(Like the website).
+- AI Code Translator
+- Proxy server options. 
+- Supports Writesonic AI as the second AI service.
+- Supports YouChat AI as the third AI service.
+
 #### **NOTE: You will need an API key to use this plugin. see the [API section](#platforms)**
 
 <br />
