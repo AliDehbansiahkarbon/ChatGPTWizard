@@ -7,12 +7,8 @@
 <a href="https://www.embarcadero.com/products/rad-studio"><img src="https://img.shields.io/badge/Delphi_RAD_Studio-B22222?style=for-the-badge&logo=delphi&logoColor=white" alt="Delphi" /></a>
 &nbsp;
 <a href="https://www.buymeacoffee.com/adehbanr" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
-<a href="https://github.com/sponsors/AliDehbansiahkarbon"><img src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" alt="sponsor"/></a>
-&nbsp;
-<a href="https://github.com/AliDehbansiahkarbon"><img src="https://img.shields.io/github/followers/AliDehbansiahkarbon.svg?style=social&label=Follow&maxAge=2592000" alt="github profile"></a>
 <br />
 <img src="https://img.shields.io/github/license/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="license">
-<img src="https://img.shields.io/github/downloads/AliDehbansiahkarbon/ChatGPTWizard/total.svg" alt="downloads">
 <img src="https://img.shields.io/github/forks/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="forks">
 <img src="https://img.shields.io/github/stars/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="stars">
 <img src="https://img.shields.io/github/watchers/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="watchers">
@@ -27,6 +23,22 @@
 
 <h3>First Plugin Ever to support ChatGPT, Writesonic, and YouChat!</h3>
 <br /
+
+## Keyfeatures:
+
+- Free text question form.
+- Dockable question form.
+- Inline questions(in the editor).
+- Context menu options to help you to find bugs, write tests, optimize code, add comments, etc...
+- Class view.
+- Predefined Questions for class view.
+- History to save your tokens on OpenAI !
+- Fuzzy string match searches in the history.
+- Animated letters(Like the website).
+- AI Code Translator
+- Proxy server options. 
+- Supports Writesonic AI as the second AI service.
+- Supports YouChat AI as the third AI service.
 
 #### **NOTE: You will need an API key to use this plugin. see the [API section](#platforms)**
 
