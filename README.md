@@ -24,7 +24,6 @@
 
 #### **PLEASE NOTE THAT You will need an API key to use this plugin. see the [API section](#platforms)**
 
-<br />
 
 ## Key Features:
 
