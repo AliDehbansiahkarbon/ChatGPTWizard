@@ -18,13 +18,15 @@
 <img src="https://img.shields.io/github/last-commit/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="last-commit">
 
 
-
 <h2>An AI plug-in for Embarcadero RAD Studio IDE.</h2>
 
 <h3>First Plugin Ever to support ChatGPT, Writesonic, and YouChat!</h3>
-<br /
 
-## Keyfeatures:
+#### **PLEASE NOTE THAT You will need an API key to use this plugin. see the [API section](#platforms) to Generate an API key**
+#### Some API Keys are Limited to a certain usage, after that you will need to purchase credits in order to keep using them
+
+
+## Key Features:
 
 - Free text question form.
 - Dockable question form.
@@ -40,7 +42,7 @@
 - Supports Writesonic AI as the second AI service.
 - Supports YouChat AI as the third AI service.
 
-#### **NOTE: You will need an API key to use this plugin. see the [API section](#platforms)**
+
 
 <br />
 
