@@ -22,7 +22,8 @@
 
 <h3>First Plugin Ever to support ChatGPT, Writesonic, and YouChat!</h3>
 
-#### **PLEASE NOTE THAT You will need an API key to use this plugin. see the [API section](#platforms)**
+#### **PLEASE NOTE THAT You will need an API key to use this plugin. see the [API section](#platforms) to Generate an API key**
+#### Some API Keys are Limited to a certain usage, after that you will need to purchase credits in order to keep using them
 
 
 ## Key Features:
