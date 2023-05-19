@@ -20,7 +20,7 @@ uses
   FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool,
   FireDAC.Phys, FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLite, FireDAC.Comp.Client,
   FireDAC.Comp.DataSet, FireDAC.VCLUI.Wait, FireDAC.Comp.UI, UConsts,
-  Vcl.WinXCtrls
+  Vcl.WinXCtrls, System.ImageList, Vcl.ImgList, ShellApi
   {$IF CompilerVersion >= 32.0}, UWriteSonicThread, UYouChatThread{$ENDIF};
 
 type
@@ -91,6 +91,8 @@ type
     ClearAnswer1: TMenuItem;
     Clearallhistoryitems1: TMenuItem;
     N1: TMenuItem;
+    btnHelp: TSpeedButton;
+    ImageList1: TImageList;
     procedure Btn_AskClick(Sender: TObject);
     procedure Btn_ClipboardClick(Sender: TObject);
     procedure CopytoClipboard1Click(Sender: TObject);
@@ -135,6 +137,7 @@ type
     procedure ClearAnswer1Click(Sender: TObject);
     procedure HistoryDBGridDblClick(Sender: TObject);
     procedure Clearallhistoryitems1Click(Sender: TObject);
+    procedure btnHelpClick(Sender: TObject);
   private
     FChatGPTTrd: TExecutorTrd;
     {$IF CompilerVersion >= 32.0}
@@ -200,6 +203,14 @@ begin
       TSingletonSettingObj.Instance.ShouldReloadHistory := True;
     end;
   end;
+end;
+
+procedure TFram_Question.btnHelpClick(Sender: TObject);
+var
+  LvUrl: string;
+begin
+  LvUrl := 'https://github.com/AliDehbansiahkarbon/ChatGPTWizard';
+  ShellExecute(0, nil, PChar(LvUrl), nil, nil, SW_SHOWNORMAL);
 end;
 
 procedure TFram_Question.Btn_AskClick(Sender: TObject);
