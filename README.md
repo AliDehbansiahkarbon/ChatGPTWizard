@@ -48,11 +48,11 @@
 
 ## Demo
 
-Short1(ChatGPT)
+Short1(all features)
 
-<a href="https://www.youtube.com/watch?v=vUgHg3ZPvXI" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
+<a href="https://www.youtube.com/watch?v=jHFmmmrk3BU" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
 
-Short2(Writesonic & YouChat)
+Short2(ChatGPT, Writesonic, and YouChat actions at the same time)
 
 <a href="https://youtu.be/tEiKmalzZo8" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
 
