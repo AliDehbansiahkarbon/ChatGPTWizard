@@ -1,0 +1,17 @@
+{
+  "id": "{7F1AF0AE-D9A8-49CA-8013-6CEABED1F565}",
+  "name": "ChatGPTWizard",
+  "picture": "Logo.png",
+  "licenses": [
+    {
+      "type": "MIT",
+      "file": "LICENSE"
+    }
+  ],
+  "platforms": "Win32",
+  "package_compiler_min": 31,
+  "package_compiler_max": 35,
+  "compiler_min": 31,
+  "compiler_max": 35,
+  "first_version": "v2.2.0.3"
+}

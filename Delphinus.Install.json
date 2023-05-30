@@ -1,0 +1,29 @@
+{
+	"search_pathes": [
+		{
+			"pathes": "",
+			"platforms": "Win32"
+		}
+	],
+	"browsing_pathes": [
+		{
+			"pathes": "",
+			"platforms": "Win32"
+		}
+	],
+
+	"source_folders": [
+		{
+			"folder": "",
+			"base": "",
+			"recursive": true,
+			"filter": "*;*.*"
+		}
+	],
+	"projects": [
+		{
+			"project": "ChatGptWizard.dproj"
+		}
+	]
+	
+}

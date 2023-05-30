@@ -287,7 +287,7 @@ begin
         end;
 
         if Result.IsEmpty then
-          Result := 'IsEmpty No answer, try again!';
+          Result := 'No answer, try again!';
       end
       else
         Result := 'No answer, try again!';
