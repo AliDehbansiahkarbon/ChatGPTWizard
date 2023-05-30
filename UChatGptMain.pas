@@ -11,7 +11,7 @@ interface
 uses
   System.Classes, System.SysUtils, Vcl.Controls, Vcl.Menus, Vcl.Dialogs, Winapi.Windows,
   {$IFNDEF NEXTGEN}System.StrUtils{$ELSE}AnsiStrings{$ENDIF !NEXTGEN}, ToolsAPI, StructureViewAPI,
-  DockForm, System.Generics.Collections, Vcl.Forms, System.IOUtils, UConsts,
+  DockForm, System.Generics.Collections, Vcl.Forms, System.IOUtils, UConsts, UAbout,
   UChatGPTMenuHook, UChatGPTSetting, UChatGPTQFrame, UChatGPTQuestion, UEditorHelpers;
 
 type
@@ -31,7 +31,7 @@ type
   TChatGptMenuWizard = class(TInterfacedObject, IOTAWizard)
   private
     FRoot, FAskMenu,
-    FSettingMenu, FAskMenuDockable: TMenuItem;
+    FSettingMenu, FAskMenuDockable, FAboutMenu: TMenuItem;
     FSetting: TSingletonSettingObj;
 
     FAskSubMenuH, FAddTestH, FFindBugsH, //These hidden menues usre used for better Ux expreince with shortcuts.
@@ -40,6 +40,7 @@ type
     procedure AskMenuClick(Sender: TObject);
     procedure ChatGPTDockableMenuClick(Sender: TObject);
     procedure ChatGPTSettingMenuClick(Sender: TObject);
+    procedure ChatGPTAboutMenuClick(Sender: TObject);
     procedure AskSubmenuHiddenOnClick(Sender: TObject);
     procedure RenewUI(AForm: TCustomForm);
   protected
@@ -182,6 +183,19 @@ begin
 end;
 
 { TChatGptMenuWizard }
+procedure TChatGptMenuWizard.ChatGPTAboutMenuClick(Sender: TObject);
+var
+  Frm_About: TFrm_About;
+begin
+  Frm_About := TFrm_About.Create(nil);
+  TSingletonSettingObj.RegisterFormClassForTheming(TFrm_About, Frm_About); //Apply Theme
+  try
+    Frm_About.ShowModal;
+  finally
+    Frm_About.Free;
+  end;
+end;
+
 procedure TChatGptMenuWizard.ChatGPTDockableMenuClick(Sender: TObject);
 var
   LvSettingObj: TSingletonSettingObj;
@@ -335,6 +349,15 @@ begin
     FAskMenuDockable.Caption := 'ChatGPT Dockabale';
     FAskMenuDockable.OnClick := ChatGPTDockableMenuClick;
     FAskMenuDockable.ImageIndex := 1;
+  end;
+
+  if not Assigned(FAboutMenu) then
+  begin
+    FSettingMenu := TMenuItem.Create(nil);
+    FSettingMenu.Name := 'Mnu_ChatGPTAbout';
+    FSettingMenu.Caption := 'About';
+    FSettingMenu.OnClick := ChatGPTAboutMenuClick;
+    FSettingMenu.ImageIndex := 50;
   end;
 
   if not Assigned(FRoot) then

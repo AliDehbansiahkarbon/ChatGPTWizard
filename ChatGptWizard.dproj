@@ -133,9 +133,17 @@
         <DCCReference Include="Utils\UConsts.pas"/>
         <DCCReference Include="Utils\UYouChatThread.pas"/>
         <DCCReference Include="Utils\UEditorHelpers.pas"/>
+        <DCCReference Include="Forms\UAbout.pas">
+            <Form>Frm_About</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <RcItem Include="Resources\CloseBtn.bmp">
             <ResourceType>BITMAP</ResourceType>
             <ResourceId>CLOSE</ResourceId>
+        </RcItem>
+        <RcItem Include="Logo.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>LOGO</ResourceId>
         </RcItem>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
@@ -218,6 +226,12 @@
                 <DeployFile LocalName="$(BDS)\Redist\osx32\libcgunwind.1.0.dylib" Class="DependencyModule"/>
                 <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\ChatGptWizard.bpl" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\ChatGptWizard.bpl" Configuration="Release" Class="ProjectOutput"/>
+                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\ChatGptWizard.bpl" Configuration="Release" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>ChatGptWizard.bpl</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployClass Name="AdditionalDebugSymbols">
                     <Platform Name="OSX32">
                         <Operation>1</Operation>
