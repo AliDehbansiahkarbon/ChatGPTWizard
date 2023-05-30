@@ -142,7 +142,6 @@ object Frm_Setting: TFrm_Setting
                 'code-davinci-002'
                 'text-davinci-002'
                 'gpt-4'
-                'gpt-4-32k'
                 'gpt-4-0314')
             end
             object chk_AnimatedLetters: TCheckBox
