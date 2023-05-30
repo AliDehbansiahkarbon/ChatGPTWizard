@@ -92,8 +92,12 @@ This Plugin Supports the following AI Services:
 
 
 ## How to Install
+1- [Getit package manager](https://getitnow.embarcadero.com/chatgptwizard/)
 
-Open the project, right-click on the project in the project manager, build, and install.
+2- [Delphinus package manager](https://github.com/Memnarch/Delphinus/wiki/Installing-Delphinus) - you can install Delphinus package manager and install ChatGPTWizard there. (Delphinus-Support)
+
+3- Direct installation - Open the project in Delphi, right-click on the project node in the project manager, build, and install.
+
 
 <br />
 
