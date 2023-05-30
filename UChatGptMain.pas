@@ -353,11 +353,11 @@ begin
 
   if not Assigned(FAboutMenu) then
   begin
-    FSettingMenu := TMenuItem.Create(nil);
-    FSettingMenu.Name := 'Mnu_ChatGPTAbout';
-    FSettingMenu.Caption := 'About';
-    FSettingMenu.OnClick := ChatGPTAboutMenuClick;
-    FSettingMenu.ImageIndex := 50;
+    FAboutMenu := TMenuItem.Create(nil);
+    FAboutMenu.Name := 'Mnu_ChatGPTAbout';
+    FAboutMenu.Caption := 'About';
+    FAboutMenu.OnClick := ChatGPTAboutMenuClick;
+    FAboutMenu.ImageIndex := 50;
   end;
 
   if not Assigned(FRoot) then
@@ -374,6 +374,7 @@ begin
     FRoot.Add(FOptimizeH);
     FRoot.Add(FAddCommentsH);
     FRoot.Add(FCompleteCodeH);
+    FRoot.Add(FAboutMenu);
   end;
 
   if not Assigned((BorlandIDEServices as INTAServices).MainMenu.Items.Find('ChatGPTRootMenu')) then
