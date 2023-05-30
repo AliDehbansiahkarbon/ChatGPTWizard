@@ -50,7 +50,7 @@ type
     property temperature: Integer read FTemperature write FTemperature;
   end;
 
-  T3_5TurboMessages = class
+  TChatMessages = class
   private
     FRole: string;
     FContent: string;
@@ -60,15 +60,15 @@ type
     property content: string read FContent write FContent;
   end;
 
-  TRequestJSON3_5Turbo = class
+  TRequestJSONChat = class
   private
     FModel: string;
-    FMessages: TObjectList<T3_5TurboMessages>;
+    FMessages: TObjectList<TChatMessages>;
   public
     constructor Create;
     destructor Destroy; override;
     property model: string read FModel write FModel;
-    property messages: TObjectList<T3_5TurboMessages> read FMessages write FMessages;
+    property messages: TObjectList<TChatMessages> read FMessages write FMessages;
   end;
 
   TChoice = class
@@ -121,7 +121,7 @@ type
     FUrl: string;
     FProxySetting: TProxySetting;
     FTimeOut: Integer;
-    function Is3_5Turbo(AModel: string): Boolean;
+    function IsChatModel(AModel: string): Boolean;
   public
     constructor Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting; ATimeOut: Integer);
     function QueryStreamIndy(const AModel: string; const APrompt: string; AMaxToken: Integer; ATemperature: Integer): string;
@@ -141,9 +141,9 @@ begin
   FTimeOut := ATimeOut;
 end;
 
-function TOpenAIAPI.Is3_5Turbo(AModel: string): Boolean;
+function TOpenAIAPI.IsChatModel(AModel: string): Boolean;
 begin
-  Result := AModel.Contains('gpt-3.5-turbo');
+  Result := AModel.Contains('gpt-3.5-turbo') or AModel.Contains('gpt-4');
 end;
 
 function TOpenAIAPI.QueryStreamIndy(const AModel: string; const APrompt: string; AMaxToken: Integer; ATemperature: Integer): string;
@@ -153,7 +153,7 @@ var
   LvParamStream: TStringStream;
   LvRequestJSON: TRequestJSON;
   LvResponseStream: TStringStream;
-  LvRequestJSON3_5Turbo: TRequestJSON3_5Turbo;
+  LvRequestJSONChat: TRequestJSONChat;
 begin
   LvHttpClient := TIdHTTP.Create(nil);
   LvHttpClient.ConnectTimeout := FTimeOut * 1000;
@@ -169,12 +169,12 @@ begin
 
   LvSslIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
 
-  if Is3_5Turbo(AModel) then
+  if IsChatModel(AModel) then
   begin
-    LvRequestJSON3_5Turbo := TRequestJSON3_5Turbo.Create;
-    LvRequestJSON3_5Turbo.model := AModel;
-    LvRequestJSON3_5Turbo.messages.Add(T3_5TurboMessages.Create('user', APrompt));
-    LvParamStream := TStringStream.Create(LvRequestJSON3_5Turbo.AsJSON(True), TEncoding.UTF8);
+    LvRequestJSONChat := TRequestJSONChat.Create;
+    LvRequestJSONChat.model := AModel;
+    LvRequestJSONChat.messages.Add(TChatMessages.Create('user', APrompt));
+    LvParamStream := TStringStream.Create(LvRequestJSONChat.AsJSON(True), TEncoding.UTF8);
   end
   else
   begin
@@ -211,8 +211,8 @@ begin
       Result := 'Error in function QueryStreamIndy.' + #13 + E.Message;
     end;
   finally
-    if Is3_5Turbo(AModel) then
-      LvRequestJSON3_5Turbo.Free
+    if IsChatModel(AModel) then
+      LvRequestJSONChat.Free
     else
       LvRequestJSON.Free;
     LvResponseStream.Free;
@@ -229,7 +229,7 @@ var
   LvResponseContent: string;
   LvRequestJSON: TRequestJSON;
   LvParamStream: TStringStream;
-  LvRequestJSON3_5Turbo: TRequestJSON3_5Turbo;
+  LvRequestJSONChat: TRequestJSONChat;
   LvResponseXObject: ISuperObject;
 begin
   LvResponseContent := '';
@@ -237,12 +237,12 @@ begin
   LvHttpClient.ConnectionTimeout := FTimeOut * 1000;
   LvHttpClient.ResponseTimeout := (FTimeOut * 1000) * 2;
 
-  if Is3_5Turbo(AModel) then
+  if IsChatModel(AModel) then
   begin
-    LvRequestJSON3_5Turbo := TRequestJSON3_5Turbo.Create;
-    LvRequestJSON3_5Turbo.model := AModel;
-    LvRequestJSON3_5Turbo.messages.Add(T3_5TurboMessages.Create('user', APrompt));
-    LvParamStream := TStringStream.Create(LvRequestJSON3_5Turbo.AsJSON(True), TEncoding.UTF8);
+    LvRequestJSONChat := TRequestJSONChat.Create;
+    LvRequestJSONChat.model := AModel;
+    LvRequestJSONChat.messages.Add(TChatMessages.Create('user', APrompt));
+    LvParamStream := TStringStream.Create(LvRequestJSONChat.AsJSON(True), TEncoding.UTF8);
   end
   else
   begin
@@ -280,7 +280,7 @@ begin
           Result :=  AdjustLineBreaks(LvResponseXObject['error.message'].AsString.Trim)
         else
         begin
-          if Is3_5Turbo(AModel) then
+          if IsChatModel(AModel) then
             Result := AdjustLineBreaks(LvResponseXObject['choices[0].message.content'].AsString.Trim)
           else
             Result :=  AdjustLineBreaks(LvResponseXObject['Choices[0].Text'].AsString.Trim);
@@ -295,8 +295,8 @@ begin
       Result := E.Message;
     end;
   finally
-    if Is3_5Turbo(AModel) then
-      LvRequestJSON3_5Turbo.Free
+    if IsChatModel(AModel) then
+      LvRequestJSONChat.Free
     else
       LvRequestJSON.Free;
     LvParamStream.Free;
@@ -311,7 +311,7 @@ var
   LvParamStream: TStringStream;
   LvResponse: string;
   LvRequestJSON: TRequestJSON;
-  LvRequestJSON3_5Turbo: TRequestJSON3_5Turbo;
+  LvRequestJSONChat: TRequestJSONChat;
 begin
   LvHttpClient := TIdHTTP.Create(nil);
   LvHttpClient.ConnectTimeout := FTimeOut * 1000;
@@ -324,12 +324,12 @@ begin
     LvHttpClient.Request.CustomHeaders.AddValue('Authorization', 'Bearer ' + FAccessToken);
     LvHttpClient.Request.ContentType := 'application/json';
 
-    if Is3_5Turbo(AModel) then
+    if IsChatModel(AModel) then
     begin
-      LvRequestJSON3_5Turbo := TRequestJSON3_5Turbo.Create;
-      LvRequestJSON3_5Turbo.model := AModel;
-      LvRequestJSON3_5Turbo.messages.Add(T3_5TurboMessages.Create('user', APrompt));
-      LvParamStream := TStringStream.Create(LvRequestJSON3_5Turbo.AsJSON(True), TEncoding.UTF8);
+      LvRequestJSONChat := TRequestJSONChat.Create;
+      LvRequestJSONChat.model := AModel;
+      LvRequestJSONChat.messages.Add(TChatMessages.Create('user', APrompt));
+      LvParamStream := TStringStream.Create(LvRequestJSONChat.AsJSON(True), TEncoding.UTF8);
     end
     else
     begin
@@ -354,8 +354,8 @@ begin
       Result := 'Error in function QueryStringIndy.' + #13 + E.Message;
     end;
   finally
-    if Is3_5Turbo(AModel) then
-      LvRequestJSON3_5Turbo.Free
+    if IsChatModel(AModel) then
+      LvRequestJSONChat.Free
     else
       LvRequestJSON.Free;
     LvParamStream.Free;
@@ -493,22 +493,22 @@ begin
   end;
 end;
 
-{ TRequestJSON3_5Turbo }
+{ TRequestJSONChat }
 
-constructor TRequestJSON3_5Turbo.Create;
+constructor TRequestJSONChat.Create;
 begin
-  FMessages := TObjectList<T3_5TurboMessages>.Create;
+  FMessages := TObjectList<TChatMessages>.Create;
 end;
 
-destructor TRequestJSON3_5Turbo.Destroy;
+destructor TRequestJSONChat.Destroy;
 begin
   FMessages.Free;
   inherited;
 end;
 
-{ T3_5TurboMessages }
+{ TChatMessages }
 
-constructor T3_5TurboMessages.Create(ARole, AContent: string);
+constructor TChatMessages.Create(ARole, AContent: string);
 begin
   FRole := ARole;
   FContent := AContent;
