@@ -20,7 +20,7 @@ type
   end;
 
   TChatGPTOnCliskType = procedure(Sender: TObject) of Object;
-  TMsgType = (mtNone, mtNormalQuestion, mtAddTest, mtFindBugs, mtAddComment, mtOptimize, mtCompleteCode);
+  TMsgType = (mtNone, mtNormalQuestion, mtAddTest, mtFindBugs, mtAddComment, mtOptimize, mtCompleteCode, mtExplain);
 
 {*********************************************************}
 {                                                         }
@@ -87,6 +87,7 @@ type
     class procedure DoOptimize;
     class procedure DoAddComments;
     class procedure DoCompleteCode;
+    class procedure DoExplain;
     class function RefineText(AInput: TStringList; AMsgType: TMsgType = mtNone): string;
     class procedure WriteIntoEditor(AText: string);
   public
@@ -406,6 +407,7 @@ begin
         3: DoOptimize;
         4: DoAddComments;
         5: DoCompleteCode;
+        6: DoExplain;
       end;
     end;
   end;
@@ -526,6 +528,7 @@ begin
       3: DoOptimize;
       4: DoAddComments;
       5: DoCompleteCode;
+      6: DoExplain;
     end;
   end;
 end;
@@ -541,6 +544,7 @@ begin
     AddMenuItem(MenuItem, 'ChatGPTOptimize', 'Optimize', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+O', 3);
     AddMenuItem(MenuItem, 'ChatGPTAddComments', 'Add Comments', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+M', 4);
     AddMenuItem(MenuItem, 'ChatGPTCompleteCode', 'Complete Code', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+k', 5);
+    AddMenuItem(MenuItem, 'ChatGPTExplain', 'Explain Code', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+E', 6);
   end;
 end;
 
@@ -559,6 +563,7 @@ begin
     mtAddComment: LvComment := 'Add Comment';
     mtOptimize: LvComment := 'Optimize Code';
     mtCompleteCode: LvComment := 'Complete Code';
+    mtExplain: LvComment := 'Explanation';
   end;
 
   Result := CRLF + '{' + LcLeftComment + LvComment + LcRightComment + CRLF + AInput.Text + '}';
@@ -626,7 +631,8 @@ begin
     mtAddTest,
     mtFindBugs,
     mtOptimize,
-    mtCompleteCode: Result := 'There is no selected text.';
+    mtCompleteCode,
+    mtExplain: Result := 'There is no selected text.';
   end;
 end;
 
@@ -695,7 +701,18 @@ begin
   if not LvSelectedText.IsEmpty then
     RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuCompleteCode + #13 + LvSelectedText, mtCompleteCode, LvSelectedText)
   else
-    ShowMessage(CreateMsg(mtAddTest));
+    ShowMessage(CreateMsg(mtCompleteCode));
+end;
+
+class procedure TEditNotifierHelper.DoExplain;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuExplain + #13 + LvSelectedText, mtExplain, LvSelectedText)
+  else
+    ShowMessage(CreateMsg(mtExplain));
 end;
 
 class procedure TEditNotifierHelper.DoFindBugs;
@@ -717,7 +734,7 @@ begin
   if not LvSelectedText.IsEmpty then
     RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuOptimize + #13 + LvSelectedText, mtOptimize, LvSelectedText)
   else
-    ShowMessage(CreateMsg(mtAddTest));
+    ShowMessage(CreateMsg(mtOptimize));
 end;
 
 function TEditNotifierHelper.GetCurrentUnitPath: string;

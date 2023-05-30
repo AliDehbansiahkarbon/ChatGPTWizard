@@ -29,6 +29,7 @@ const
   ContextMenuOptimize = 'Optimize the following Delphi code';
   ContextMenuAddComments = 'Add descriptive comments for the following Delphi code';
   ContextMenuCompleteCode = 'Try to complete the following Delphi code and return the completed code';
+  ContextMenuExplain = 'Explain what does the following code';
 
 implementation
 end.
