@@ -181,16 +181,17 @@ Context Menu for Selected text or a block of code. The Result will be inserted a
 **Options**
 
 - Ask
-- Add Test  - Will try to create unit test for the selected text
-- Find Bugs - Find fugs in the selected text
-- Optimize - Will Optimize the selected text
-- Add Comments - Will add necessary comments to the selected code
-- Complete code - Will try to add any missing code to the selected code
+- Add Test  - Will try to create unit test for the selected text.
+- Find Bugs - Find fugs in the selected text.
+- Optimize - Will Optimize the selected text.
+- Add Comments - Will add necessary comments to the selected code.
+- Complete code - Will try to add any missing code to the selected code.
+- Explain code - will explain that what does the selected code in Delphi.
 
 <br />
 <br />
 
-![image_2023-04-25_15-59-25](https://user-images.githubusercontent.com/24512608/236583960-d584de08-6924-4b42-9e0a-c028a36d919f.png)
+![image](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/assets/5601608/51bf3bd9-ab79-4a3c-be18-9e3f7b0cdc06)
 
 <br />
 
