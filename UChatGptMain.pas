@@ -11,8 +11,8 @@ interface
 uses
   System.Classes, System.SysUtils, Vcl.Controls, Vcl.Menus, Vcl.Dialogs, Winapi.Windows,
   {$IFNDEF NEXTGEN}System.StrUtils{$ELSE}AnsiStrings{$ENDIF !NEXTGEN}, ToolsAPI, StructureViewAPI,
-  DockForm, System.Generics.Collections, Vcl.Forms, System.IOUtils, UConsts, UAbout,
-  UChatGPTMenuHook, UChatGPTSetting, UChatGPTQFrame, UChatGPTQuestion, UEditorHelpers;
+  DockForm, System.Generics.Collections, Vcl.Forms, System.IOUtils, UConsts, UAbout, Vcl.Imaging.pngimage,
+  UChatGPTMenuHook, UChatGPTSetting, UChatGPTQFrame, UChatGPTQuestion, UEditorHelpers, Vcl.Graphics, Vcl.ImgList;
 
 type
   TTStringListHelper = class helper for TStringList
@@ -55,6 +55,7 @@ type
     procedure BeforeSave;
     procedure Destroyed; { The associated item is being destroyed so all references should be dropped.Exceptions are ignored. }
     procedure Modified; { This associated item was modified in some way. This is not called for IOTAWizards }
+    procedure LoadSubMenuIcons(AMainMenu: TMainMenu);
   end;
 
 {************************************************************************************************}
@@ -275,7 +276,6 @@ begin
     FAskMenu.Caption := 'Ask ChatGPT';
     FAskMenu.OnClick := AskMenuClick;
     FAskMenu.ShortCut := TextToShortCut('Ctrl+Alt+Shift+C');
-    FAskMenu.ImageIndex := 1;
   end;
 
   if not Assigned(FSettingMenu) then
@@ -348,7 +348,6 @@ begin
     FAskMenuDockable.Name := 'Mnu_ChatGPTDockable';
     FAskMenuDockable.Caption := 'ChatGPT Dockabale';
     FAskMenuDockable.OnClick := ChatGPTDockableMenuClick;
-    FAskMenuDockable.ImageIndex := 1;
   end;
 
   if not Assigned(FAboutMenu) then
@@ -381,6 +380,7 @@ begin
   begin
     LvMainMenu := (BorlandIDEServices as INTAServices).MainMenu;
     LvMainMenu.Items.Insert(LvMainMenu.Items.Count - 1, FRoot);
+    LoadSubMenuIcons(LvMainMenu);
   end;
   TSingletonSettingObj.Instance.RootMenuIndex := LvMainMenu.Items.IndexOf(FRoot);
   TSingletonSettingObj.Instance.ReadRegistry;
@@ -475,6 +475,55 @@ end;
 function TChatGptMenuWizard.GetState: TWizardState;
 begin
   Result := [wsEnabled];
+end;
+
+procedure TChatGptMenuWizard.LoadSubMenuIcons(AMainMenu: TMainMenu);
+var
+  LvResStream: TResourceStream;
+  LvImgList: TCustomImageList;
+  LvPngImage: TPngImage;
+  LvRootMenu: TMenuItem;
+  LvBmp: TBitmap;
+  I: Integer;
+begin
+  LvResStream := TResourceStream.Create(HInstance, 'GPT16', RT_RCDATA);
+  try
+    LvPngImage := TPngImage.Create;
+    try
+      LvPngImage.LoadFromStream(LvResStream);
+      LvBmp := TBitmap.Create;
+      try
+        LvPngImage.Transparent := False;
+        LvPngImage.AssignTo(LvBmp);
+        LvBmp.SetSize(16, 16);
+        for I := AMainMenu.Items.Count - 1 downto 0 do
+        begin
+          LvRootMenu := AMainMenu.Items[I];
+          if LvRootMenu.Name = 'ChatGPTRootMenu' then
+          begin
+            LvImgList := LvRootMenu.GetImageList;
+            if Assigned(LvImgList) then
+            begin
+              try
+                FAskMenu.ImageIndex := LvImgList.Add(LvBmp, nil);
+                FAskMenuDockable.ImageIndex := FAskMenu.ImageIndex;
+              except
+                FAskMenu.ImageIndex := 1;
+                FAskMenuDockable.ImageIndex := 1;
+              end;
+            end;
+            Break;
+          end;
+        end;
+      finally
+        LvBmp.Free;
+      end;
+    finally
+      LvPngImage.Free;
+    end;
+  finally
+    LvResStream.Free;
+  end;
 end;
 
 procedure TChatGptMenuWizard.Modified;

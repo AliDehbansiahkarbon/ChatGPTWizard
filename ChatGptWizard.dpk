@@ -40,7 +40,8 @@ requires
   FireDAC,
   FireDACCommonDriver,
   FireDACCommon,
-  FireDACSqliteDriver;
+  FireDACSqliteDriver,
+  vclwinx;
 
 contains
   UChatGptMain in 'UChatGptMain.pas',
