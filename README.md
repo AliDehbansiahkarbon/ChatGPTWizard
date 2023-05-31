@@ -32,15 +32,15 @@
 - Dockable question form.
 - Inline questions(in the editor).
 - Context menu options to help you to find bugs, write tests, optimize code, add comments, etc...
-- Class view.
+- Class view(Code conversion, code optimizing, test units, and other options per class).
 - Predefined Questions for class view.
 - History to save your tokens on OpenAI !
 - Fuzzy string match searches in the history.
 - Animated letters(Like the website).
 - AI Code Translator
 - Proxy server options. 
-- Supports Writesonic AI as the second AI service.
-- Supports YouChat AI as the third AI service.
+- Supports [Writesonic](https://writesonic.com/chat) AI as the second AI service.
+- Supports [YouChat](https://you.com/code) AI as the third AI service.
 
 
 
