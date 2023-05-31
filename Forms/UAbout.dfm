@@ -13,8 +13,10 @@ object Frm_About: TFrm_About
   Font.Name = 'Segoe UI'
   Font.Style = []
   KeyPreview = True
+  OldCreateOrder = True
   Position = poScreenCenter
   OnCreate = FormCreate
+  PixelsPerInch = 96
   TextHeight = 15
   object Img_Logo: TImage
     Left = 13

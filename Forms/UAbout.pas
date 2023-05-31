@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, Winapi.ShellAPI;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, Winapi.ShellAPI, Vcl.Imaging.pngimage;
 
 type
   TFrm_About = class(TForm)
@@ -45,10 +45,31 @@ end;
 procedure TFrm_About.LoadLogo;
 var
   LvResStream: TResourceStream;
+{$IF CompilerVersion < 32.0}
+  LvPngImage: TPngImage;
+  LvBmp: TBitmap;
+{$ENDIF}
 begin
   LvResStream := TResourceStream.Create(HInstance, 'LOGO', RT_RCDATA);
   try
+  {$IF CompilerVersion < 32.0}
+    LvPngImage := TPngImage.Create;
+    try
+      LvPngImage.LoadFromStream(LvResStream);
+      LvBmp := TBitmap.Create;
+      try
+        LvPngImage.Transparent := False;
+        LvPngImage.AssignTo(LvBmp);
+        Img_Logo.Picture.Assign(LvBmp);
+      finally
+        LvBmp.Free;
+      end;
+    finally
+      LvPngImage.Free;
+    end;
+  {$ELSE}
     Img_Logo.Picture.LoadFromStream(LvResStream);
+  {$IFEND}
   finally
     LvResStream.Free;
   end;
