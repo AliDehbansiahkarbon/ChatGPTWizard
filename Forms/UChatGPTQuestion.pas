@@ -3,6 +3,7 @@
 {   This is the main form of the plugin.            }
 {   Could be open/close in the main menu.           }
 {   Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com) }
+{   GitHub: https://github.com/AliDehbansiahkarbon  }
 {                                                   }
 {***************************************************}
 unit UChatGPTQuestion;

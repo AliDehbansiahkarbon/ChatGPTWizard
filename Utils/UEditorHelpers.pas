@@ -1,3 +1,11 @@
+{***************************************************}
+{                                                   }
+{   This unit includes some helper functions to     }
+{   work with Editor.                               }
+{   Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com) }
+{   GitHub: https://github.com/AliDehbansiahkarbon  }
+{                                                   }
+{***************************************************}
 unit UEditorHelpers;
 
 interface

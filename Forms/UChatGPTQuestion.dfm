@@ -3,8 +3,8 @@ object FrmChatGPT: TFrmChatGPT
   Top = 0
   BiDiMode = bdLeftToRight
   Caption = 'ChatGPT'
-  ClientHeight = 487
-  ClientWidth = 429
+  ClientHeight = 486
+  ClientWidth = 425
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,15 +21,15 @@ object FrmChatGPT: TFrmChatGPT
   inline Fram_Question: TFram_Question
     Left = 0
     Top = 0
-    Width = 429
-    Height = 487
+    Width = 425
+    Height = 486
     Align = alClient
     TabOrder = 0
     ExplicitWidth = 429
     ExplicitHeight = 487
     inherited pgcMain: TPageControl
-      Width = 429
-      Height = 453
+      Width = 425
+      Height = 452
       ExplicitWidth = 429
       ExplicitHeight = 453
       inherited tsChatGPT: TTabSheet
@@ -111,13 +111,17 @@ object FrmChatGPT: TFrmChatGPT
       end
     end
     inherited pnlBottom: TPanel
-      Top = 453
-      Width = 429
-      ExplicitTop = 453
-      ExplicitWidth = 429
+      Top = 452
+      Width = 425
+      ExplicitTop = 452
+      ExplicitWidth = 425
       inherited chk_AutoCopy: TCheckBox
-        Left = 281
+        Left = 273
         ExplicitLeft = 281
+      end
+      inherited ActivityIndicator1: TActivityIndicator
+        ExplicitWidth = 24
+        ExplicitHeight = 24
       end
     end
   end

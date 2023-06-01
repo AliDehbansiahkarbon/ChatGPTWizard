@@ -1,3 +1,11 @@
+{***************************************************}
+{                                                   }
+{   This unit contains a worker thread to do        }
+{   API calls and some other stuff.                 }
+{   Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com) }
+{   GitHub: https://github.com/AliDehbansiahkarbon  }
+{                                                   }
+{***************************************************}
 unit UYouChatThread;
 
 interface

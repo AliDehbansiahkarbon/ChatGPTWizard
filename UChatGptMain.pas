@@ -3,6 +3,7 @@
 {   This unit is the main unit of the package       }
 {   including register function.                    }
 {   Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com) }
+{   GitHub: https://github.com/AliDehbansiahkarbon  }
 {                                                   }
 {***************************************************}
 unit UChatGptMain;

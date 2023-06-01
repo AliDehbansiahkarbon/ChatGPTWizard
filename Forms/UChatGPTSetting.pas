@@ -1,10 +1,11 @@
-{ *************************************************** }
-{                                                     }
-{ This is the setting form of the plugin.             }
-{ Could be found in the main menu.                    }
-{ Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com)     }
-{                                                     }
-{ *************************************************** }
+{ ***************************************************}
+{                                                    }
+{   This is the setting form of the plugin.          }
+{   Could be found in the main menu.                 }
+{   Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com)  }
+{   GitHub: https://github.com/AliDehbansiahkarbon   }
+{                                                    }
+{ ***************************************************}
 unit UChatGPTSetting;
 
 interface

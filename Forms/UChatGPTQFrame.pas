@@ -1,10 +1,11 @@
-﻿{****************************************************}
-{                                                    }
-{    This unit contains a frame that will be         }
-{    used in dockable form.                          }
-{    Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com) }
-{                                                    }
-{****************************************************}
+﻿{***************************************************}
+{                                                   }
+{   This unit contains a frame that will be         }
+{   used in dockable form.                          }
+{   Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com) }
+{   GitHub: https://github.com/AliDehbansiahkarbon  }
+{                                                   }
+{***************************************************}
 unit UChatGPTQFrame;
 
 interface

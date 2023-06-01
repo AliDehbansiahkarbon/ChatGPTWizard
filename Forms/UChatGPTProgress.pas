@@ -3,6 +3,8 @@
 {   This unit contains a progressbar that           }
 {   will be used in inline processes.               }
 {   Auhtor: Ali Dehbansiahkarbon(adehban@gmail.com) }
+{   GitHub: https://github.com/AliDehbansiahkarbon  }
+{                                                   }
 {***************************************************}
 unit UChatGPTProgress;
 
