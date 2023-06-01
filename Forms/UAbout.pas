@@ -19,6 +19,7 @@ type
     LinkLabel_LongVideo: TLinkLabel;
     procedure FormCreate(Sender: TObject);
     procedure LinkLabel_GithubLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     procedure LoadLogo;
   public
@@ -35,6 +36,12 @@ implementation
 procedure TFrm_About.FormCreate(Sender: TObject);
 begin
   LoadLogo;
+end;
+
+procedure TFrm_About.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Ord(Key) = 27 then
+    Close;
 end;
 
 procedure TFrm_About.LinkLabel_GithubLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
