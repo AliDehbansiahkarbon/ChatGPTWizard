@@ -141,6 +141,7 @@ type
     FShouldApplyTheme: Boolean = False;
 
     procedure RemoveAferUnInstall;
+    procedure RegisterAboutBox;
     procedure register;
 
 implementation
@@ -181,6 +182,37 @@ begin
   if FStylingNotifierIndex <> WizardFail then
      (BorlandIDEServices as IOTAIDEThemingServices).RemoveNotifier(FStylingNotifierIndex);
   {$ENDIF}
+end;
+
+procedure RegisterAboutBox;
+var
+  LvSplashService : IOTASplashScreenServices;
+  LvResStream: TResourceStream;
+  LvPngImage: TPngImage;
+  LvBmp: TBitmap;
+begin
+  if Supports(SplashScreenServices, IOTASplashScreenServices, LvSplashService) then
+  begin
+    LvResStream := TResourceStream.Create(HInstance, 'GPT24', RT_RCDATA);
+    try
+      LvPngImage := TPngImage.Create;
+      try
+        LvPngImage.LoadFromStream(LvResStream);
+        LvBmp := TBitmap.Create;
+        try
+          LvPngImage.Transparent := False;
+          LvPngImage.AssignTo(LvBmp);
+          LvSplashService.AddPluginBitmap(CVersionedName, LvBmp.Handle, False, 'MIT License');
+        finally
+          LvBmp.Free;
+        end;
+      finally
+        LvPngImage.Free;
+      end;
+    finally
+      LvResStream.Free;
+    end;
+  end;
 end;
 
 { TChatGptMenuWizard }
@@ -486,7 +518,7 @@ var
   LvBmp: TBitmap;
   I: Integer;
 begin
-  LvResStream := TResourceStream.Create(HInstance, 'GPT16', RT_RCDATA);
+  LvResStream := TResourceStream.Create(HInstance, 'GPT24', RT_RCDATA);
   try
     LvPngImage := TPngImage.Create;
     try
@@ -496,6 +528,8 @@ begin
         LvPngImage.Transparent := False;
         LvPngImage.AssignTo(LvBmp);
         LvBmp.SetSize(16, 16);
+        LvBmp.Canvas.Draw((16 - LvPngImage.Width) div 2, (16 - LvPngImage.Height) div 2, LvPngImage);
+
         for I := AMainMenu.Items.Count - 1 downto 0 do
         begin
           LvRootMenu := AMainMenu.Items[I];
@@ -523,6 +557,10 @@ begin
     end;
   finally
     LvResStream.Free;
+  end;
+  try
+    RegisterAboutBox;
+  except
   end;
 end;
 

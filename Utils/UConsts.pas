@@ -31,5 +31,9 @@ const
   ContextMenuCompleteCode = 'Try to complete the following Delphi code and return the completed code';
   ContextMenuExplain = 'Explain what does the following code';
 
+  CPluginName = 'ChatGPTWizard';
+  CVersion = 'v2.0.0.5';
+  CVersionedName = CPluginName + ' - ' + CVersion;
+
 implementation
 end.
