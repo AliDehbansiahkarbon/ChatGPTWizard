@@ -16,6 +16,8 @@ uses
   UChatGPTMenuHook, UChatGPTSetting, UChatGPTQFrame, UChatGPTQuestion, UEditorHelpers, Vcl.Graphics, Vcl.ImgList;
 
 type
+
+{$REGION 'Types and definitions'}
   TTStringListHelper = class helper for TStringList
     function TrimLineText: string;
   end;
@@ -146,12 +148,14 @@ type
     procedure RemoveAferUnInstall;
     procedure RegisterAboutBox;
     procedure register;
+{$ENDREGION}
 
 implementation
 
 uses
   UChatGPTProgress;
 
+{$REGION 'public methods'}
 procedure register;
 begin
   FChatGptMenuWizard := TChatGptMenuWizard.Create;
@@ -217,8 +221,9 @@ begin
     end;
   end;
 end;
+{$ENDREGION}
 
-{ TChatGptMenuWizard }
+{$REGION 'TChatGptMenuWizard'}
 procedure TChatGptMenuWizard.ChatGPTAboutMenuClick(Sender: TObject);
 var
   Frm_About: TFrm_About;
@@ -421,11 +426,6 @@ begin
   TSingletonSettingObj.Instance.ReadRegistry;
 end;
 
-procedure TChatGptMenuWizard.AfterSave;
-begin
-//Do noting yet, its created by interface force!
-end;
-
 procedure TChatGptMenuWizard.AskMenuClick(Sender: TObject);
 var
   LvSettingObj: TSingletonSettingObj;
@@ -616,9 +616,9 @@ begin
   end;
   Cs.Leave;
 end;
+{$ENDREGION}
 
-{ TEditNotifierHelper }
-
+{$REGION 'TEditNotifierHelper'}
 function TEditNotifierHelper.AddMenuItem(AParentMenu: TMenuItem; AName, ACaption: string; AOnClick: TChatGPTOnCliskType; AShortCut: string; ATag: NativeInt): TMenuItem;
 var
   LvItem: TMenuItem;
@@ -665,11 +665,8 @@ begin
   end;
 end;
 
-class function TEditNotifierHelper.RefineText(AInput: TStringList;
-  AMsgType: TMsgType): string;
-const
-  LcLeftComment = '//************ ';
-  LcRightComment = ' ***************';
+class function TEditNotifierHelper.RefineText(AInput: TStringList; AMsgType: TMsgType): string;
+  const LcLeftComment = '//************ '; LcRightComment = ' ***************';
 var
   LvComment: string;
 begin
@@ -698,8 +695,7 @@ begin
     AInput.Text + '}';
 end;
 
-class procedure TEditNotifierHelper.RunInlineQuestion(AQuestion: string;
-  AMsgType: TMsgType);
+class procedure TEditNotifierHelper.RunInlineQuestion(AQuestion: string; AMsgType: TMsgType);
 begin
   if not TSingletonSettingObj.Instance.ApiKey.Trim.IsEmpty then
   begin
@@ -878,6 +874,31 @@ procedure TEditNotifierHelper.DockFormVisibleChanged(const EditWindow: INTAEditW
 begin
 end;
 
+procedure TChatGptMenuWizard.AfterSave;
+begin
+//Do noting yet, its created by interface force!
+end;
+
+procedure TEditNotifierHelper.WindowActivated(const EditWindow: INTAEditWindow);
+begin
+end;
+
+procedure TEditNotifierHelper.WindowCommand(const EditWindow: INTAEditWindow; Command, Param: Integer; var Handled: Boolean);
+begin
+end;
+
+procedure TEditNotifierHelper.WindowNotification(const EditWindow: INTAEditWindow; Operation: TOperation);
+begin
+end;
+
+procedure TEditNotifierHelper.WindowShow(const EditWindow: INTAEditWindow; Show, LoadedFromDesktop: Boolean);
+begin
+end;
+
+procedure TEditNotifierHelper.EditorViewModified(const EditWindow: INTAEditWindow; const EditView: IOTAEditView);
+begin
+end;
+
 function TEditNotifierHelper.GetCurrentUnitPath: string;
 var
   ModuleServices: IOTAModuleServices;
@@ -921,10 +942,6 @@ begin
       end;
     end;
   end;
-end;
-
-procedure TEditNotifierHelper.EditorViewModified(const EditWindow: INTAEditWindow; const EditView: IOTAEditView);
-begin
 end;
 
 class procedure TEditNotifierHelper.FormatSource;
@@ -972,22 +989,6 @@ begin
   end;
 end;
 
-procedure TEditNotifierHelper.WindowActivated(const EditWindow: INTAEditWindow);
-begin
-end;
-
-procedure TEditNotifierHelper.WindowCommand(const EditWindow: INTAEditWindow; Command, Param: Integer; var Handled: Boolean);
-begin
-end;
-
-procedure TEditNotifierHelper.WindowNotification(const EditWindow: INTAEditWindow; Operation: TOperation);
-begin
-end;
-
-procedure TEditNotifierHelper.WindowShow(const EditWindow: INTAEditWindow; Show, LoadedFromDesktop: Boolean);
-begin
-end;
-
 class procedure TEditNotifierHelper.WriteIntoEditor(AText: string);
 var
   LvEditView: IOTAEditView;
@@ -1023,9 +1024,9 @@ begin
     end;
   end;
 end;
+{$ENDREGION}
 
-{ TTStringListHelper }
-
+{$REGION 'TTStringListHelper'}
 function TTStringListHelper.TrimLineText: string;
 var
   I: Integer;
@@ -1035,9 +1036,9 @@ begin
 
   Result := Self.Text;
 end;
+{$ENDREGION}
 
-{ TChatGPTDockForm }
-
+{$REGION 'TChatGPTDockForm'}
 constructor TChatGPTDockForm.Create(AOwner: TComponent);
 begin
   inherited;
@@ -1107,8 +1108,10 @@ begin
   Cs.Leave;
 end;
 
+{$ENDREGION}
+
+{$REGION 'TStylingNotifier'}
 {$IF CompilerVersion >= 32.0}
-{ TStylingNotifier }
 procedure TStylingNotifier.ChangedTheme;
 begin
   if FShouldApplyTheme then
@@ -1147,6 +1150,7 @@ begin
   end;
 end;
 {$ENDIF}
+{$ENDREGION}
 
 initialization
   FChatGPTSubMenu := nil;
