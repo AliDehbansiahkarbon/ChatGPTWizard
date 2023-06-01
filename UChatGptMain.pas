@@ -20,7 +20,8 @@ type
   end;
 
   TChatGPTOnCliskType = procedure(Sender: TObject) of Object;
-  TMsgType = (mtNone, mtNormalQuestion, mtAddTest, mtFindBugs, mtAddComment, mtOptimize, mtCompleteCode, mtExplain);
+  TMsgType = (mtNone, mtNormalQuestion, mtAddTest, mtFindBugs, mtAddComment,
+              mtOptimize, mtCompleteCode, mtExplain, mtRefactor);
 
 {*********************************************************}
 {                                                         }
@@ -82,7 +83,7 @@ type
     class procedure FormatSource;
     function GetCurrentUnitPath: string;
     class function GetSelectedText: string;
-    class procedure RunInlineQuestion(AEditView: IOTAEditView; AQuestion: string; AMsgType: TMsgType; ASelectedText: string = '');
+    class procedure RunInlineQuestion(AQuestion: string; AMsgType: TMsgType);
     class procedure DoAskSubMenu;
     class procedure DoAddTest;
     class procedure DoFindBugs;
@@ -90,6 +91,7 @@ type
     class procedure DoAddComments;
     class procedure DoCompleteCode;
     class procedure DoExplain;
+    class procedure DoRefactor;
     class function RefineText(AInput: TStringList; AMsgType: TMsgType = mtNone): string;
     class procedure WriteIntoEditor(AText: string);
   public
@@ -464,6 +466,7 @@ begin
         4: DoAddComments;
         5: DoCompleteCode;
         6: DoExplain;
+        7: DoRefactor;
       end;
     end;
   end;
@@ -640,6 +643,7 @@ begin
       4: DoAddComments;
       5: DoCompleteCode;
       6: DoExplain;
+      7: DoRefactor;
     end;
   end;
 end;
@@ -656,37 +660,51 @@ begin
     AddMenuItem(MenuItem, 'ChatGPTAddComments', 'Add Comments', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+M', 4);
     AddMenuItem(MenuItem, 'ChatGPTCompleteCode', 'Complete Code', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+k', 5);
     AddMenuItem(MenuItem, 'ChatGPTExplain', 'Explain Code', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+E', 6);
+    AddMenuItem(MenuItem, 'ChatGPTRefactor', 'Refactor Code', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+R', 7);
   end;
 end;
 
-class function TEditNotifierHelper.RefineText(AInput: TStringList; AMsgType: TMsgType): string;
+class function TEditNotifierHelper.RefineText(AInput: TStringList;
+  AMsgType: TMsgType): string;
 const
-   LcLeftComment = '//************ ';
-   LcRightComment = ' ***************';
+  LcLeftComment = '//************ ';
+  LcRightComment = ' ***************';
 var
   LvComment: string;
 begin
   case AMsgType of
-    mtNone: LvComment := '';
-    mtNormalQuestion: LvComment := '';
-    mtAddTest: LvComment := 'Add Test';
-    mtFindBugs: LvComment := 'Find Bugs';
-    mtAddComment: LvComment := 'Add Comment';
-    mtOptimize: LvComment := 'Optimize Code';
-    mtCompleteCode: LvComment := 'Complete Code';
-    mtExplain: LvComment := 'Explanation';
+    mtNone:
+      LvComment := '';
+    mtNormalQuestion:
+      LvComment := '';
+    mtAddTest:
+      LvComment := 'Add Test';
+    mtFindBugs:
+      LvComment := 'Find Bugs';
+    mtAddComment:
+      LvComment := 'Add Comment';
+    mtOptimize:
+      LvComment := 'Optimize Code';
+    mtCompleteCode:
+      LvComment := 'Complete Code';
+    mtExplain:
+      LvComment := 'Explanation';
+    mtRefactor:
+      LvComment := 'Refactor';
   end;
 
-  Result := CRLF + '{' + LcLeftComment + LvComment + LcRightComment + CRLF + AInput.Text + '}';
+  Result := CRLF + '{' + LcLeftComment + LvComment + LcRightComment + CRLF +
+    AInput.Text + '}';
 end;
 
-class procedure TEditNotifierHelper.RunInlineQuestion(AEditView: IOTAEditView; AQuestion: string; AMsgType: TMsgType; ASelectedText: string);
+class procedure TEditNotifierHelper.RunInlineQuestion(AQuestion: string;
+  AMsgType: TMsgType);
 begin
   if not TSingletonSettingObj.Instance.ApiKey.Trim.IsEmpty then
   begin
     Frm_Progress := TFrm_Progress.Create(nil);
     try
-      frm_Progress.SelectedText := AQuestion;
+      Frm_Progress.SelectedText := AQuestion;
       TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Progress, Frm_Progress); //Apply Theme
       Frm_Progress.ShowModal;
       if not Frm_Progress.Answer.Text.Trim.IsEmpty then
@@ -753,28 +771,6 @@ begin
   inherited;
 end;
 
-class procedure TEditNotifierHelper.DoAddComments;
-var
-  LvSelectedText: string;
-begin
-  LvSelectedText := GetSelectedText;
-  if not LvSelectedText.IsEmpty then
-    RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuAddComments + #13 + LvSelectedText, mtAddComment, LvSelectedText)
-  else
-    ShowMessage(CreateMsg(mtAddTest));
-end;
-
-class procedure TEditNotifierHelper.DoAddTest;
-var
-  LvSelectedText: string;
-begin
-  LvSelectedText := GetSelectedText;
-  if not LvSelectedText.IsEmpty then
-    RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuAddTest + #13 + LvSelectedText, mtAddTest, LvSelectedText)
-  else
-    ShowMessage(CreateMsg(mtAddTest));
-end;
-
 class procedure TEditNotifierHelper.DoAskSubMenu;
 var
   LvSelectedText: string;
@@ -784,12 +780,89 @@ begin
   begin
     //If it is a ChatGPT question
     if (SameStr(LeftStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.LeftIdentifier)) and (SameStr(RightStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.RightIdentifier)) then
-      RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, GetQuestion(LvSelectedText), mtNormalQuestion, LvSelectedText)
+      RunInlineQuestion(GetQuestion(LvSelectedText), mtNormalQuestion)
     else
       ShowMessage(CreateMsg(mtNormalQuestion));
   end
   else
     ShowMessage(CreateMsg(mtNormalQuestion));
+end;
+
+class procedure TEditNotifierHelper.DoAddTest;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion(ContextMenuAddTest + #13 + LvSelectedText, mtAddTest)
+  else
+    ShowMessage(CreateMsg(mtAddTest));
+end;
+
+class procedure TEditNotifierHelper.DoFindBugs;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion(ContextMenuFindBugs + #13 + LvSelectedText, mtFindBugs)
+  else
+    ShowMessage(CreateMsg(mtFindBugs));
+end;
+
+class procedure TEditNotifierHelper.DoOptimize;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion(ContextMenuOptimize + #13 + LvSelectedText, mtOptimize)
+  else
+    ShowMessage(CreateMsg(mtOptimize));
+end;
+
+class procedure TEditNotifierHelper.DoAddComments;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion(ContextMenuAddComments + #13 + LvSelectedText, mtAddComment)
+  else
+    ShowMessage(CreateMsg(mtAddTest));
+end;
+
+class procedure TEditNotifierHelper.DoCompleteCode;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion(ContextMenuCompleteCode + #13 + LvSelectedText, mtCompleteCode)
+  else
+    ShowMessage(CreateMsg(mtCompleteCode));
+end;
+
+class procedure TEditNotifierHelper.DoExplain;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion(ContextMenuExplain + #13 + LvSelectedText, mtExplain)
+  else
+    ShowMessage(CreateMsg(mtExplain));
+end;
+
+class procedure TEditNotifierHelper.DoRefactor;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion(ContextMenuRefactor + #13 + LvSelectedText, mtRefactor)
+  else
+    ShowMessage(CreateMsg(mtOptimize));
 end;
 
 procedure TEditNotifierHelper.DockFormRefresh(const EditWindow: INTAEditWindow; DockForm: TDockableForm);
@@ -802,50 +875,6 @@ end;
 
 procedure TEditNotifierHelper.DockFormVisibleChanged(const EditWindow: INTAEditWindow; DockForm: TDockableForm);
 begin
-end;
-
-class procedure TEditNotifierHelper.DoCompleteCode;
-var
-  LvSelectedText: string;
-begin
-  LvSelectedText := GetSelectedText;
-  if not LvSelectedText.IsEmpty then
-    RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuCompleteCode + #13 + LvSelectedText, mtCompleteCode, LvSelectedText)
-  else
-    ShowMessage(CreateMsg(mtCompleteCode));
-end;
-
-class procedure TEditNotifierHelper.DoExplain;
-var
-  LvSelectedText: string;
-begin
-  LvSelectedText := GetSelectedText;
-  if not LvSelectedText.IsEmpty then
-    RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuExplain + #13 + LvSelectedText, mtExplain, LvSelectedText)
-  else
-    ShowMessage(CreateMsg(mtExplain));
-end;
-
-class procedure TEditNotifierHelper.DoFindBugs;
-var
-  LvSelectedText: string;
-begin
-  LvSelectedText := GetSelectedText;
-  if not LvSelectedText.IsEmpty then
-    RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuFindBugs + #13 + LvSelectedText, mtFindBugs, LvSelectedText)
-  else
-    ShowMessage(CreateMsg(mtFindBugs));
-end;
-
-class procedure TEditNotifierHelper.DoOptimize;
-var
-  LvSelectedText: string;
-begin
-  LvSelectedText := GetSelectedText;
-  if not LvSelectedText.IsEmpty then
-    RunInlineQuestion((BorlandIDEServices as IOTAEditorServices).TopView, ContextMenuOptimize + #13 + LvSelectedText, mtOptimize, LvSelectedText)
-  else
-    ShowMessage(CreateMsg(mtOptimize));
 end;
 
 function TEditNotifierHelper.GetCurrentUnitPath: string;

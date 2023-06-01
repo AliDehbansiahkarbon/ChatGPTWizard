@@ -30,6 +30,7 @@ const
   ContextMenuAddComments = 'Add descriptive comments for the following Delphi code';
   ContextMenuCompleteCode = 'Try to complete the following Delphi code and return the completed code';
   ContextMenuExplain = 'Explain what does the following code';
+  ContextMenuRefactor = 'Refactor the following code';
 
   CPluginName = 'ChatGPTWizard';
   CVersion = 'v2.0.0.5';
