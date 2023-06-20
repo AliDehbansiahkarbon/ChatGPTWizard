@@ -94,6 +94,16 @@ object Frm_About: TFrm_About
     Font.Style = [fsBold]
     ParentFont = False
   end
+  object lbl_Free: TLabel
+    Left = 210
+    Top = 46
+    Width = 41
+    Height = 15
+    Caption = 'It'#39's free!'
+    Color = 5592575
+    ParentColor = False
+    Transparent = False
+  end
   object LinkLabel_Github: TLinkLabel
     Left = 79
     Top = 107

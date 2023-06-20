@@ -115,7 +115,7 @@ type
 
 {*******************************************************}
 {                                                       }
-{   This is a dockable form of the plugin.              }
+{   This is the dockable form of the plugin.              }
 {   It is a singleton class which means there will      }
 {   be just one instance as long as the IDE is alive!   }
 {   Could be activate/deactive in main menu.            }

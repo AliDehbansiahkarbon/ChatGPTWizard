@@ -17,6 +17,7 @@ type
     LinkLabel_ShortVideo: TLinkLabel;
     lbl_LongVideo: TLabel;
     LinkLabel_LongVideo: TLinkLabel;
+    lbl_Free: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure LinkLabel_GithubLinkClick(Sender: TObject; const Link: string; LinkType: TSysLinkType);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
