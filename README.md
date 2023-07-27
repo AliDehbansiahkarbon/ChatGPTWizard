@@ -279,3 +279,10 @@ Do not hesitate to star! if you like it take a leap of faith, and hit that 'Star
 All PRs, disscutions, and issues are welcome but please read check the closed issues before opening a new one to avoid duplicates!
 
 **Good luck!**
+<hr>
+<p align="center">
+<img src="https://dtffvb2501i0o.cloudfront.net/images/logos/delphi-logo-128.webp" alt="Delphi">
+</p>
+<h5 align="center">
+Made with :heart: on Delphi
+</h5>
