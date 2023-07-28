@@ -12,11 +12,11 @@
 <img src="https://img.shields.io/github/forks/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="forks">
 <img src="https://img.shields.io/github/stars/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="stars">
 <img src="https://img.shields.io/github/watchers/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="watchers">
-<br />
 <a href="https://github.com/AliDehbansiahkarbon/ChatGPTWizard/issues"><img src="https://img.shields.io/github/issues-closed/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="issues"></a>
+<br />
 <a href="https://github.com/AliDehbansiahkarbon/ChatGPTWizard/pulls"><img src="https://img.shields.io/github/issues-pr-closed/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="pulls"></a>
 <img src="https://img.shields.io/github/last-commit/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="last-commit">
-
+[![Downloads](https://static.pepy.tech/personalized-badge/video2tfrecord?period=month&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/video2tfrecord)
 
 <h2>An AI plug-in for Embarcadero RAD Studio IDE.</h2>
 
