@@ -79,11 +79,12 @@ This Plugin Supports the following AI Services:
 
 [generate API Key here](https://betterapi.net/about)
 
-**NOTE: Other AI Services(non-ChatGPT) are enabled in Rad Studio 10.2 and above!**
+**NOTE: ChatGPT is working with Rad Studio 10.1 and above but Other(non-ChatGPT) AI Services are enabled in Rad Studio 10.2 and above!**
 
 
 ## Remarks
 
+- This plugin is free but some AI Services are not free for ever.
 - It's compatible with Delphi 10.1 Berlin and later versions.
 - Uses XSuperObject library which is included in the project files. you can also find the latest version [here](https://github.com/onryldz/x-superobject/blob/master/XSuperObject.pas)
 - Settings are stored in registry which can be found here: `Computer\HKEY_CURRENT_USER\Software\ChatGPTWizard`
