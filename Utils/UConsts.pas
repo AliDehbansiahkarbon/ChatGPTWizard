@@ -33,7 +33,7 @@ const
   ContextMenuRefactor = 'Refactor the following code';
 
   CPluginName = 'ChatGPTWizard';
-  CVersion = 'v2.2.0.6';
+  CVersion = 'v2.2.0.7';
   CVersionedName = CPluginName + ' - ' + CVersion;
 
 implementation
