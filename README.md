@@ -12,11 +12,11 @@
 <img src="https://img.shields.io/github/forks/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="forks">
 <img src="https://img.shields.io/github/stars/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="stars">
 <img src="https://img.shields.io/github/watchers/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="watchers">
-<br />
 <a href="https://github.com/AliDehbansiahkarbon/ChatGPTWizard/issues"><img src="https://img.shields.io/github/issues-closed/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="issues"></a>
+<br />
 <a href="https://github.com/AliDehbansiahkarbon/ChatGPTWizard/pulls"><img src="https://img.shields.io/github/issues-pr-closed/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="pulls"></a>
 <img src="https://img.shields.io/github/last-commit/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="last-commit">
-
+[![Downloads](https://static.pepy.tech/personalized-badge/video2tfrecord?period=month&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/video2tfrecord)
 
 <h2>An AI plug-in for Embarcadero RAD Studio IDE.</h2>
 
@@ -79,11 +79,12 @@ This Plugin Supports the following AI Services:
 
 [generate API Key here](https://betterapi.net/about)
 
-**NOTE: Other AI Services(non-ChatGPT) are enabled in Rad Studio 10.2 and above!**
+**NOTE: ChatGPT is working with Rad Studio 10.1 and above but Other(non-ChatGPT) AI Services are enabled in Rad Studio 10.2 and above!**
 
 
 ## Remarks
 
+- This plugin is free but some AI Services are not free for ever.
 - It's compatible with Delphi 10.1 Berlin and later versions.
 - Uses XSuperObject library which is included in the project files. you can also find the latest version [here](https://github.com/onryldz/x-superobject/blob/master/XSuperObject.pas)
 - Settings are stored in registry which can be found here: `Computer\HKEY_CURRENT_USER\Software\ChatGPTWizard`
@@ -279,3 +280,10 @@ Do not hesitate to star! if you like it take a leap of faith, and hit that 'Star
 All PRs, disscutions, and issues are welcome but please read check the closed issues before opening a new one to avoid duplicates!
 
 **Good luck!**
+<hr>
+<p align="center">
+<img src="https://dtffvb2501i0o.cloudfront.net/images/logos/delphi-logo-128.webp" alt="Delphi">
+</p>
+<h5 align="center">
+Made with :heart: on Delphi
+</h5>
