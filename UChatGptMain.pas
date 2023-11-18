@@ -39,7 +39,7 @@ type
     FSetting: TSingletonSettingObj;
 
     FAskSubMenuH, FAddTestH, FFindBugsH, //These hidden menues usre used for better Ux expreince with shortcuts.
-    FOptimizeH, FAddCommentsH, FCompleteCodeH: TMenuItem;
+    FOptimizeH, FAddCommentsH, FCompleteCodeH, FAsmConvert: TMenuItem;
 
     procedure AskMenuClick(Sender: TObject);
     procedure ChatGPTDockableMenuClick(Sender: TObject);
@@ -381,6 +381,15 @@ begin
     FCompleteCodeH.OnClick := AskSubmenuHiddenOnClick;
     FCompleteCodeH.Visible := False;
   end;
+
+  if not Assigned(FAsmConvert) then
+  begin
+    FCompleteCodeH := TMenuItem.Create(nil);
+    FCompleteCodeH.Tag := 8;
+    FCompleteCodeH.ShortCut := TextToShortCut('Ctrl+Alt+Shift+S');
+    FCompleteCodeH.OnClick := AskSubmenuHiddenOnClick;
+    FCompleteCodeH.Visible := False;
+  end;
   {$ENDREGION}
 
   if not Assigned(FAskMenuDockable) then
@@ -665,6 +674,7 @@ begin
     AddMenuItem(MenuItem, 'ChatGPTCompleteCode', 'Complete Code', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+k', 5);
     AddMenuItem(MenuItem, 'ChatGPTExplain', 'Explain Code', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+E', 6);
     AddMenuItem(MenuItem, 'ChatGPTRefactor', 'Refactor Code', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+R', 7);
+    AddMenuItem(MenuItem, 'ChatGPTAsm', 'Convert to Assembly', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+S', 8);
   end;
 end;
 
