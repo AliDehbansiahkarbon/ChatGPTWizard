@@ -774,25 +774,6 @@ end;
 procedure TFrm_Setting.cbbModelChange(Sender: TObject);
 begin
   HasChanges := True;
-  if (Copy(cbbModel.Text, 1, 4) = 'gpt-') and (edt_Url.Text = DefaultChatGPTURL) then
-  begin
-    if MessageDlg('Chat API uses a different base URL, would you like me to set it automatically?' + #13 +
-                    'The base URL should be something like the following URL but in case it doesn''t work ' + #13 +
-                    'Please visit the online documentation from OpenAI in this regard' + #13 +
-                    'Base URL: https://api.openai.com/v1/chat/completions',
-    mtConfirmation, [mbYes, mbNo], 0) = mrYes then
-      edt_Url.Text := DefaultChatGPT3_5TurboURL;
-  end;
-
-  if (Copy(cbbModel.Text, 1, 4) <> 'gpt-') and (edt_Url.Text = DefaultChatGPT3_5TurboURL) then
-  begin
-    if MessageDlg('Any models except "gpt-3.5-turbo" and "gpt-4" use a different base URL, would you like me to set it automatically?' + #13 +
-                'The base URL should be something like the following URL but in case it doesn''t work ' + #13 +
-                'Please visit the online documentation from OpenAI in this regard' + #13 +
-                'Base URL: https://api.openai.com/v1/completions',
-    mtConfirmation, [mbYes, mbNo], 0) = mrYes then
-      edt_Url.Text := DefaultChatGPTURL;
-  end;
 end;
 
 procedure TFrm_Setting.chk_AnimatedLettersClick(Sender: TObject);

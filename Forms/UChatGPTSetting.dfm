@@ -3,7 +3,7 @@ object Frm_Setting: TFrm_Setting
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'Setting'
-  ClientHeight = 572
+  ClientHeight = 565
   ClientWidth = 453
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,27 +20,25 @@ object Frm_Setting: TFrm_Setting
     Left = 0
     Top = 0
     Width = 453
-    Height = 526
+    Height = 519
     ActivePage = tsMainSetting
     Align = alClient
     TabOrder = 0
     OnChange = pgcSettingChange
-    ExplicitWidth = 461
-    ExplicitHeight = 538
     object tsMainSetting: TTabSheet
       Caption = 'Main Setting'
       object pnlMain: TPanel
         Left = 0
         Top = 0
-        Width = 453
-        Height = 508
+        Width = 445
+        Height = 489
         Align = alClient
         TabOrder = 0
         object grp_OpenAI: TGroupBox
           Left = 1
           Top = 1
-          Width = 451
-          Height = 184
+          Width = 443
+          Height = 160
           Align = alTop
           Caption = 'OpenAI preferences'
           TabOrder = 0
@@ -48,8 +46,8 @@ object Frm_Setting: TFrm_Setting
             AlignWithMargins = True
             Left = 5
             Top = 20
-            Width = 441
-            Height = 159
+            Width = 433
+            Height = 135
             Align = alClient
             BevelOuter = bvLowered
             TabOrder = 0
@@ -75,18 +73,20 @@ object Frm_Setting: TFrm_Setting
               Caption = 'Model:'
             end
             object lbl_4: TLabel
-              Left = 19
-              Top = 104
+              Left = 227
+              Top = 109
               Width = 62
               Height = 15
               Caption = 'Max-Token:'
+              Visible = False
             end
             object lbl_5: TLabel
-              Left = 12
-              Top = 135
+              Left = 220
+              Top = 140
               Width = 69
               Height = 15
               Caption = 'Temperature:'
+              Visible = False
             end
             object edt_Url: TEdit
               Left = 89
@@ -94,7 +94,7 @@ object Frm_Setting: TFrm_Setting
               Width = 318
               Height = 23
               TabOrder = 0
-              Text = 'https://api.openai.com/v1/completions'
+              Text = 'https://api.openai.com/v1/chat/completions'
               OnChange = edt_UrlChange
             end
             object edt_ApiKey: TEdit
@@ -107,23 +107,25 @@ object Frm_Setting: TFrm_Setting
               OnChange = edt_UrlChange
             end
             object edt_MaxToken: TEdit
-              Left = 89
-              Top = 101
+              Left = 298
+              Top = 107
               Width = 122
               Height = 23
               NumbersOnly = True
               TabOrder = 2
               Text = '2048'
+              Visible = False
               OnChange = edt_UrlChange
             end
             object edt_Temperature: TEdit
-              Left = 89
-              Top = 131
+              Left = 297
+              Top = 136
               Width = 122
               Height = 23
               NumbersOnly = True
               TabOrder = 3
               Text = '0'
+              Visible = False
               OnChange = edt_UrlChange
             end
             object cbbModel: TComboBox
@@ -135,16 +137,10 @@ object Frm_Setting: TFrm_Setting
               TabOrder = 4
               OnChange = cbbModelChange
               Items.Strings = (
-                'text-davinci-003'
-                'text-curie-001'
-                'text-babbage-001'
-                'text-ada-001'
                 'gpt-3.5-turbo'
-                'gpt-3.5-turbo-0301'
-                'code-davinci-002'
-                'text-davinci-002'
+                'gpt-3.5-turbo-16k'
                 'gpt-4'
-                'gpt-4-0314')
+                'gpt-4-32k')
             end
             object chk_AnimatedLetters: TCheckBox
               Left = 234
@@ -160,8 +156,8 @@ object Frm_Setting: TFrm_Setting
               OnClick = chk_AnimatedLettersClick
             end
             object lbEdt_Timeout: TLabeledEdit
-              Left = 297
-              Top = 99
+              Left = 102
+              Top = 101
               Width = 28
               Height = 23
               Alignment = taCenter
@@ -178,17 +174,15 @@ object Frm_Setting: TFrm_Setting
         end
         object pnlOther: TPanel
           Left = 1
-          Top = 185
+          Top = 161
           Width = 443
-          Height = 310
+          Height = 327
           Align = alClient
           TabOrder = 1
-          ExplicitWidth = 451
-          ExplicitHeight = 322
           object grp_History: TGroupBox
             Left = 1
             Top = 1
-            Width = 449
+            Width = 441
             Height = 96
             Align = alTop
             Caption = 'History'
@@ -197,7 +191,7 @@ object Frm_Setting: TFrm_Setting
               AlignWithMargins = True
               Left = 5
               Top = 20
-              Width = 439
+              Width = 431
               Height = 71
               Align = alClient
               BevelOuter = bvLowered
@@ -215,7 +209,7 @@ object Frm_Setting: TFrm_Setting
               object chk_History: TCheckBox
                 Left = 20
                 Top = 16
-                Width = 47
+                Width = 39
                 Height = 17
                 Anchors = [akLeft, akTop, akRight]
                 BiDiMode = bdLeftToRight
@@ -223,7 +217,6 @@ object Frm_Setting: TFrm_Setting
                 ParentBiDiMode = False
                 TabOrder = 0
                 OnClick = chk_HistoryClick
-                ExplicitWidth = 55
               end
               object lbEdt_History: TLabeledEdit
                 Left = 79
@@ -272,12 +265,11 @@ object Frm_Setting: TFrm_Setting
             Align = alTop
             Caption = 'Proxy Setting'
             TabOrder = 1
-            ExplicitWidth = 449
             object pnlProxy: TPanel
               AlignWithMargins = True
               Left = 5
               Top = 20
-              Width = 439
+              Width = 431
               Height = 132
               Align = alClient
               BevelOuter = bvLowered
@@ -354,12 +346,11 @@ object Frm_Setting: TFrm_Setting
             Align = alTop
             Caption = 'IDE && Other'
             TabOrder = 2
-            ExplicitWidth = 449
             object pnlIDE: TPanel
               AlignWithMargins = True
               Left = 5
               Top = 20
-              Width = 439
+              Width = 431
               Height = 42
               Align = alClient
               BevelOuter = bvLowered
@@ -411,8 +402,8 @@ object Frm_Setting: TFrm_Setting
       object pnlPredefinedQ: TPanel
         Left = 0
         Top = 0
-        Width = 453
-        Height = 508
+        Width = 445
+        Height = 489
         Align = alClient
         TabOrder = 0
         object Btn_AddQuestion: TButton
@@ -428,15 +419,15 @@ object Frm_Setting: TFrm_Setting
           AlignWithMargins = True
           Left = 4
           Top = 51
-          Width = 445
-          Height = 453
+          Width = 437
+          Height = 434
           Margins.Top = 50
           Align = alClient
           TabOrder = 1
           object GridPanelPredefinedQs: TGridPanel
             Left = 0
             Top = 0
-            Width = 441
+            Width = 433
             Height = 0
             Align = alTop
             ColumnCollection = <
@@ -471,8 +462,8 @@ object Frm_Setting: TFrm_Setting
       object pnlOtherAIMain: TPanel
         Left = 0
         Top = 0
-        Width = 453
-        Height = 508
+        Width = 445
+        Height = 489
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 0
@@ -480,7 +471,7 @@ object Frm_Setting: TFrm_Setting
           AlignWithMargins = True
           Left = 3
           Top = 135
-          Width = 447
+          Width = 439
           Height = 126
           Align = alTop
           Caption = 'Writesonic'
@@ -489,7 +480,7 @@ object Frm_Setting: TFrm_Setting
             AlignWithMargins = True
             Left = 5
             Top = 20
-            Width = 437
+            Width = 429
             Height = 101
             Align = alClient
             BevelOuter = bvLowered
@@ -536,7 +527,7 @@ object Frm_Setting: TFrm_Setting
           AlignWithMargins = True
           Left = 3
           Top = 3
-          Width = 447
+          Width = 439
           Height = 126
           Align = alTop
           Caption = 'YouChat'
@@ -545,7 +536,7 @@ object Frm_Setting: TFrm_Setting
             AlignWithMargins = True
             Left = 5
             Top = 20
-            Width = 437
+            Width = 429
             Height = 101
             Align = alClient
             BevelOuter = bvLowered
@@ -593,14 +584,12 @@ object Frm_Setting: TFrm_Setting
   end
   object pnlBottom: TPanel
     Left = 0
-    Top = 526
+    Top = 519
     Width = 453
     Height = 46
     Align = alBottom
     BevelOuter = bvLowered
     TabOrder = 1
-    ExplicitTop = 538
-    ExplicitWidth = 461
     DesignSize = (
       453
       46)
@@ -613,7 +602,6 @@ object Frm_Setting: TFrm_Setting
       Caption = 'Load Defaults'
       TabOrder = 0
       OnClick = Btn_DefaultClick
-      ExplicitLeft = 275
     end
     object Btn_Save: TButton
       Left = 350
@@ -624,7 +612,6 @@ object Frm_Setting: TFrm_Setting
       Caption = 'Save && Close'
       TabOrder = 1
       OnClick = Btn_SaveClick
-      ExplicitLeft = 366
     end
   end
 end

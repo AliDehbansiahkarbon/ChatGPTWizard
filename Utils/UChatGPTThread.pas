@@ -144,7 +144,8 @@ end;
 
 function TOpenAIAPI.IsChatModel(AModel: string): Boolean;
 begin
-  Result := AModel.Contains('gpt-3.5-turbo') or AModel.Contains('gpt-4');
+  Result := True; // Other models seem to be deprecated soon.
+  //Result := AModel.Contains('gpt-3.5-turbo') or AModel.Contains('gpt-4');
 end;
 
 function TOpenAIAPI.QueryStreamIndy(const AModel: string; const APrompt: string; AMaxToken: Integer; ATemperature: Integer): string;

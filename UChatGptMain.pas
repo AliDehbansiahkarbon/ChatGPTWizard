@@ -24,7 +24,7 @@ type
 
   TChatGPTOnCliskType = procedure(Sender: TObject) of Object;
   TMsgType = (mtNone, mtNormalQuestion, mtAddTest, mtFindBugs, mtAddComment,
-              mtOptimize, mtCompleteCode, mtExplain, mtRefactor);
+              mtOptimize, mtCompleteCode, mtExplain, mtRefactor, mtASM);
 
 {*********************************************************}
 {                                                         }
@@ -95,6 +95,7 @@ type
     class procedure DoCompleteCode;
     class procedure DoExplain;
     class procedure DoRefactor;
+    class procedure DoConvertToAssembly;
     class function RefineText(AInput: TStringList; AMsgType: TMsgType = mtNone): string;
     class procedure WriteIntoEditor(AText: string);
   public
@@ -115,7 +116,7 @@ type
 
 {*******************************************************}
 {                                                       }
-{   This is the dockable form of the plugin.              }
+{   This is the dockable form of the plugin.            }
 {   It is a singleton class which means there will      }
 {   be just one instance as long as the IDE is alive!   }
 {   Could be activate/deactive in main menu.            }
@@ -468,6 +469,7 @@ begin
         5: DoCompleteCode;
         6: DoExplain;
         7: DoRefactor;
+        8: DoConvertToAssembly;
       end;
     end;
   end;
@@ -645,6 +647,7 @@ begin
       5: DoCompleteCode;
       6: DoExplain;
       7: DoRefactor;
+      8: DoConvertToAssembly;
     end;
   end;
 end;
@@ -689,6 +692,8 @@ begin
       LvComment := 'Explanation';
     mtRefactor:
       LvComment := 'Refactor';
+    mtASM:
+      LvComment := 'Convert to Assembly'
   end;
 
   Result := CRLF + '{' + LcLeftComment + LvComment + LcRightComment + CRLF +
@@ -758,7 +763,7 @@ begin
     mtFindBugs,
     mtOptimize,
     mtCompleteCode,
-    mtExplain: Result := 'There is no selected text.';
+    mtExplain, mtASM: Result := 'There is no selected text.';
   end;
 end;
 
@@ -838,6 +843,17 @@ begin
     RunInlineQuestion(ContextMenuCompleteCode + #13 + LvSelectedText, mtCompleteCode)
   else
     ShowMessage(CreateMsg(mtCompleteCode));
+end;
+
+class procedure TEditNotifierHelper.DoConvertToAssembly;
+var
+  LvSelectedText: string;
+begin
+  LvSelectedText := GetSelectedText;
+  if not LvSelectedText.IsEmpty then
+    RunInlineQuestion(ContextMenuConvertToAsm + #13 + LvSelectedText, mtASM)
+  else
+    ShowMessage(CreateMsg(mtASM));
 end;
 
 class procedure TEditNotifierHelper.DoExplain;

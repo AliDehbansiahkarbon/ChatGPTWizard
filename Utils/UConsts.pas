@@ -10,9 +10,8 @@ const
   WM_WRITESONIC_UPDATE_MESSAGE = WM_USER + 5876;
   WM_YOUCHAT_UPDATE_MESSAGE = WM_USER + 5877;
 
-  DefaultChatGPTURL = 'https://api.openai.com/v1/completions';
-  DefaultChatGPT3_5TurboURL = 'https://api.openai.com/v1/chat/completions';
-  DefaultModel = 'text-davinci-003';
+  DefaultChatGPTURL = 'https://api.openai.com/v1/chat/completions';
+  DefaultModel = 'gpt-3.5-turbo';
   DefaultMaxToken = 2048;
   DefaultTemperature = 0;
   DefaultIdentifier = 'cpt';
@@ -31,9 +30,10 @@ const
   ContextMenuCompleteCode = 'Try to complete the following Delphi code and return the completed code';
   ContextMenuExplain = 'Explain what does the following code';
   ContextMenuRefactor = 'Refactor the following code';
+  ContextMenuConvertToAsm = 'Convert the following code to Assembly code';
 
   CPluginName = 'ChatGPTWizard';
-  CVersion = 'v2.2.0.7';
+  CVersion = 'v2.2.0.9';
   CVersionedName = CPluginName + ' - ' + CVersion;
 
 implementation

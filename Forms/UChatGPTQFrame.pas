@@ -162,6 +162,7 @@ type
                                 ACaseSensitive: Boolean; ABkColor: TColor; ASelectedBkColor: TColor);
     procedure EnableUI(ATaskName: string);
     procedure ClearAnswers;
+    function IslegacyModel: Boolean;
   public
     procedure InitialFrame;
     procedure InitialClassViewMenueItems(AClassList: TClassList);
@@ -215,6 +216,11 @@ end;
 
 procedure TFram_Question.Btn_AskClick(Sender: TObject);
 begin
+  if IslegacyModel then
+  begin
+    ShowMessage('You are trying to use model"' + '+' + TSingletonSettingObj.Instance.Model + '" which is deprecated')
+  end;
+  
   if mmoQuestion.Lines.Text.Trim.IsEmpty then
   begin
     ShowMessage('Really?!😂' + #13 + 'You need to type a question first.');
@@ -907,6 +913,14 @@ begin
     pnlHistoryTop.StyleElements := [seFont, seBorder];
     FHistoryGrid.StyleElements := [seFont, seBorder];
     FHistoryGrid.ParentColor := True;
+  end;
+end;
+
+function TFram_Question.IslegacyModel: Boolean;
+begin
+  with TSingletonSettingObj.Instance do
+  begin
+    Result := Model.Equals('text-davinci-003') or URL.Equals('https://api.openai.com/v1/completions');
   end;
 end;
 
