@@ -218,7 +218,8 @@ procedure TFram_Question.Btn_AskClick(Sender: TObject);
 begin
   if IslegacyModel then
   begin
-    ShowMessage('You are trying to use model"' + '+' + TSingletonSettingObj.Instance.Model + '" which is deprecated')
+    ShowMessage('You are trying to use the model"' + TSingletonSettingObj.Instance.Model + '" which is deprecated, you can change the Model in setting form.');
+    Exit;
   end;
   
   if mmoQuestion.Lines.Text.Trim.IsEmpty then
