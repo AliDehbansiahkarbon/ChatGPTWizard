@@ -412,7 +412,7 @@ begin
   if not Assigned(FRoot) then
   begin
     FRoot := TMenuItem.Create(nil);
-    FRoot.Caption := 'ChatGPT';
+    FRoot.Caption := 'ChatGPTWizard';
     FRoot.Name := 'ChatGPTRootMenu';
     FRoot.Add(FAskMenu);
     FRoot.Add(FAskMenuDockable);
@@ -740,7 +740,7 @@ begin
   FMenuHook.HookMenu(LvEditorPopUpMenu);
   if FMenuHook.IsHooked(LvEditorPopUpMenu) then
   begin
-    FChatGPTSubMenu := TCpMenuItemDef.Create('ChatGPTSubMenu', 'ChatGPT', nil, ipAfter, 'ChatGPTSubMenu');
+    FChatGPTSubMenu := TCpMenuItemDef.Create('ChatGPTSubMenu', 'AI Assistant(ChatGPTWizard)', nil, ipAfter, 'ChatGPTSubMenu');
     FChatGPTSubMenu.OnCreated := OnChatGPTSubMenuClick;
     FMenuHook.AddMenuItemDef(FChatGPTSubMenu);
   end;
