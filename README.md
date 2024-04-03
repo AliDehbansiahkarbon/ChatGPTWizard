@@ -42,9 +42,15 @@
 - Supports [Writesonic](https://writesonic.com/chat) AI as the second AI service.
 - Supports [YouChat](https://you.com/code) AI as the third AI service.
 
-
-
 <br />
+
+# Disclaimer
+As a user of the API key, it is important to understand that you are solely responsible for all content generated through the prompt. Please note that there is no text moderation with this plugin, and your prompt will be sent directly to the AI Server through the API. While mistakes can happen while using browsers, mobile apps, or this plugin, it remains the responsibility of the user to ensure the accuracy and appropriateness of the content generated(prompts).
+
+The plugin serves as a bridge between the user's IDE and the AI Server, enabling faster and smarter development. Please note that the plugin is intended for programming purposes only, and users should use it accordingly. 
+For more information, please refer to the Terms of Use defined by OpenAI: [Terms of use](https://openai.com/policies/terms-of-use#:~:text=What%20You%20Cannot,compete%20with%20OpenAI.)
+
+<be />
 
 ## Demo
 
