@@ -3,8 +3,8 @@ object FrmChatGPT: TFrmChatGPT
   Top = 0
   BiDiMode = bdLeftToRight
   Caption = 'ChatGPT'
-  ClientHeight = 486
-  ClientWidth = 425
+  ClientHeight = 485
+  ClientWidth = 421
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,63 +21,71 @@ object FrmChatGPT: TFrmChatGPT
   inline Fram_Question: TFram_Question
     Left = 0
     Top = 0
-    Width = 425
-    Height = 486
+    Width = 421
+    Height = 485
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 429
-    ExplicitHeight = 487
+    ExplicitWidth = 421
+    ExplicitHeight = 485
     inherited pgcMain: TPageControl
-      Width = 425
-      Height = 452
-      ExplicitWidth = 429
-      ExplicitHeight = 453
+      Width = 421
+      Height = 451
+      ExplicitWidth = 417
+      ExplicitHeight = 450
       inherited tsChatGPT: TTabSheet
-        ExplicitWidth = 421
-        ExplicitHeight = 423
+        ExplicitWidth = 413
+        ExplicitHeight = 421
         inherited pnlMain: TPanel
-          Width = 421
-          Height = 423
-          ExplicitWidth = 421
-          ExplicitHeight = 423
+          Width = 413
+          Height = 421
+          ExplicitWidth = 409
+          ExplicitHeight = 420
           inherited pnlTop: TPanel
-            Width = 419
-            ExplicitWidth = 419
+            Width = 411
+            ExplicitWidth = 407
+            inherited btnHelp: TSpeedButton
+              Left = 386
+              ExplicitLeft = 390
+            end
           end
           inherited pnlCenter: TPanel
-            Width = 419
-            Height = 377
-            ExplicitWidth = 419
-            ExplicitHeight = 377
+            Width = 411
+            Height = 375
+            ExplicitWidth = 407
+            ExplicitHeight = 374
             inherited splitter: TSplitter
-              Width = 419
+              Width = 411
               ExplicitWidth = 419
             end
             inherited pnlAnswer: TPanel
-              Width = 419
-              Height = 260
-              ExplicitWidth = 419
-              ExplicitHeight = 260
+              Width = 411
+              Height = 258
+              ExplicitWidth = 407
+              ExplicitHeight = 257
               inherited pgcAnswers: TPageControl
-                Width = 417
-                Height = 258
-                ExplicitWidth = 417
-                ExplicitHeight = 258
+                Width = 409
+                Height = 256
+                ExplicitWidth = 405
+                ExplicitHeight = 255
                 inherited tsChatGPTAnswer: TTabSheet
-                  ExplicitWidth = 409
-                  ExplicitHeight = 230
+                  ExplicitWidth = 401
+                  ExplicitHeight = 228
                   inherited mmoAnswer: TMemo
-                    Width = 409
-                    Height = 230
-                    ExplicitWidth = 409
-                    ExplicitHeight = 230
+                    Width = 401
+                    Height = 228
+                    ExplicitWidth = 397
+                    ExplicitHeight = 227
                   end
                 end
               end
             end
             inherited pnlQuestion: TPanel
-              Width = 419
-              ExplicitWidth = 419
+              Width = 411
+              ExplicitWidth = 407
+              inherited mmoQuestion: TMemo
+                Width = 411
+                ExplicitWidth = 407
+              end
             end
           end
         end
@@ -89,35 +97,18 @@ object FrmChatGPT: TFrmChatGPT
       end
       inherited tsHistory: TTabSheet
         inherited splHistory: TSplitter
-          Width = 421
           ExplicitWidth = 421
-        end
-        inherited pnlHistoryTop: TPanel
-          Width = 421
-          ExplicitWidth = 421
-        end
-        inherited pnlHistoryBottom: TPanel
-          Width = 421
-          Height = 235
-          ExplicitWidth = 421
-          ExplicitHeight = 235
-          inherited mmoHistoryDetail: TMemo
-            Width = 419
-            Height = 233
-            ExplicitWidth = 419
-            ExplicitHeight = 233
-          end
         end
       end
     end
     inherited pnlBottom: TPanel
-      Top = 452
-      Width = 425
-      ExplicitTop = 452
-      ExplicitWidth = 425
+      Top = 451
+      Width = 421
+      ExplicitTop = 450
+      ExplicitWidth = 417
       inherited chk_AutoCopy: TCheckBox
-        Left = 273
-        ExplicitLeft = 281
+        Left = 261
+        ExplicitLeft = 257
       end
       inherited ActivityIndicator1: TActivityIndicator
         ExplicitWidth = 24

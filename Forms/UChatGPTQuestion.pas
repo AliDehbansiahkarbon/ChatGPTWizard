@@ -59,6 +59,12 @@ begin
     mmoQuestion.Lines.Clear;
     if not TSingletonSettingObj.Instance.MainFormLastQuestion.Trim.IsEmpty then
       mmoQuestion.Lines.Add(TSingletonSettingObj.Instance.MainFormLastQuestion);
+
+    if TSingletonSettingObj.Instance.IsOffline then
+      tsChatGPTAnswer.Caption := 'Ollama(Offline)'
+    else
+      tsChatGPTAnswer.Caption := 'OpenAI(ChatGPT)';
+
     Cs.Leave;
     ActivityIndicator1.Visible := False;
     FreeAndNil(pgcMain);

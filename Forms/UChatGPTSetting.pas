@@ -67,6 +67,7 @@ type
     FAnimatedLetters: Boolean;
     FTimeOut: Integer;
     FMainFormLastQuestion: string;
+    FIsOffline: Boolean;
 
     FEnableWriteSonic: Boolean;
     FWriteSonicAPIKey: string;
@@ -88,7 +89,7 @@ type
     function GetRightIdentifier: string;
     procedure LoadDefaults;
     procedure LoadDefaultQuestions;
-    function GetMuliAI: Boolean;
+    function IsMultiAI: Boolean;
 
   public
     procedure ReadRegistry;
@@ -121,6 +122,7 @@ type
     property AnimatedLetters: Boolean read FAnimatedLetters write FAnimatedLetters;
     property TimeOut: Integer read FTimeOut write FTimeOut;
     property MainFormLastQuestion: string read FMainFormLastQuestion write FMainFormLastQuestion;
+    property IsOffline: Boolean read FIsOffline write FIsOffline;
 
     property EnableWriteSonic: Boolean read FEnableWriteSonic write FEnableWriteSonic;
     property WriteSonicAPIKey: string read FWriteSonicAPIKey write FWriteSonicAPIKey;
@@ -130,7 +132,7 @@ type
     property YouChatAPIKey: string read FYouChatAPIKey write FYouChatAPIKey;
     property YouChatBaseURL: string read FYouChatBaseURL write FYouChatBaseURL;
 
-    property MultiAI: Boolean read GetMuliAI;
+    property MultiAI: Boolean read IsMultiAI;
     property TaskList: TList<string> read FTaskList write FTaskList;
     property DockableFormPointer: TDockableForm read FDockableFormPointer write FDockableFormPointer;
   end;
@@ -180,7 +182,6 @@ type
     ScrollBox: TScrollBox;
     GridPanelPredefinedQs: TGridPanel;
     Btn_RemoveQuestion: TButton;
-    chk_AnimatedLetters: TCheckBox;
     lbEdt_Timeout: TLabeledEdit;
     tsOtherAiServices: TTabSheet;
     grp_WriteSonic: TGroupBox;
@@ -195,6 +196,9 @@ type
     lbEdt_YouChatBaseURL: TLabeledEdit;
     pnlPredefinedQ: TPanel;
     pnlOtherAIMain: TPanel;
+    chk_AnimatedLetters: TCheckBox;
+    chk_Offline: TCheckBox;
+    edt_OfflineModel: TEdit;
     procedure Btn_SaveClick(Sender: TObject);
     procedure Btn_DefaultClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -211,6 +215,7 @@ type
     procedure pgcSettingChange(Sender: TObject);
     procedure chk_WriteSonicClick(Sender: TObject);
     procedure chk_YouChatClick(Sender: TObject);
+    procedure chk_OfflineClick(Sender: TObject);
   private
     procedure AddQuestion(AQuestionpair: TQuestionPair = nil);
     procedure RemoveLatestQuestion;
@@ -268,7 +273,7 @@ begin
   Result := FIdentifier + ':';
 end;
 
-function TSingletonSettingObj.GetMuliAI: Boolean;
+function TSingletonSettingObj.IsMultiAI: Boolean;
 begin
   Result := FEnableWriteSonic or FEnableYouChat;
 end;
@@ -313,7 +318,7 @@ begin
   begin
     Clear;
     Add(1, TQuestionPair.Create('Create Test Unit', 'Create a Test Unit for the following class in Delphi:'));
-    Add(2, TQuestionPair.Create( 'Convert to Singleton', 'Convert this class to singleton in Delphi:'));
+    Add(2, TQuestionPair.Create('Convert to Singleton', 'Convert this class to singleton in Delphi:'));
     Add(3, TQuestionPair.Create('Find possible problems', 'What is wrong with this class in Delphi?'));
     Add(4, TQuestionPair.Create('Improve Naming', 'Improve naming of the members of this class in Delphi:'));
     Add(5, TQuestionPair.Create('Rewrite in modern coding style', 'Rewrite this class with modern coding style in Delphi:'));
@@ -345,6 +350,7 @@ begin
   FAnimatedLetters := True;
   FTimeOut := 20;
   FMainFormLastQuestion := 'Create a class to make a Zip file in Delphi.';
+  FIsOffline := False;
 
   FEnableWriteSonic := False;
   FWriteSonicAPIKey := '';
@@ -378,14 +384,12 @@ begin
             FApiKey := ReadString('ChatGPTApiKey');
 
           if ValueExists('ChatGPTURL') then
-            FURL := IfThen(ReadString('ChatGPTURL').IsEmpty, DefaultChatGPTURL,
-              ReadString('ChatGPTURL'))
+            FURL := IfThen(ReadString('ChatGPTURL').IsEmpty, DefaultChatGPTURL, ReadString('ChatGPTURL'))
           else
             FURL := DefaultChatGPTURL;
 
           if ValueExists('ChatGPTModel') then
-            FModel := IfThen(ReadString('ChatGPTModel').IsEmpty, DefaultModel,
-              ReadString('ChatGPTModel'))
+            FModel := IfThen(ReadString('ChatGPTModel').IsEmpty, DefaultModel, ReadString('ChatGPTModel'))
           else
             FModel := DefaultModel;
 
@@ -408,8 +412,7 @@ begin
             FTemperature := DefaultTemperature;
 
           if ValueExists('ChatGPTSourceIdentifier') then
-            FIdentifier := IfThen(ReadString('ChatGPTSourceIdentifier').IsEmpty,
-              DefaultIdentifier, ReadString('ChatGPTSourceIdentifier'))
+            FIdentifier := IfThen(ReadString('ChatGPTSourceIdentifier').IsEmpty, DefaultIdentifier, ReadString('ChatGPTSourceIdentifier'))
           else
             FIdentifier := DefaultIdentifier;
 
@@ -512,6 +515,14 @@ begin
           else
             FYouChatBaseURL := DefaultYouChatURL;
           //==============================YouChat=========================end
+
+
+          //=======================Ollama(Offline)=======================begin
+          if ValueExists('ChatGPTIsOffline') then
+            FIsOffline := ReadBool('ChatGPTIsOffline')
+          else
+            FIsOffline := False;
+          //=======================Ollama(Offline)========================end
         end;
 
         if OpenKey('\SOFTWARE\ChatGPTWizard\PredefinedQuestions', False) then
@@ -613,6 +624,7 @@ begin
         WriteBool('ChatGPTAnimatedLetters', FAnimatedLetters);
         WriteInteger('ChatGPTTimeOut', FTimeOut);
         WriteString('ChatGPTMainFormLastQuestion', FMainFormLastQuestion.Trim);
+        WriteBool('ChatGPTIsOffline', FIsOffline);
 
         WriteBool('ChatGPTEnableWriteSonic', FEnableWriteSonic);
         WriteString('ChatGPTWriteSonicAPIKey', FWriteSonicAPIKey);
@@ -672,6 +684,7 @@ begin
   ColorBox_Highlight.Selected := clRed;
   chk_AnimatedLetters.Checked := True;
   lbEdt_WriteSonicBaseURL.Text := DefaultWriteSonicURL;
+  chk_Offline.Checked := False;
 end;
 
 procedure TFrm_Setting.Btn_HistoryPathBuilderClick(Sender: TObject);
@@ -702,7 +715,11 @@ begin
   LvSettingObj := TSingletonSettingObj.Instance;
   LvSettingObj.ApiKey := Trim(edt_ApiKey.Text);
   LvSettingObj.URL := Trim(edt_Url.Text);
-  LvSettingObj.Model := Trim(cbbModel.Text);
+  if chk_Offline.Checked then
+    LvSettingObj.Model := Trim(edt_OfflineModel.Text)
+  else
+    LvSettingObj.Model := Trim(cbbModel.Text);
+
   LvSettingObj.MaxToken := StrToInt(edt_MaxToken.Text);
   LvSettingObj.Temperature := StrToInt(edt_Temperature.Text);
   LvSettingObj.RighToLeft := chk_Rtl.Checked;
@@ -721,6 +738,7 @@ begin
   LvSettingObj.HighlightColor := ColorBox_Highlight.Selected;
   LvSettingObj.AnimatedLetters := chk_AnimatedLetters.Checked;
   LvSettingObj.TimeOut := StrToInt(Frm_Setting.lbEdt_Timeout.Text);
+  LvSettingObj.IsOffline := chk_Offline.Checked;
 
   LvSettingObj.EnableWriteSonic := chk_WriteSonic.Checked;
   LvSettingObj.WriteSonicAPIKey := lbEdt_WriteSonicAPIKey.Text;
@@ -786,6 +804,13 @@ begin
   lbEdt_History.Enabled := chk_History.Checked;
   Btn_HistoryPathBuilder.Enabled := chk_History.Checked;
   HasChanges := True;
+end;
+
+procedure TFrm_Setting.chk_OfflineClick(Sender: TObject);
+begin
+  cbbModel.Enabled := not chk_Offline.Checked;
+  edt_MaxToken.Enabled := not chk_Offline.Checked;
+  edt_OfflineModel.Enabled := chk_Offline.Checked;
 end;
 
 procedure TFrm_Setting.chk_ProxyActiveClick(Sender: TObject);
@@ -986,6 +1011,30 @@ begin
       ShowMessage('Please complete the WriteSonic section.');
       Exit;
     end;
+  end;
+
+  if chk_Offline.Checked then
+  begin
+    if Trim(edt_OfflineModel.Text).IsEmpty then
+    begin
+      ShowMessage('Please enter the Offline model name.');
+      Exit;
+    end;
+  end
+  else if (cbbModel.ItemIndex = -1) or (Trim(cbbModel.Text).Equals(EmptyStr)) then
+  begin
+    ShowMessage('Please Select the model name.');
+    if cbbModel.CanFocus then
+      cbbModel.SetFocus;
+
+    Exit;
+  end;
+
+
+  if (not chk_Offline.Checked) and (Pos(LowerCase(edt_Url.Text), 'localhost') > -1) and (Pos(LowerCase(edt_Url.Text), '127.0.0.1') > -1) then
+  begin
+    if MessageDlg('It seems you are using offline server with an online model, it doesn''t work probably, do you want to save anyway?', mtWarning, [mbYes,mbNo], 0) = mrNo then
+      Exit;
   end;
 
   Result := True;

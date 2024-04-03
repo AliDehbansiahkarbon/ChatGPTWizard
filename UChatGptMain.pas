@@ -282,6 +282,15 @@ begin
       ColorBox_Highlight.Selected := FSetting.HighlightColor;
       chk_AnimatedLetters.Checked := FSetting.AnimatedLetters;
       lbEdt_Timeout.Text := FSetting.TimeOut.ToString;
+
+
+      chk_Offline.Checked := FSetting.IsOffline;
+      cbbModel.Enabled := not FSetting.IsOffline;
+      edt_MaxToken.Enabled := not FSetting.IsOffline;
+      edt_OfflineModel.Enabled := FSetting.IsOffline;
+      if FSetting.IsOffline then
+        edt_OfflineModel.Text := FSetting.Model;
+
       AddAllDefinedQuestions;
 
       chk_WriteSonic.Checked := FSetting.EnableWriteSonic;

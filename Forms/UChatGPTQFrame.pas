@@ -302,6 +302,7 @@ var
   LvProxyPassword: string;
   LvAnimatedLetters: Boolean;
   LvTimeOut: Integer;
+  LvIsOffline: Boolean;
 
   MultiAI: Boolean;
   LvSetting: TSingletonSettingObj;
@@ -311,6 +312,7 @@ begin
   LvChatGPTApiKey := LvSetting.ApiKey;
   LvChatGPTBaseUrl := LvSetting.URL;
   LvModel := LvSetting.Model;
+
   LvMaxToken := LvSetting.MaxToken;
   LvTemperature := LvSetting.Temperature;
   LvQuestion := APrompt;
@@ -322,6 +324,7 @@ begin
   LvProxyPassword := LvSetting.ProxySetting.ProxyPassword;
   LvAnimatedLetters := LvSetting.AnimatedLetters;
   LvTimeOut := LvSetting.TimeOut;
+  LvIsOffline := LvSetting.IsOffline;
 
   LvEnableWriteSonic := LvSetting.EnableWriteSonic;
   LvWriteSonicAPIKey := LvSetting.WriteSonicAPIKey;
@@ -354,7 +357,7 @@ begin
 
   FChatGPTTrd := TExecutorTrd.Create(Self.Handle, LvChatGPTApiKey, LvModel, LvQuestion, LvChatGPTBaseUrl,
     LvMaxToken, LvTemperature, LvIsProxyActive, LvProxyHost, LvProxyPort, LvProxyUsername,
-    LvProxyPassword, LvAnimatedLetters, LvTimeOut);
+    LvProxyPassword, LvAnimatedLetters, LvTimeOut, LvIsOffline);
   FChatGPTTrd.Start;
 
   {$IF CompilerVersion >= 32.0}
@@ -915,6 +918,11 @@ begin
     FHistoryGrid.StyleElements := [seFont, seBorder];
     FHistoryGrid.ParentColor := True;
   end;
+
+  if TSingletonSettingObj.Instance.IsOffline then
+    tsChatGPTAnswer.Caption := 'Ollama(Offline)'
+  else
+    tsChatGPTAnswer.Caption := 'OpenAI(ChatGPT)';
 end;
 
 function TFram_Question.IslegacyModel: Boolean;

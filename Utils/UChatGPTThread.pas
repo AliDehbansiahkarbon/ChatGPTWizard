@@ -28,13 +28,14 @@ type
     FProxySetting: TProxySetting;
     FAnimated: Boolean;
     FTimeOut: Integer;
+    FIsOffline: Boolean;
     function CorrectPrompt(APrompt: string): string;
   protected
     procedure Execute; override;
   public
     constructor Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer;
                        AProxayIsActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string;
-                       AProxyPassword: string; AAnimated: Boolean; ATimeOut: Integer);
+                       AProxyPassword: string; AAnimated: Boolean; ATimeOut: Integer; AIsOffline: Boolean);
     destructor Destroy; override;
   end;
 
@@ -116,6 +117,28 @@ type
     property usage: TUsage read FUsage write FUsage;
   end;
 
+  TOllamaRequestJSON = class
+  private
+    FModel: string;
+    FPrompt: string;
+  public
+    property model: string read FModel write FModel;
+    property prompt: string read FPrompt write FPrompt;
+  end;
+
+   TOllamaResponse = class
+   private
+     FModel: string;
+     FCreatedAt: TDateTime;
+     FResponse: string;
+     FDone: Boolean;
+   public
+     property model: string read FModel write FModel;
+     property created_at: TDateTime read FCreatedAt write FCreatedAt;
+     property response: string read FResponse write FResponse;
+     property done: Boolean read FDone write FDone;
+    end;
+
   TOpenAIAPI = class
   private
     FAccessToken: string;
@@ -123,11 +146,13 @@ type
     FProxySetting: TProxySetting;
     FTimeOut: Integer;
     function IsChatModel(AModel: string): Boolean;
+    function ExtractOllamaAnswer(AOllamaAnswer: TStringList): string;
   public
     constructor Create(const AAccessToken, AUrl: string; AProxySetting: TProxySetting; ATimeOut: Integer);
     function QueryStreamIndy(const AModel: string; const APrompt: string; AMaxToken: Integer; ATemperature: Integer): string;
     function QueryStringIndy(const AModel: string; const APrompt: string; AMaxToken: Integer; ATemperature: Integer): string;
     function QueryStreamNative(const AModel: string; const APrompt: string; AMaxToken: Integer; ATemperature: Integer): string;
+    function QueryOllama(const AModel: string; const APrompt: string): string;
   end;
 
 implementation
@@ -142,13 +167,76 @@ begin
   FTimeOut := ATimeOut;
 end;
 
-function TOpenAIAPI.IsChatModel(AModel: string): Boolean;
+function TOpenAIAPI.ExtractOllamaAnswer(AOllamaAnswer: TStringList): string;
+var
+  I: Integer;
+  LvSO: TOllamaResponse;
 begin
-  Result := True; // Other models seem to be deprecated soon.
-  //Result := AModel.Contains('gpt-3.5-turbo') or AModel.Contains('gpt-4');
+  Result := EmptyStr;
+  for I := 0 to Pred(AOllamaAnswer.Count) do
+  begin
+    LvSO := TOllamaResponse.FromJSON(AOllamaAnswer[I]);
+    if Assigned(LvSO) then
+    begin
+      try
+        if not LvSO.done then
+          Result := Result + LvSO.response;
+      finally
+        FreeAndNil(LvSO);
+      end;
+    end;
+  end;
 end;
 
-function TOpenAIAPI.QueryStreamIndy(const AModel: string; const APrompt: string; AMaxToken: Integer; ATemperature: Integer): string;
+function TOpenAIAPI.IsChatModel(AModel: string): Boolean;
+begin
+  Result := True; //Other models are deprecated.
+end;
+
+function TOpenAIAPI.QueryOllama(const AModel, APrompt: string): string;
+var
+  LvHttpClient: THTTPClient;
+  LvResponse: IHTTPResponse;
+  LvResponseContent: TStringList;
+  LvRequestJSON: TOllamaRequestJSON;
+  LvParamStream: TStringStream;
+begin
+  LvHttpClient := THTTPClient.Create;
+  LvHttpClient.ConnectionTimeout := FTimeOut * 1000;
+  LvHttpClient.ResponseTimeout := (FTimeOut * 1000) * 2;
+
+  LvRequestJSON := TOllamaRequestJSON.Create;
+  LvRequestJSON.model := AModel;
+  LvRequestJSON.prompt := APrompt;
+
+  LvParamStream := TStringStream.Create(LvRequestJSON.AsJSON(), TEncoding.UTF8);
+  LvResponseContent := TStringList.Create;
+  LvResponseContent.Clear;
+
+  try
+    LvHttpClient.CustomHeaders['Content-Type'] := 'application/json';
+    LvHttpClient.CustomHeaders['AcceptEncoding'] := 'deflate, gzip;q=1.0, *;q=0.5';
+
+    try
+      LvResponse := LvHttpClient.Post(FUrl , LvParamStream);
+      LvResponseContent.Text := LvResponse.ContentAsString(TEncoding.UTF8);
+      if not LvResponseContent.Text.IsEmpty then
+        Result := AdjustLineBreaks(ExtractOllamaAnswer(LvResponseContent))
+      else
+        Result := 'No answer, try again!';
+    except on E: Exception do
+      Result := E.Message;
+    end;
+  finally
+    LvResponseContent.Free;
+    LvRequestJSON.Free;
+    LvParamStream.Free;
+    LvHttpClient.Free;
+  end;
+end;
+
+function TOpenAIAPI.QueryStreamIndy(const AModel: string; const APrompt: string;
+  AMaxToken: Integer; ATemperature: Integer): string;
 var
   LvHttpClient: TIdHTTP;
   LvSslIOHandler: TIdSSLIOHandlerSocketOpenSSL;
@@ -161,7 +249,8 @@ begin
   LvHttpClient.ConnectTimeout := FTimeOut * 1000;
   LvHttpClient.ReadTimeout := (FTimeOut * 1000) * 2;
 
-  if (FProxySetting.Active) and (not LvHttpClient.ProxyParams.ProxyServer.IsEmpty) then
+  if (FProxySetting.Active) and
+    (not LvHttpClient.ProxyParams.ProxyServer.IsEmpty) then
   begin
     LvHttpClient.ProxyParams.ProxyServer := FProxySetting.ProxyHost;
     LvHttpClient.ProxyParams.ProxyPort := FProxySetting.ProxyPort;
@@ -175,7 +264,7 @@ begin
   begin
     LvRequestJSONChat := TRequestJSONChat.Create;
     LvRequestJSONChat.model := AModel;
-    LvRequestJSONChat.messages.Add(TChatMessages.Create('user', APrompt));
+    LvRequestJSONChat.Messages.Add(TChatMessages.Create('user', APrompt));
     LvParamStream := TStringStream.Create(LvRequestJSONChat.AsJSON(True), TEncoding.UTF8);
   end
   else
@@ -400,7 +489,7 @@ end;
 
 constructor TExecutorTrd.Create(AHandle: HWND; AApiKey, AModel, APrompt, AUrl: string; AMaxToken, ATemperature: Integer;
                        AProxayIsActive: Boolean; AProxyHost: string; AProxyPort: Integer; AProxyUsername: string;
-                       AProxyPassword: string; AAnimated: Boolean; ATimeOut: Integer);
+                       AProxyPassword: string; AAnimated: Boolean; ATimeOut: Integer; AIsOffline: Boolean);
 begin
   inherited Create(True);
   FreeOnTerminate := True;
@@ -414,6 +503,7 @@ begin
   FUrl := AUrl;
   FAnimated := AAnimated;
   FTimeOut := ATimeOut;
+  FIsOffline := AIsOffline;
   FProxySetting := TProxySetting.Create;
   with FProxySetting do
   begin
@@ -452,7 +542,12 @@ begin
   try
     try
       if not Terminated then
-        LvResult := LvAPI.QueryStreamNative(FModel, FPrompt, FMaxToken, FTemperature).Trim;
+      begin
+        if FIsOffline then
+          LvResult := LvAPI.QueryOllama(FModel, FPrompt).Trim
+        else
+          LvResult := LvAPI.QueryStreamNative(FModel, FPrompt, FMaxToken, FTemperature).Trim;
+      end;
 
       if (not Terminated) and (not LvResult.IsEmpty) then
       begin

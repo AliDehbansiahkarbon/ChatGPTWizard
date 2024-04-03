@@ -3,8 +3,8 @@ object Frm_Setting: TFrm_Setting
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'Setting'
-  ClientHeight = 565
-  ClientWidth = 453
+  ClientHeight = 591
+  ClientWidth = 445
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,38 +19,44 @@ object Frm_Setting: TFrm_Setting
   object pgcSetting: TPageControl
     Left = 0
     Top = 0
-    Width = 453
-    Height = 519
+    Width = 445
+    Height = 545
     ActivePage = tsMainSetting
     Align = alClient
     TabOrder = 0
     OnChange = pgcSettingChange
+    ExplicitWidth = 437
+    ExplicitHeight = 533
     object tsMainSetting: TTabSheet
       Caption = 'Main Setting'
       object pnlMain: TPanel
         Left = 0
         Top = 0
-        Width = 445
-        Height = 489
+        Width = 437
+        Height = 515
         Align = alClient
         TabOrder = 0
+        ExplicitWidth = 429
+        ExplicitHeight = 503
         object grp_OpenAI: TGroupBox
           Left = 1
           Top = 1
-          Width = 443
+          Width = 435
           Height = 160
           Align = alTop
           Caption = 'OpenAI preferences'
           TabOrder = 0
+          ExplicitWidth = 427
           object pnlOpenAI: TPanel
             AlignWithMargins = True
             Left = 5
             Top = 20
-            Width = 433
+            Width = 425
             Height = 135
             Align = alClient
             BevelOuter = bvLowered
             TabOrder = 0
+            ExplicitWidth = 417
             object lbl_1: TLabel
               Left = 30
               Top = 18
@@ -73,8 +79,8 @@ object Frm_Setting: TFrm_Setting
               Caption = 'Model:'
             end
             object lbl_4: TLabel
-              Left = 227
-              Top = 109
+              Left = 222
+              Top = 75
               Width = 62
               Height = 15
               Caption = 'Max-Token:'
@@ -107,9 +113,9 @@ object Frm_Setting: TFrm_Setting
               OnChange = edt_UrlChange
             end
             object edt_MaxToken: TEdit
-              Left = 298
-              Top = 107
-              Width = 122
+              Left = 293
+              Top = 73
+              Width = 114
               Height = 23
               NumbersOnly = True
               TabOrder = 2
@@ -142,62 +148,75 @@ object Frm_Setting: TFrm_Setting
                 'gpt-4'
                 'gpt-4-32k')
             end
-            object chk_AnimatedLetters: TCheckBox
-              Left = 234
-              Top = 76
-              Width = 113
-              Height = 17
-              Caption = 'Animated Letters'
-              Color = clBtnFace
-              Ctl3D = True
-              ParentColor = False
-              ParentCtl3D = False
-              TabOrder = 5
-              OnClick = chk_AnimatedLettersClick
-            end
             object lbEdt_Timeout: TLabeledEdit
-              Left = 102
+              Left = 126
               Top = 101
               Width = 28
               Height = 23
               Alignment = taCenter
-              EditLabel.Width = 57
+              EditLabel.Width = 102
               EditLabel.Height = 23
-              EditLabel.Caption = 'Timeout(s)'
+              EditLabel.Caption = 'Request Timeout(s)'
               LabelPosition = lpLeft
               LabelSpacing = 5
               NumbersOnly = True
-              TabOrder = 6
+              TabOrder = 5
               Text = '20'
+            end
+            object chk_Offline: TCheckBox
+              Left = 172
+              Top = 105
+              Width = 107
+              Height = 17
+              Caption = 'Ollama(Offline):'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'Segoe UI'
+              Font.Style = [fsBold]
+              ParentFont = False
+              TabOrder = 6
+              OnClick = chk_OfflineClick
+            end
+            object edt_OfflineModel: TEdit
+              Left = 286
+              Top = 102
+              Width = 121
+              Height = 23
+              TabOrder = 7
             end
           end
         end
         object pnlOther: TPanel
           Left = 1
           Top = 161
-          Width = 443
-          Height = 327
+          Width = 435
+          Height = 353
           Align = alClient
           TabOrder = 1
+          ExplicitWidth = 427
+          ExplicitHeight = 341
           object grp_History: TGroupBox
             Left = 1
             Top = 1
-            Width = 441
+            Width = 433
             Height = 96
             Align = alTop
             Caption = 'History'
             TabOrder = 0
+            ExplicitWidth = 425
             object pnlHistory: TPanel
               AlignWithMargins = True
               Left = 5
               Top = 20
-              Width = 431
+              Width = 423
               Height = 71
               Align = alClient
               BevelOuter = bvLowered
               TabOrder = 0
+              ExplicitWidth = 415
               DesignSize = (
-                431
+                423
                 71)
               object lbl_ColorPicker: TLabel
                 Left = 197
@@ -209,7 +228,7 @@ object Frm_Setting: TFrm_Setting
               object chk_History: TCheckBox
                 Left = 20
                 Top = 16
-                Width = 39
+                Width = 60
                 Height = 17
                 Anchors = [akLeft, akTop, akRight]
                 BiDiMode = bdLeftToRight
@@ -217,6 +236,7 @@ object Frm_Setting: TFrm_Setting
                 ParentBiDiMode = False
                 TabOrder = 0
                 OnClick = chk_HistoryClick
+                ExplicitWidth = 52
               end
               object lbEdt_History: TLabeledEdit
                 Left = 79
@@ -259,21 +279,23 @@ object Frm_Setting: TFrm_Setting
           end
           object grp_Proxy: TGroupBox
             Left = 1
-            Top = 164
-            Width = 441
+            Top = 189
+            Width = 433
             Height = 157
             Align = alTop
             Caption = 'Proxy Setting'
             TabOrder = 1
+            ExplicitWidth = 425
             object pnlProxy: TPanel
               AlignWithMargins = True
               Left = 5
               Top = 20
-              Width = 431
+              Width = 423
               Height = 132
               Align = alClient
               BevelOuter = bvLowered
               TabOrder = 0
+              ExplicitWidth = 415
               object lbEdt_ProxyHost: TLabeledEdit
                 Left = 71
                 Top = 11
@@ -341,20 +363,22 @@ object Frm_Setting: TFrm_Setting
           object grp_Other: TGroupBox
             Left = 1
             Top = 97
-            Width = 441
-            Height = 67
+            Width = 433
+            Height = 92
             Align = alTop
             Caption = 'IDE && Other'
             TabOrder = 2
+            ExplicitWidth = 425
             object pnlIDE: TPanel
               AlignWithMargins = True
               Left = 5
               Top = 20
-              Width = 431
-              Height = 42
+              Width = 423
+              Height = 67
               Align = alClient
               BevelOuter = bvLowered
               TabOrder = 0
+              ExplicitWidth = 415
               object lbl_6: TLabel
                 Left = 271
                 Top = 17
@@ -372,7 +396,7 @@ object Frm_Setting: TFrm_Setting
                 Text = 'cpt'
               end
               object chk_CodeFormatter: TCheckBox
-                Left = 24
+                Left = 19
                 Top = 17
                 Width = 128
                 Height = 17
@@ -384,12 +408,25 @@ object Frm_Setting: TFrm_Setting
                 TabOrder = 1
               end
               object chk_Rtl: TCheckBox
-                Left = 168
+                Left = 162
                 Top = 17
                 Width = 97
                 Height = 17
                 Caption = 'Righ To Left'
                 TabOrder = 2
+              end
+              object chk_AnimatedLetters: TCheckBox
+                Left = 19
+                Top = 40
+                Width = 113
+                Height = 17
+                Caption = 'Animated Letters'
+                Color = clBtnFace
+                Ctl3D = True
+                ParentColor = False
+                ParentCtl3D = False
+                TabOrder = 3
+                OnClick = chk_AnimatedLettersClick
               end
             end
           end
@@ -402,8 +439,8 @@ object Frm_Setting: TFrm_Setting
       object pnlPredefinedQ: TPanel
         Left = 0
         Top = 0
-        Width = 445
-        Height = 489
+        Width = 437
+        Height = 515
         Align = alClient
         TabOrder = 0
         object Btn_AddQuestion: TButton
@@ -419,15 +456,15 @@ object Frm_Setting: TFrm_Setting
           AlignWithMargins = True
           Left = 4
           Top = 51
-          Width = 437
-          Height = 434
+          Width = 429
+          Height = 460
           Margins.Top = 50
           Align = alClient
           TabOrder = 1
           object GridPanelPredefinedQs: TGridPanel
             Left = 0
             Top = 0
-            Width = 433
+            Width = 425
             Height = 0
             Align = alTop
             ColumnCollection = <
@@ -462,8 +499,8 @@ object Frm_Setting: TFrm_Setting
       object pnlOtherAIMain: TPanel
         Left = 0
         Top = 0
-        Width = 445
-        Height = 489
+        Width = 437
+        Height = 515
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 0
@@ -471,7 +508,7 @@ object Frm_Setting: TFrm_Setting
           AlignWithMargins = True
           Left = 3
           Top = 135
-          Width = 439
+          Width = 431
           Height = 126
           Align = alTop
           Caption = 'Writesonic'
@@ -480,7 +517,7 @@ object Frm_Setting: TFrm_Setting
             AlignWithMargins = True
             Left = 5
             Top = 20
-            Width = 429
+            Width = 421
             Height = 101
             Align = alClient
             BevelOuter = bvLowered
@@ -527,7 +564,7 @@ object Frm_Setting: TFrm_Setting
           AlignWithMargins = True
           Left = 3
           Top = 3
-          Width = 439
+          Width = 431
           Height = 126
           Align = alTop
           Caption = 'YouChat'
@@ -536,7 +573,7 @@ object Frm_Setting: TFrm_Setting
             AlignWithMargins = True
             Left = 5
             Top = 20
-            Width = 429
+            Width = 421
             Height = 101
             Align = alClient
             BevelOuter = bvLowered
@@ -584,17 +621,19 @@ object Frm_Setting: TFrm_Setting
   end
   object pnlBottom: TPanel
     Left = 0
-    Top = 519
-    Width = 453
+    Top = 545
+    Width = 445
     Height = 46
     Align = alBottom
     BevelOuter = bvLowered
     TabOrder = 1
+    ExplicitTop = 533
+    ExplicitWidth = 437
     DesignSize = (
-      453
+      445
       46)
     object Btn_Default: TButton
-      Left = 259
+      Left = 244
       Top = 10
       Width = 89
       Height = 28
@@ -602,9 +641,10 @@ object Frm_Setting: TFrm_Setting
       Caption = 'Load Defaults'
       TabOrder = 0
       OnClick = Btn_DefaultClick
+      ExplicitLeft = 236
     end
     object Btn_Save: TButton
-      Left = 350
+      Left = 335
       Top = 10
       Width = 89
       Height = 28
@@ -612,6 +652,7 @@ object Frm_Setting: TFrm_Setting
       Caption = 'Save && Close'
       TabOrder = 1
       OnClick = Btn_SaveClick
+      ExplicitLeft = 327
     end
   end
 end

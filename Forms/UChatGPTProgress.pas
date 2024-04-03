@@ -81,6 +81,7 @@ var
   LvProxyUsername: string;
   LvProxyPassword: string;
   LvTimeOut: Integer;
+  LvIsOffline: Boolean;
   LvSetting: TSingletonSettingObj;
 begin
   Cs.Enter;
@@ -97,10 +98,11 @@ begin
   LvProxyUsername := LvSetting.ProxySetting.ProxyUsername;
   LvProxyPassword := LvSetting.ProxySetting.ProxyPassword;
   LvTimeOut := LvSetting.TimeOut;
+  LvIsOffline := LvSetting.IsOffline;
   Cs.Leave;
 
   FTrd := TExecutorTrd.Create(Self.Handle, LvApiKey, LvModel, SelectedText, LvUrl, LvMaxToken, LvTemperature,
-                              LvIsProxyActive, LvProxyHost, LvProxyPort, LvProxyUsername, LvProxyPassword, False, LvTimeOut);
+                              LvIsProxyActive, LvProxyHost, LvProxyPort, LvProxyUsername, LvProxyPassword, False, LvTimeOut, LvIsOffline);
   FTrd.Start;
 end;
 
