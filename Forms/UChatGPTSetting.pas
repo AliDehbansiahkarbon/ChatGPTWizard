@@ -993,6 +993,8 @@ begin
 end;
 
 function TFrm_Setting.ValidateInputs: Boolean;
+var
+  LvStr: string;
 begin
   Result := False;
   if chk_History.Checked then
@@ -1030,8 +1032,8 @@ begin
     Exit;
   end;
 
-
-  if (not chk_Offline.Checked) and (Pos(LowerCase(edt_Url.Text), 'localhost') > -1) and (Pos(LowerCase(edt_Url.Text), '127.0.0.1') > -1) then
+  LvStr := edt_Url.Text;
+  if (not chk_Offline.Checked) and (LvStr.Contains('localhost')) or (LvStr.Contains('127.0.0.1')) then
   begin
     if MessageDlg('It seems you are using offline server with an online model, it doesn''t work probably, do you want to save anyway?', mtWarning, [mbYes,mbNo], 0) = mrNo then
       Exit;
