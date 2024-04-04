@@ -65,9 +65,12 @@ In order to use this plug-in with a local host follow these steps:
 
 1- Download and Install Ollama : [here](https://ollama.com)
 
-2- Check if the server is running by opening this in your browser: http://localhost:11434
-  You should see something like this:
+2- Check if the server is running by opening it in your browser: http://localhost:11434
+
+  You should see something like this screenshot:
+
   ![Screenshot 2024-04-02 094238](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/assets/5601608/72eb4b84-7971-4354-bcc8-dd8c3818d3ad)
+  
   
 3- Then you need at least one trained model to be attached to your new AI server, there are a lot of models [here](https://ollama.com/library), so choose one (codellama is a good one, I suggest that for now) and install it with this command in command-line: 
 ```
@@ -77,14 +80,14 @@ ollama run codellama
 
 After pulling the model is finished you can ask some questions in CMD right away.
 
-4- Now use this URL instead of OpenAPI's URL in the setting form of the Plugin in RAD Studio: 
+4- Now use this URL instead of the OpenAPI's URL in the setting form of the Plugin in RAD Studio: 
 ```
 http://localhost:11434/api/generate
 ```
 
 You don't need an Accesskey, no need to change or even clear it, just leave it.
 
-5- tick the checkbox called Ollama(Offline) and add your model name in the text box in front of the checkbox, in my case, I use "codellama" as the model name.
+5- Tick the checkbox called Ollama(Offline) and add your model name in the text box in front of the checkbox, in my case, I use "codellama" as the model name.
 
 6- Congratulations! you did it, now enjoy forever free AI assistance.
 
