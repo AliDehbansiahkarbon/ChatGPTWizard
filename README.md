@@ -51,19 +51,20 @@ As a user of the API key, it is important to understand that you are solely resp
 The plugin serves as a bridge between the user's IDE and the AI Server, enabling faster and smarter development. Please note that the plugin is intended for programming purposes only, and users should use it accordingly. 
 For more information, please refer to the Terms of Use defined by OpenAI: [Terms of use](https://openai.com/policies/terms-of-use#:~:text=What%20You%20Cannot,compete%20with%20OpenAI.)
 
-<be />
+<br />
 
 # 🟢🟢🟢 How to use it in Offline mode 🟢🟢🟢
 
 <details>
 <summary>
-  🟢 setup an Offline AI server
+  🟢 Set up an Offline AI server 👈👈👈
 </summary>
 
 In order to use this plug-in with a local host follow these steps:
 
 
 1- Download and Install Ollama : [here](https://ollama.com)
+
 2- Check if the server is running by opening this in your browser: http://localhost:11434
   You should see something like this:
   ![Screenshot 2024-04-02 094238](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/assets/5601608/72eb4b84-7971-4354-bcc8-dd8c3818d3ad)
@@ -95,20 +96,31 @@ Good luck!
 
 <br />
 
-## Demo
+## Demo videos
 
-Short1(all features)
-
+<details>
+<summary>
+  🟢 Short1(all features)
+</summary>
 <a href="https://www.youtube.com/watch?v=jHFmmmrk3BU" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
-
-Short2(ChatGPT, Writesonic, and YouChat actions at the same time)
-
-<a href="https://youtu.be/tEiKmalzZo8" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
+</details>
 
 
-Long
+<details>
+  <summary>
+  🟢 Short2(ChatGPT, Writesonic, and YouChat actions at the same time)
+</summary>
+    <a href="https://youtu.be/tEiKmalzZo8" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
+</details>
 
+<details>  
+<summary>
+  🟢 Long
+</summary>
 <a href="https://www.youtube.com/watch?v=qHqEGfxAhIM" target="_blank"><img src="https://img.youtube.com/vi/qHqEGfxAhIM/0.jpg" /></a>
+</details>
+
+
 
 <br />
 
@@ -331,7 +343,7 @@ All PRs, discussions, and issues are welcome but please read and check the close
 **Good luck!**
 <hr>
 <p align="center">
-<img src="https://dtffvb2501i0o.cloudfront.net/images/logos/delphi-logo-128.webp" alt="Delphi">
+<img src="https://i0.wp.com/blogs.embarcadero.com/wp-content/uploads/2022/11/dlogonew-5582740.png?resize=254%2C242&ssl=1" alt="Delphi">
 </p>
 <h5 align="center">
 Made with :heart: on Delphi
