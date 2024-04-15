@@ -246,7 +246,7 @@ begin
   LvSettingObj.ReadRegistry;
   if LvSettingObj.ApiKey = '' then
   begin
-    if LvSettingObj.GetSetting.Trim.IsEmpty then
+    if (LvSettingObj.IsOffline) and (LvSettingObj.GetSetting.Trim.IsEmpty) then
       Exit;
   end;
 
@@ -455,7 +455,7 @@ begin
 
   if LvSettingObj.ApiKey = '' then
   begin
-    if LvSettingObj.GetSetting.Trim.IsEmpty then
+    if (LvSettingObj.IsOffline) and (LvSettingObj.GetSetting.Trim.IsEmpty) then
       Exit;
   end;
 
