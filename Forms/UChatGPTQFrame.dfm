@@ -532,7 +532,6 @@ object Fram_Question: TFram_Question
       FieldName = 'HID'
       Origin = 'HID'
       ProviderFlags = [pfInWhere, pfInKey]
-      ReadOnly = True
     end
     object FDQryHistoryQuestion: TWideMemoField
       Alignment = taCenter

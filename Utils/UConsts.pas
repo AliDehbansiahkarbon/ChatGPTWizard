@@ -11,6 +11,7 @@ const
   WM_YOUCHAT_UPDATE_MESSAGE = WM_USER + 5877;
 
   DefaultChatGPTURL = 'https://api.openai.com/v1/chat/completions';
+  DefaultChatGPTURL_Offline = 'http://localhost:11434/api/generate';
   DefaultModel = 'gpt-3.5-turbo';
   DefaultMaxToken = 2048;
   DefaultTemperature = 0;

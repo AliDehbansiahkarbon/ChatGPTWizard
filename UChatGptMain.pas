@@ -633,6 +633,11 @@ begin
       Btn_Clipboard.Anchors := [TAnchorKind.akTop, TAnchorKind.akLeft];
       Btn_Clear.Anchors := [TAnchorKind.akTop, TAnchorKind.akLeft];
     end;
+
+    if TSingletonSettingObj.Instance.IsOffline then
+      tsChatGPTAnswer.Caption := 'Ollama(Offline)'
+    else
+      tsChatGPTAnswer.Caption := 'OpenAI(ChatGPT)';
   end;
   Cs.Leave;
 end;
@@ -1138,8 +1143,15 @@ end;
 procedure TChatGPTDockForm.FormShow(Sender: TObject);
 begin
   Cs.Enter;
+
+  if TSingletonSettingObj.Instance.IsOffline then
+    Fram_Question.tsChatGPTAnswer.Caption := 'Ollama(Offline)'
+  else
+    Fram_Question.tsChatGPTAnswer.Caption := 'OpenAI(ChatGPT)';
+
   Fram_Question.tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
   Fram_Question.tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
+
   Cs.Leave;
 end;
 

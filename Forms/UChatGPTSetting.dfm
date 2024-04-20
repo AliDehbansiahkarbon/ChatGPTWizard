@@ -25,8 +25,6 @@ object Frm_Setting: TFrm_Setting
     Align = alClient
     TabOrder = 0
     OnChange = pgcSettingChange
-    ExplicitWidth = 437
-    ExplicitHeight = 533
     object tsMainSetting: TTabSheet
       Caption = 'Main Setting'
       object pnlMain: TPanel
@@ -36,8 +34,6 @@ object Frm_Setting: TFrm_Setting
         Height = 515
         Align = alClient
         TabOrder = 0
-        ExplicitWidth = 429
-        ExplicitHeight = 503
         object grp_OpenAI: TGroupBox
           Left = 1
           Top = 1
@@ -46,7 +42,6 @@ object Frm_Setting: TFrm_Setting
           Align = alTop
           Caption = 'OpenAI preferences'
           TabOrder = 0
-          ExplicitWidth = 427
           object pnlOpenAI: TPanel
             AlignWithMargins = True
             Left = 5
@@ -56,7 +51,6 @@ object Frm_Setting: TFrm_Setting
             Align = alClient
             BevelOuter = bvLowered
             TabOrder = 0
-            ExplicitWidth = 417
             object lbl_1: TLabel
               Left = 30
               Top = 18
@@ -146,7 +140,8 @@ object Frm_Setting: TFrm_Setting
                 'gpt-3.5-turbo'
                 'gpt-3.5-turbo-16k'
                 'gpt-4'
-                'gpt-4-32k')
+                'gpt-4-turbo'
+                'gpt-4-turbo-preview')
             end
             object lbEdt_Timeout: TLabeledEdit
               Left = 126
@@ -194,8 +189,6 @@ object Frm_Setting: TFrm_Setting
           Height = 353
           Align = alClient
           TabOrder = 1
-          ExplicitWidth = 427
-          ExplicitHeight = 341
           object grp_History: TGroupBox
             Left = 1
             Top = 1
@@ -204,7 +197,6 @@ object Frm_Setting: TFrm_Setting
             Align = alTop
             Caption = 'History'
             TabOrder = 0
-            ExplicitWidth = 425
             object pnlHistory: TPanel
               AlignWithMargins = True
               Left = 5
@@ -214,7 +206,6 @@ object Frm_Setting: TFrm_Setting
               Align = alClient
               BevelOuter = bvLowered
               TabOrder = 0
-              ExplicitWidth = 415
               DesignSize = (
                 423
                 71)
@@ -236,7 +227,6 @@ object Frm_Setting: TFrm_Setting
                 ParentBiDiMode = False
                 TabOrder = 0
                 OnClick = chk_HistoryClick
-                ExplicitWidth = 52
               end
               object lbEdt_History: TLabeledEdit
                 Left = 79
@@ -285,7 +275,6 @@ object Frm_Setting: TFrm_Setting
             Align = alTop
             Caption = 'Proxy Setting'
             TabOrder = 1
-            ExplicitWidth = 425
             object pnlProxy: TPanel
               AlignWithMargins = True
               Left = 5
@@ -295,7 +284,6 @@ object Frm_Setting: TFrm_Setting
               Align = alClient
               BevelOuter = bvLowered
               TabOrder = 0
-              ExplicitWidth = 415
               object lbEdt_ProxyHost: TLabeledEdit
                 Left = 71
                 Top = 11
@@ -368,7 +356,6 @@ object Frm_Setting: TFrm_Setting
             Align = alTop
             Caption = 'IDE && Other'
             TabOrder = 2
-            ExplicitWidth = 425
             object pnlIDE: TPanel
               AlignWithMargins = True
               Left = 5
@@ -378,7 +365,6 @@ object Frm_Setting: TFrm_Setting
               Align = alClient
               BevelOuter = bvLowered
               TabOrder = 0
-              ExplicitWidth = 415
               object lbl_6: TLabel
                 Left = 271
                 Top = 17
@@ -627,32 +613,28 @@ object Frm_Setting: TFrm_Setting
     Align = alBottom
     BevelOuter = bvLowered
     TabOrder = 1
-    ExplicitTop = 533
-    ExplicitWidth = 437
     DesignSize = (
       445
       46)
     object Btn_Default: TButton
-      Left = 244
-      Top = 10
+      Left = 260
+      Top = 9
       Width = 89
       Height = 28
       Anchors = [akRight, akBottom]
       Caption = 'Load Defaults'
       TabOrder = 0
       OnClick = Btn_DefaultClick
-      ExplicitLeft = 236
     end
     object Btn_Save: TButton
-      Left = 335
-      Top = 10
+      Left = 351
+      Top = 9
       Width = 89
       Height = 28
       Anchors = [akRight, akBottom]
       Caption = 'Save && Close'
       TabOrder = 1
       OnClick = Btn_SaveClick
-      ExplicitLeft = 327
     end
   end
 end

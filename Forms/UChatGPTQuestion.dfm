@@ -38,10 +38,12 @@ object FrmChatGPT: TFrmChatGPT
         inherited pnlMain: TPanel
           Width = 413
           Height = 421
+          StyleElements = [seFont, seClient, seBorder]
           ExplicitWidth = 409
           ExplicitHeight = 420
           inherited pnlTop: TPanel
             Width = 411
+            StyleElements = [seFont, seClient, seBorder]
             ExplicitWidth = 407
             inherited btnHelp: TSpeedButton
               Left = 386
@@ -51,6 +53,7 @@ object FrmChatGPT: TFrmChatGPT
           inherited pnlCenter: TPanel
             Width = 411
             Height = 375
+            StyleElements = [seFont, seClient, seBorder]
             ExplicitWidth = 407
             ExplicitHeight = 374
             inherited splitter: TSplitter
@@ -60,6 +63,7 @@ object FrmChatGPT: TFrmChatGPT
             inherited pnlAnswer: TPanel
               Width = 411
               Height = 258
+              StyleElements = [seFont, seClient, seBorder]
               ExplicitWidth = 407
               ExplicitHeight = 257
               inherited pgcAnswers: TPageControl
@@ -73,17 +77,33 @@ object FrmChatGPT: TFrmChatGPT
                   inherited mmoAnswer: TMemo
                     Width = 401
                     Height = 228
+                    StyleElements = [seFont, seClient, seBorder]
                     ExplicitWidth = 397
                     ExplicitHeight = 227
+                  end
+                end
+                inherited tsWriteSonicAnswer: TTabSheet
+                  inherited mmoWriteSonicAnswer: TMemo
+                    StyleElements = [seFont, seClient, seBorder]
+                  end
+                end
+                inherited tsYouChat: TTabSheet
+                  inherited mmoYouChatAnswer: TMemo
+                    StyleElements = [seFont, seClient, seBorder]
                   end
                 end
               end
             end
             inherited pnlQuestion: TPanel
               Width = 411
+              StyleElements = [seFont, seClient, seBorder]
               ExplicitWidth = 407
+              inherited Lbl_Question: TLabel
+                StyleElements = [seFont, seClient, seBorder]
+              end
               inherited mmoQuestion: TMemo
                 Width = 411
+                StyleElements = [seFont, seClient, seBorder]
                 ExplicitWidth = 407
               end
             end
@@ -94,25 +114,49 @@ object FrmChatGPT: TFrmChatGPT
         inherited splClassView: TSplitter
           ExplicitWidth = 421
         end
+        inherited pnlClasses: TPanel
+          StyleElements = [seFont, seClient, seBorder]
+        end
+        inherited pnlPredefinedCmdAnswer: TPanel
+          StyleElements = [seFont, seClient, seBorder]
+          inherited mmoClassViewDetail: TMemo
+            StyleElements = [seFont, seClient, seBorder]
+          end
+          inherited mmoClassViewResult: TMemo
+            StyleElements = [seFont, seClient, seBorder]
+          end
+        end
       end
       inherited tsHistory: TTabSheet
         inherited splHistory: TSplitter
           ExplicitWidth = 421
+        end
+        inherited pnlHistoryTop: TPanel
+          StyleElements = [seFont, seClient, seBorder]
+          inherited pnlSearchHistory: TPanel
+            StyleElements = [seFont, seClient, seBorder]
+            inherited Edt_Search: TEdit
+              StyleElements = [seFont, seClient, seBorder]
+            end
+          end
+        end
+        inherited pnlHistoryBottom: TPanel
+          StyleElements = [seFont, seClient, seBorder]
+          inherited mmoHistoryDetail: TMemo
+            StyleElements = [seFont, seClient, seBorder]
+          end
         end
       end
     end
     inherited pnlBottom: TPanel
       Top = 451
       Width = 421
-      ExplicitTop = 450
-      ExplicitWidth = 417
+      StyleElements = [seFont, seClient, seBorder]
+      ExplicitTop = 451
+      ExplicitWidth = 421
       inherited chk_AutoCopy: TCheckBox
         Left = 261
         ExplicitLeft = 257
-      end
-      inherited ActivityIndicator1: TActivityIndicator
-        ExplicitWidth = 24
-        ExplicitHeight = 24
       end
     end
   end
