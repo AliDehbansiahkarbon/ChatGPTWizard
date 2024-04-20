@@ -34,7 +34,7 @@ const
   ContextMenuConvertToAsm = 'Convert the following code to Assembly code';
 
   CPluginName = 'ChatGPTWizard';
-  CVersion = 'v3.0';
+  CVersion = 'v3.1';
   CVersionedName = CPluginName + ' - ' + CVersion;
 
 implementation
