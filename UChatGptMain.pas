@@ -987,10 +987,15 @@ end;
 class procedure TEditNotifierHelper.FormatSource;
 var
   LvEditorPopUpMenu: TPopupMenu;
+  LvFormatSource: TMenuItem;
 begin
   LvEditorPopUpMenu := TPopupMenu((BorlandIDEServices as IOTAEditorServices).TopView.GetEditWindow.Form.FindComponent('EditorLocalMenu'));
   if LvEditorPopUpMenu <> nil then
-    LvEditorPopUpMenu.Items.Find('Format Source').Click;
+  begin
+    LvFormatSource := LvEditorPopUpMenu.Items.Find('Format Source');
+    if Assigned(LvFormatSource) then
+      LvFormatSource.Click;
+  end;
 end;
 
 class function TEditNotifierHelper.GetQuestion(AStr: string): string;
