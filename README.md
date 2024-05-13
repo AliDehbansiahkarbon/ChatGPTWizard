@@ -39,6 +39,7 @@
 - Animated letters(Like the website).
 - AI Code Translator
 - Proxy server options. 
+- Supports [OpenAI](https://openai.com) ChatGPT as the main AI service.
 - Supports [Writesonic](https://writesonic.com/chat) AI as the second AI service.
 - Supports [YouChat](https://you.com/code) AI as the third AI service.
 - Supports [Ollama(Offline)](https://ollama.com)
