@@ -4,8 +4,8 @@
 
 <br />
 
-<a href="https://www.embarcadero.com/products/rad-studio"><img src="https://img.shields.io/badge/Delphi_RAD_Studio-B22222?style=for-the-badge&logo=delphi&logoColor=white" alt="Delphi" /></a>
-&nbsp;
+
+
 <a href="https://www.buymeacoffee.com/adehbanr" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 <br />
 <img src="https://img.shields.io/github/license/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="license">
@@ -13,10 +13,13 @@
 <img src="https://img.shields.io/github/stars/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="stars">
 <img src="https://img.shields.io/github/watchers/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="watchers">
 <a href="https://github.com/AliDehbansiahkarbon/ChatGPTWizard/issues"><img src="https://img.shields.io/github/issues-closed/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="issues"></a>
-<br />
 <a href="https://github.com/AliDehbansiahkarbon/ChatGPTWizard/pulls"><img src="https://img.shields.io/github/issues-pr-closed/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="pulls"></a>
+<br />
 <img src="https://img.shields.io/github/last-commit/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="last-commit">
 [![Downloads](https://static.pepy.tech/personalized-badge/video2tfrecord?period=month&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/video2tfrecord)
+[![](https://tokei.rs/b1/github/AliDehbansiahkarbon/ChatGPTWizard?category=lines)](https://github.com/AliDehbansiahkarbon/ChatGPTWizard)
+[![](https://tokei.rs/b1/github/AliDehbansiahkarbon/ChatGPTWizard?category=code)](https://github.com/AliDehbansiahkarbon/ChatGPTWizard) 
+[![](https://tokei.rs/b1/github/AliDehbansiahkarbon/ChatGPTWizard?category=files)](https://github.com/AliDehbansiahkarbon/ChatGPTWizard)
 
 <h2>An AI plug-in for Embarcadero RAD Studio IDE.</h2>
 
