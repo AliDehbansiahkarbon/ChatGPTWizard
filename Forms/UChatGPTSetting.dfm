@@ -141,7 +141,7 @@ object Frm_Setting: TFrm_Setting
                 'gpt-3.5-turbo-16k'
                 'gpt-4'
                 'gpt-4-turbo'
-                'gpt-4-turbo-preview')
+                'gpt-4o')
             end
             object lbEdt_Timeout: TLabeledEdit
               Left = 126
