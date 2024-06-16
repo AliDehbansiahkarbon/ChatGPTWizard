@@ -58,7 +58,7 @@ Delphi 12.x Athens
 # Older IDE versions (XE2 to XE8)
 If you are using Delphi XE2 to XE8, there is a limited version of this plug-in available, which has the main functionality.
 
-Please have a look at that version [here](https://github.com/AliDehbansiahkarbon/ChatGPTWizard-XE5-to-XE8).
+Please have a look at that version [here](https://github.com/AliDehbansiahkarbon/ChatGPTWizard-XE2-to-XE8).
 
 
 # Disclaimer
