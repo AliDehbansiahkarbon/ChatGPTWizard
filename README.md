@@ -156,7 +156,7 @@ This Plugin Supports the following AI Services:
 
 ### [YouChat](https://you.com/code)
 
-[generate API Key here](https://betterapi.net/about)
+[generate API Key here](https://api.you.com)
 
 **NOTE: ChatGPT is working with Rad Studio 10.1 and above but Other(non-ChatGPT) AI Services are enabled in Rad Studio 10.2 and above!**
 
