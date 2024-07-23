@@ -209,7 +209,7 @@ object Fram_Question: TFram_Question
                   Font.Color = clWindowText
                   Font.Height = -12
                   Font.Name = 'Consolas'
-                  Font.Style = []
+                  Font.Style = [fsBold]
                   ParentFont = False
                   ReadOnly = True
                   ScrollBars = ssVertical

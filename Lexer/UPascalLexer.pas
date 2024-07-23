@@ -58,8 +58,8 @@ type
     fOnIfDirect: TDirectiveEvent;
     fOnIfEndDirect: TDirectiveEvent;
     fOnElseIfDirect: TDirectiveEvent;
-	fOnUnDefDirect: TDirectiveEvent;
-  FDirectiveParamOrigin: PChar;
+	  fOnUnDefDirect: TDirectiveEvent;
+    FDirectiveParamOrigin: PChar;
 
   	fAsmCode : Boolean;		// DR 2002-01-14
 
@@ -74,7 +74,7 @@ type
     function Func15: TptTokenKind;
     function Func19: TptTokenKind;
     function Func20: TptTokenKind;
-	function Func21: TptTokenKind;
+	  function Func21: TptTokenKind;
     function Func23: TptTokenKind;
     function Func25: TptTokenKind;
     function Func27: TptTokenKind;
@@ -101,7 +101,7 @@ type
     function Func49: TptTokenKind;
     function Func52: TptTokenKind;
     function Func54: TptTokenKind;
-	function Func55: TptTokenKind;
+	  function Func55: TptTokenKind;
     function Func56: TptTokenKind;
     function Func57: TptTokenKind;
     function Func58: TptTokenKind;
@@ -111,7 +111,7 @@ type
     function Func62: TptTokenKind;
     function Func63: TptTokenKind;
     function Func64: TptTokenKind;
-	function Func65: TptTokenKind;
+	  function Func65: TptTokenKind;
     function Func66: TptTokenKind;
     function Func69: TptTokenKind;
     function Func71: TptTokenKind;
@@ -125,8 +125,8 @@ type
     function Func79: TptTokenKind;
     function Func81: TptTokenKind;
     function Func84: TptTokenKind;
-	function Func85: TptTokenKind;
-	function Func86: TptTokenKind;
+	  function Func85: TptTokenKind;
+	  function Func86: TptTokenKind;
     function Func87: TptTokenKind;
     function Func88: TptTokenKind;
     {$IFDEF D8_NEWER}
@@ -151,7 +151,7 @@ type
     function Func108: TptTokenKind;
     function Func112: TptTokenKind;
     function Func117: TptTokenKind;
-	function Func123: TptTokenKind;
+	  function Func123: TptTokenKind;
     function Func126: TptTokenKind;
     function Func127: TptTokenKind;
     function Func128: TptTokenKind;
@@ -188,7 +188,7 @@ type
     procedure GreaterProc;
     procedure IdentProc;
     procedure IntegerProc;
-	procedure LFProc;
+	  procedure LFProc;
     procedure LowerProc;
     procedure MinusProc;
     procedure NullProc;
@@ -204,8 +204,8 @@ type
     procedure SquareCloseProc;
     procedure SquareOpenProc;
     procedure StarProc;
-	procedure StringProc;
-	procedure StringDQProc;
+	  procedure StringProc;
+	  procedure StringDQProc;
     procedure SymbolProc;
     procedure UnknownProc;
     function GetToken: string;
@@ -274,7 +274,7 @@ type
     property CommentState: Pointer read GetCommentState write SetCommentState;
     property CompilerDirective: string read GetCompilerDirective;
     property DirectiveParam: string read GetDirectiveParam;
-	property IsJunk: Boolean read GetIsJunk;
+	  property IsJunk: Boolean read GetIsJunk;
     property IsSpace: Boolean read GetIsSpace;
     property Line: string write SetLine;
     //Note: setting the following two properties does not GO to that line, it just sets the internal counters
@@ -309,18 +309,13 @@ type
     property OnIfOptDirect: TDirectiveEvent read fOnIfOptDirect write SetOnIfOptDirect;
     property OnIncludeDirect: TDirectiveEvent read fOnIncludeDirect write SetOnIncludeDirect;
     property OnIfDirect: TDirectiveEvent read fOnIfDirect write SetOnIfDirect;
-    property OnIfEndDirect: TDirectiveEvent read fOnIfEndDirect write 
-    SetOnIfEndDirect;
-    property OnElseIfDirect: TDirectiveEvent read fOnElseIfDirect write 
-    SetOnElseIfDirect;
-	property OnResourceDirect: TDirectiveEvent read fOnResourceDirect write SetOnResourceDirect;
-	property OnUnDefDirect: TDirectiveEvent read fOnUnDefDirect write SetOnUnDefDirect;
-
-	property AsmCode : Boolean read fAsmCode write fAsmCode; // DR 2002-01-14
-  property DirectiveParamOrigin: pchar read FDirectiveParamOrigin;
-
+    property OnIfEndDirect: TDirectiveEvent read fOnIfEndDirect write SetOnIfEndDirect;
+    property OnElseIfDirect: TDirectiveEvent read fOnElseIfDirect write SetOnElseIfDirect;
+	  property OnResourceDirect: TDirectiveEvent read fOnResourceDirect write SetOnResourceDirect;
+  	property OnUnDefDirect: TDirectiveEvent read fOnUnDefDirect write SetOnUnDefDirect;
+	  property AsmCode : Boolean read fAsmCode write fAsmCode; // DR 2002-01-14
+    property DirectiveParamOrigin: pchar read FDirectiveParamOrigin;
     property UseDefines: Boolean read FUseDefines write FUseDefines;
-
   end;
 
   TmwPasLex = class(TmwBasePasLex)
@@ -457,10 +452,10 @@ begin
       9: fIdentFuncTable[I] := Func9;
       {$ENDIF}
       15: fIdentFuncTable[I] := Func15;
-	  19: fIdentFuncTable[I] := Func19;
+	    19: fIdentFuncTable[I] := Func19;
       20: fIdentFuncTable[I] := Func20;
       21: fIdentFuncTable[I] := Func21;
-	  23: fIdentFuncTable[I] := Func23;
+	    23: fIdentFuncTable[I] := Func23;
       25: fIdentFuncTable[I] := Func25;
       27: fIdentFuncTable[I] := Func27;
       28: fIdentFuncTable[I] := Func28;
@@ -472,13 +467,13 @@ begin
       36: fIdentFuncTable[I] := Func36;
       37: fIdentFuncTable[I] := Func37;
       38: fIdentFuncTable[I] := Func38;
-	  39: fIdentFuncTable[I] := Func39;
+	    39: fIdentFuncTable[I] := Func39;
       40: fIdentFuncTable[I] := Func40;
-	  41: fIdentFuncTable[I] := Func41;
-    {$IFDEF D8_NEWER} //JThurman 2004-03-2003
-    42: fIdentFuncTable[I] := Func42;
-    {$ENDIF}
-	  43: fIdentFuncTable[I] := Func43;
+	    41: fIdentFuncTable[I] := Func41;
+      {$IFDEF D8_NEWER} //JThurman 2004-03-2003
+      42: fIdentFuncTable[I] := Func42;
+      {$ENDIF}
+	    43: fIdentFuncTable[I] := Func43;
       44: fIdentFuncTable[I] := Func44;
       45: fIdentFuncTable[I] := Func45;
       46: fIdentFuncTable[I] := Func46;
@@ -490,12 +485,12 @@ begin
       56: fIdentFuncTable[I] := Func56;
       57: fIdentFuncTable[I] := Func57;
       58: fIdentFuncTable[I] := Func58;
-	  59: fIdentFuncTable[I] := Func59;
+	    59: fIdentFuncTable[I] := Func59;
       60: fIdentFuncTable[I] := Func60;
       61: fIdentFuncTable[I] := Func61;
-	  62: fIdentFuncTable[I] := Func62;
+	    62: fIdentFuncTable[I] := Func62;
       63: fIdentFuncTable[I] := Func63;
-	  64: fIdentFuncTable[I] := Func64;
+	    64: fIdentFuncTable[I] := Func64;
       65: fIdentFuncTable[I] := Func65;
       66: fIdentFuncTable[I] := Func66;
       69: fIdentFuncTable[I] := Func69;
@@ -510,8 +505,8 @@ begin
       79: fIdentFuncTable[I] := Func79;
       81: fIdentFuncTable[I] := Func81;
       84: fIdentFuncTable[I] := Func84;
-	  85: fIdentFuncTable[I] := Func85;
-	  86: fIdentFuncTable[I] := Func86;
+	    85: fIdentFuncTable[I] := Func85;
+	    86: fIdentFuncTable[I] := Func86;
       87: fIdentFuncTable[I] := Func87;
       88: fIdentFuncTable[I] := Func88;
       {$IFDEF D8_NEWER} //JThurman 2004-03-03
@@ -526,12 +521,12 @@ begin
       98: fIdentFuncTable[I] := Func98;
       99: fIdentFuncTable[I] := Func99;
       100: fIdentFuncTable[I] := Func100;
-	  101: fIdentFuncTable[I] := Func101;
+	    101: fIdentFuncTable[I] := Func101;
       102: fIdentFuncTable[I] := Func102;
       103: fIdentFuncTable[I] := Func103;
       104: fIdentFuncTable[I] := Func104;
       105: fIdentFuncTable[I] := Func105;
-	  106: fIdentFuncTable[I] := Func106;
+	    106: fIdentFuncTable[I] := Func106;
       107: fIdentFuncTable[I] := Func107;
       108: fIdentFuncTable[I] := Func108;
       112: fIdentFuncTable[I] := Func112;
@@ -540,11 +535,11 @@ begin
       126: fIdentFuncTable[I] := Func126;
       127: fIdentFuncTable[I] := Func127;
       128: fIdentFuncTable[I] := Func128;
-	  129: fIdentFuncTable[I] := Func129;
+	    129: fIdentFuncTable[I] := Func129;
       130: fIdentFuncTable[I] := Func130;
       132: fIdentFuncTable[I] := Func132;
       133: fIdentFuncTable[I] := Func133;
-	  136: fIdentFuncTable[I] := Func136;
+	    136: fIdentFuncTable[I] := Func136;
       141: fIdentFuncTable[I] := Func141;
       143: fIdentFuncTable[I] := Func143;
       166: fIdentFuncTable[I] := Func166;

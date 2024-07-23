@@ -15,6 +15,9 @@ unit UChatGPTMenuHook;
 {    -Comments are translated, original comments are in Chinese.                                   }
 {**************************************************************************************************}
 
+{Bsed on the official documentation there is no simple way to access to the context menu via ToolsAPI}
+{more info: https://docwiki.embarcadero.com/RADStudio/Athens/en/Using_Native_IDE_Objects#:~:text=The%20context%20menus%20of%20the%20IDE%20are%20not%20accessible%20through%20the%20Tools%20API.}
+
 interface
 
 uses

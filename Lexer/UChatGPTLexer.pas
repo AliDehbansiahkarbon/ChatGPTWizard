@@ -16,7 +16,7 @@ uses
 
 type
   TClassList = TObjectDictionary<string, TStringList>;
-  TcpLexer = class
+  TCpLexer = class
   private
     FClassList: TClassList;
     function GetCurrentUnitPath: string;

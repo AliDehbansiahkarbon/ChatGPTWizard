@@ -726,7 +726,6 @@ constructor TBaseJSON<T, Typ>.Create(JSON: String; const CheckDate: Boolean);
 type PInterface = ^IInterface;
 var
   JVal: IJSONAncestor;
-  PIntf: PInterface;
 begin
   FCheckDate := CheckDate;
   if (Self.InheritsFrom(TSuperArray)) and (Trim(JSON) = '{}') then JSON := '[]';
@@ -3257,11 +3256,10 @@ class function TJSON.Parse<T>(JSON: ISuperObject): T;
 var
   Ctx: TRttiContext;
   Typ: TRttiType;
-  DType: TDataType;
   _Array: ISuperArray;
   _PResult: Pointer;
-  I: Integer;
-type PTime = ^TTime;
+type
+  PTime = ^TTime;
 begin
   Ctx := TRttiContext.Create;
   try

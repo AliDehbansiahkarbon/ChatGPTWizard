@@ -1012,25 +1012,30 @@ end;
 
 class function TEditNotifierHelper.GetSelectedText: string;
 var
+  LvEditorServices: IOTAEditorServices;
   LvEditView: IOTAEditView;
   LvEditBlock: IOTAEditBlock;
 begin
   Result := '';
-  if TSingletonSettingObj.Instance.ApiKey = '' then
+
+  // Check if the API key is set or if the settings are empty
+  if (TSingletonSettingObj.Instance.ApiKey = '') and (TSingletonSettingObj.Instance.GetSetting.Trim.IsEmpty) then
+    Exit;
+
+  // Get the editor services
+  if Supports(BorlandIDEServices, IOTAEditorServices, LvEditorServices) then
   begin
-    if TSingletonSettingObj.Instance.GetSetting.Trim.IsEmpty then
-      Exit;
-  end;
+    LvEditView := LvEditorServices.TopView;
 
-  if Supports(BorlandIDEServices, IOTAEditorServices) then
-  begin
-    LvEditView := (BorlandIDEServices as IOTAEditorServices).TopView;
+    // Ensure we have a valid edit view
+    if Assigned(LvEditView) then
+    begin
+      LvEditBlock := LvEditView.GetBlock;
 
-    // Get the selected text in the edit view
-    LvEditBlock := LvEditView.GetBlock;
-
-    if (LvEditBlock.StartingColumn <> LvEditBlock.EndingColumn) or (LvEditBlock.StartingRow <> LvEditBlock.EndingRow) then
-      Result := LvEditBlock.Text;
+      // Check if there is a selection in the edit block
+      if (LvEditBlock.StartingRow <> LvEditBlock.EndingRow) or (LvEditBlock.StartingColumn <> LvEditBlock.EndingColumn) then
+        Result := LvEditBlock.Text;
+    end;
   end;
 end;
 
