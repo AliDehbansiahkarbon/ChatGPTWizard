@@ -49,6 +49,17 @@
 
 <br />
 
+# Supported IDE Versions 
+```delphi
+Delphi 10.x (10.1 Berlin, 10.2 Tokyo, 10.3 Rio, 10.4 Sydney)
+Delphi 11.x Alexandria
+Delphi 12.x Athens
+```
+# Older IDE versions (XE2 to XE8)
+If you are using Delphi XE2 to XE8, there is a limited version of this plug-in available, which has the main functionality.
+Please have a look at that version [here](https://github.com/AliDehbansiahkarbon/ChatGPTWizard-XE2-to-XE8).
+
+
 # Disclaimer
 As a user of the API key, it is important to understand that you are solely responsible for all content generated through the prompt. Please note that there is no text moderation with this plugin, and your prompt will be sent directly to the AI Server through the API. While mistakes can happen while using browsers, mobile apps, or this plugin, it remains the responsibility of the user to ensure the accuracy and appropriateness of the content generated(prompts).
 
@@ -145,7 +156,7 @@ This Plugin Supports the following AI Services:
 
 ### [YouChat](https://you.com/code)
 
-[generate API Key here](https://betterapi.net/about)
+[generate API Key here](https://api.you.com)
 
 **NOTE: ChatGPT is working with Rad Studio 10.1 and above but Other(non-ChatGPT) AI Services are enabled in Rad Studio 10.2 and above!**
 
