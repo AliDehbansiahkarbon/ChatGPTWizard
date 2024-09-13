@@ -25,6 +25,19 @@
 
 <h3>First Plugin Ever to support Online(ChatGPT, Writesonic, and YouChat) and Offline(Ollama) AI servers!</h3>
 
+<h1> Important Update</h1>
+<h2>
+
+# Embarcadero introduced a built-in AI engine called Smart Codeinsight starting from version 12.2, so this plugin will not be updated for versions 12.2 and higher version but will be maintained for version 12.1 and earlier.
+# Do not install this plugin on RAD Studio 12.2 or above IDE versions.
+
+  
+</h2>
+
+
+
+
+
 #### **PLEASE NOTE THAT You will need an API key (just in Online mode) to use this plugin. see the [API section](#platforms) to Generate an API key**
 #### Some API Keys are Limited to a certain usage, after that, you will need to purchase credits to keep using them.
 
