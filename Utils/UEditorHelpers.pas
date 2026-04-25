@@ -10,7 +10,7 @@ unit UEditorHelpers;
 
 interface
 uses
-  ToolsAPI, System.SysUtils, System.Classes, UConsts;
+  Winapi.Windows, ToolsAPI, System.SysUtils, System.Classes, System.StrUtils, System.IOUtils, Vcl.Dialogs, UConsts;
 
 const
   EditControlClassName = 'TEditControl';
@@ -36,8 +36,14 @@ const
   procedure PositionInsertText(AEditPosition: IOTAEditPosition; const AText: string);
   procedure InsertSingleLine(ALine: Integer; const AText: string; AEditView: IOTAEditView = nil);
   function GetCurrChar(OffsetX: Integer = 0; View: IOTAEditView = nil): Char;
+  procedure ShowIDEMessage(const AMessage: string; AIsError: Boolean = True; const ATitle: string = CPluginName);
+  procedure AppendLogMessage(const ADirectory, AMessage: string; const ATitle: string = CPluginName);
 
 implementation
+
+var
+  GMessageGroup: IOTAMessageGroup;
+  GLogLock: TObject;
 
 
 function QuerySvcs(const AInstance: IUnknown; const AIntf: TGUID; out AInst): Boolean;
@@ -161,8 +167,17 @@ end;
 
 function GetTopMostEditView: IOTAEditView;
 var
+  LiEditorServices: IOTAEditorServices;
   LiEditBuffer: IOTAEditBuffer;
 begin
+  QuerySvcs(BorlandIDEServices, IOTAEditorServices, LiEditorServices);
+  if Assigned(LiEditorServices) then
+  begin
+    Result := LiEditorServices.TopView;
+    if Assigned(Result) then
+      Exit;
+  end;
+
   LiEditBuffer := GetEditBuffer;
   if LiEditBuffer <> nil then
   begin
@@ -327,5 +342,71 @@ begin
       Result := LineText[CharIndex];
   end;
 end;
+
+procedure ShowIDEMessage(const AMessage: string; AIsError: Boolean; const ATitle: string);
+var
+  LMessageServices: IOTAMessageServices60;
+  LGroup90: IOTAMessageGroup90;
+  LLineRef: Pointer;
+  LPrefix: string;
+  LDialogType: TMsgDlgType;
+begin
+  if Supports(BorlandIDEServices, IOTAMessageServices60, LMessageServices) then
+  begin
+    if not Assigned(GMessageGroup) then
+      GMessageGroup := LMessageServices.AddMessageGroup(ATitle);
+
+    if Assigned(GMessageGroup) and Supports(GMessageGroup, IOTAMessageGroup90, LGroup90) then
+      LGroup90.AutoScroll := True;
+
+    LMessageServices.ClearMessageGroup(GMessageGroup);
+    LMessageServices.AddTitleMessage(ATitle, GMessageGroup);
+    if AIsError then
+      LPrefix := 'Error'
+    else
+      LPrefix := ATitle;
+    LLineRef := nil;
+    LMessageServices.AddToolMessage('', AMessage, LPrefix, 0, 0, nil, LLineRef, GMessageGroup);
+    LMessageServices.ShowMessageView(GMessageGroup);
+    Exit;
+  end;
+
+  if AIsError then
+    LDialogType := mtError
+  else
+    LDialogType := mtInformation;
+  MessageDlg(AMessage, LDialogType, [mbOK], 0);
+end;
+
+procedure AppendLogMessage(const ADirectory, AMessage: string; const ATitle: string);
+var
+  LDirectory: string;
+  LFilePath: string;
+  LLine: string;
+begin
+  LDirectory := Trim(ADirectory);
+  if LDirectory = '' then
+    Exit;
+
+  try
+    TMonitor.Enter(GLogLock);
+    try
+      ForceDirectories(LDirectory);
+      LFilePath := TPath.Combine(LDirectory, ATitle + '-' + FormatDateTime('yyyymmdd', Now) + '.log');
+      LLine := FormatDateTime('yyyy-mm-dd hh:nn:ss.zzz', Now) + ' | ' + AMessage + sLineBreak;
+      TFile.AppendAllText(LFilePath, LLine, TEncoding.UTF8);
+    finally
+      TMonitor.Exit(GLogLock);
+    end;
+  except
+    // Logging must never break provider or UI flow.
+  end;
+end;
+
+initialization
+  GLogLock := TObject.Create;
+
+finalization
+  GLogLock.Free;
 
 end.

@@ -1,4 +1,4 @@
-package ChatGptWizard;
+package FusionAI;
 
 {$R *.res}
 {$R *.dres}
@@ -45,7 +45,6 @@ requires
 
 contains
   UChatGptMain in 'UChatGptMain.pas',
-  UChatGPTThread in 'Utils\UChatGPTThread.pas',
   UChatGPTProgress in 'Forms\UChatGPTProgress.pas' {Frm_Progress},
   UChatGPTMenuHook in 'Utils\UChatGPTMenuHook.pas',
   UChatGPTSetting in 'Forms\UChatGPTSetting.pas' {Frm_Setting},
@@ -55,9 +54,11 @@ contains
   UPascalLexer in 'Lexer\UPascalLexer.pas',
   UPascalLexerTypes in 'Lexer\UPascalLexerTypes.pas',
   UHistory in 'Utils\UHistory.pas',
-  UWriteSonicThread in 'Utils\UWriteSonicThread.pas',
   UConsts in 'Utils\UConsts.pas',
-  UYouChatThread in 'Utils\UYouChatThread.pas',
+  UAICommon in 'Utils\UAICommon.pas',
+  UAIProviders in 'Utils\UAIProviders.pas',
+  UAIRequestCoordinator in 'Utils\UAIRequestCoordinator.pas',
+  UAIHistory in 'Utils\UAIHistory.pas',
   UEditorHelpers in 'Utils\UEditorHelpers.pas',
   UAbout in 'Forms\UAbout.pas' {Frm_About};
 

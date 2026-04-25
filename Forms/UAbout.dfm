@@ -30,7 +30,7 @@ object Frm_About: TFrm_About
     Top = 24
     Width = 129
     Height = 23
-    Caption = 'ChatGPTWizard'
+    Caption = 'FusionAI'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -19
@@ -45,8 +45,8 @@ object Frm_About: TFrm_About
     Height = 30
     AutoSize = False
     Caption = 
-      'An IDE plug-in for ChatGPT, Writesonic, and Youchat by Ali Dehba' +
-      'nsiahkarbon.'
+      'An IDE plug-in for ChatGPT, Gemini, Claude, and Ollama by Ali De' +
+      'hbansiahkarbon.'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -117,8 +117,8 @@ object Frm_About: TFrm_About
     Width = 206
     Height = 21
     Caption = 
-      '<a href="https://github.com/AliDehbansiahkarbon/ChatGPTWizard">h' +
-      'ttps://github.com/ChatGPTWizard</a>'
+      '<a href="https://github.com/AliDehbansiahkarbon/ChatGPTWizard">F' +
+      'usionAI repository</a>'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13

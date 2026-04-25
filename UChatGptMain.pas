@@ -1,4 +1,4 @@
-{***************************************************}
+﻿{***************************************************}
 {                                                   }
 {   This unit is the main unit of the package       }
 {   including register function.                    }
@@ -35,7 +35,7 @@ type
   TChatGptMenuWizard = class(TInterfacedObject, IOTAWizard)
   private
     FRoot, FAskMenu,
-    FSettingMenu, FAskMenuDockable, FAboutMenu: TMenuItem;
+    FSettingMenu, FAboutMenu: TMenuItem;
     FSetting: TSingletonSettingObj;
 
     FAskSubMenuH, FAddTestH, FFindBugsH, //These hidden menues usre used for better Ux expreince with shortcuts.
@@ -46,6 +46,8 @@ type
     procedure ChatGPTSettingMenuClick(Sender: TObject);
     procedure ChatGPTAboutMenuClick(Sender: TObject);
     procedure AskSubmenuHiddenOnClick(Sender: TObject);
+    class function CanUseDockableAssistant: Boolean; static;
+    procedure OpenAssistantUI;
     procedure RenewUI(AForm: TCustomForm);
   protected
     { protected declarations }
@@ -65,7 +67,7 @@ type
 {************************************************************************************************}
 {                                                                                                }
 {   The editor is not immediately available upon startup of the IDE,                             }
-{   therefore we can�t get access to the editor in the plugin initialization code.               }
+{   therefore we can’t get access to the editor in the plugin initialization code.               }
 {   What we needed is to register a class that implements the INTAEditServicesNotifier interface.}
 {   The IDE calls this interface when the editor is activated in the IDE.                        }
 {                                                                                                }
@@ -79,6 +81,7 @@ type
   TEditNotifierHelper = class(TNotifierObject, IOTANotifier, INTAEditServicesNotifier)
     procedure OnChatGPTSubMenuClick(Sender: TObject; MenuItem: TMenuItem);
     procedure OnChatGPTContextMenuFixedQuestionClick(Sender: TObject);
+    procedure AfterEditorContextMenuPopup(Sender: TObject; Menu: TPopupMenu);
   private
     FMenuHook: TCpMenuHook;
     class function GetQuestion(AStr: string): string;
@@ -87,6 +90,9 @@ type
     function GetCurrentUnitPath: string;
     class function GetSelectedText: string;
     class procedure RunInlineQuestion(AQuestion: string; AMsgType: TMsgType);
+    class procedure ShowAssistantMessage(const AMessage: string);
+    class procedure ShowSettingsDialog;
+    class procedure OpenAssistantWithDraft(const ASelectedText: string; AShowInlineHint: Boolean = False);
     class procedure DoAskSubMenu;
     class procedure DoAddTest;
     class procedure DoFindBugs;
@@ -112,6 +118,7 @@ type
     procedure DockFormRefresh(const EditWindow: INTAEditWindow; DockForm: TDockableForm);
     procedure AddEditorContextMenu;
     function AddMenuItem(AParentMenu: TMenuItem; AName, ACaption: string; AOnClick: TChatGPTOnCliskType; AShortCut: string; ATag: NativeInt): TMenuItem;
+    function AddSeparatorMenuItem(AParentMenu: TMenuItem; const AName: string): TMenuItem;
   end;
 
 {*******************************************************}
@@ -141,8 +148,8 @@ type
     FMainMenuIndex: Integer = WizardFail;
     FNotifierIndex: Integer = WizardFail;
     FStylingNotifierIndex: Integer = WizardFail;
-    FChatGPTSubMenu: TCpMenuItemDef;
-    FChatGPTDockForm: TChatGPTDockForm;
+    FFusionAISubMenu: TCpMenuItemDef;
+    FFusionAIDockForm: TChatGPTDockForm;
     FChatGptMenuWizard: TChatGptMenuWizard;
     FShouldApplyTheme: Boolean = False;
 
@@ -171,10 +178,10 @@ procedure RemoveAferUnInstall;
 var
   LvRootMenu: TMainMenu;
 begin
-  if Assigned(FChatGPTDockForm) then
+  if Assigned(FFusionAIDockForm) then
   begin
-    FChatGPTDockForm.Close;
-    FreeAndNil(FChatGPTDockForm);
+    FFusionAIDockForm.Close;
+    FreeAndNil(FFusionAIDockForm);
   end;
 
   LvRootMenu := (BorlandIDEServices as INTAServices).MainMenu;
@@ -239,23 +246,38 @@ begin
 end;
 
 procedure TChatGptMenuWizard.ChatGPTDockableMenuClick(Sender: TObject);
-var
-  LvSettingObj: TSingletonSettingObj;
 begin
-  LvSettingObj := TSingletonSettingObj.Instance;
-  LvSettingObj.ReadRegistry;
-  if LvSettingObj.ApiKey = '' then
+  AskMenuClick(Sender);
+end;
+class function TChatGptMenuWizard.CanUseDockableAssistant: Boolean;
+begin
+  {$IF CompilerVersion >= 32.0}
+  Result := True;
+  {$ELSE}
+  Result := False;
+  {$IFEND}
+end;
+procedure TChatGptMenuWizard.OpenAssistantUI;
+var
+  FrmChatGPTMain: TFrmChatGPT;
+begin
+  if CanUseDockableAssistant then
   begin
-    if (LvSettingObj.IsOffline) and (LvSettingObj.GetSetting.Trim.IsEmpty) then
-      Exit;
+    if not Assigned(FFusionAIDockForm) then
+      FFusionAIDockForm := TChatGPTDockForm.Create(Application);
+    TSingletonSettingObj.RegisterFormClassForTheming(TChatGPTDockForm, FFusionAIDockForm); //Apply Theme
+    RenewUI(FFusionAIDockForm);
+    FFusionAIDockForm.Show;
+    Exit;
   end;
-
-  if not Assigned(FChatGPTDockForm) then
-    FChatGPTDockForm := TChatGPTDockForm.Create(Application);
-
-  TSingletonSettingObj.RegisterFormClassForTheming(TChatGPTDockForm, FChatGPTDockForm); //Apply Theme
-  RenewUI(FChatGPTDockForm);
-  FChatGPTDockForm.Show;
+  FrmChatGPTMain := TFrmChatGPT.Create(Application);
+  try
+    TSingletonSettingObj.RegisterFormClassForTheming(TFrmChatGPT, FrmChatGPTMain);  //Apply Theme
+    RenewUI(FrmChatGPTMain);
+    FrmChatGPTMain.ShowModal;
+  finally
+    FreeAndNil(FrmChatGPTMain);
+  end;
 end;
 
 procedure TChatGptMenuWizard.ChatGPTSettingMenuClick(Sender: TObject);
@@ -265,50 +287,10 @@ begin
   Frm_Setting := TFrm_Setting.Create(nil);
   try
     TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Setting, Frm_Setting); //Apply Theme
-    with Frm_Setting do
-    begin
-      Edt_ApiKey.Text := FSetting.ApiKey;
-      Edt_Url.Text := FSetting.URL;
-      Edt_MaxToken.Text := FSetting.MaxToken.ToString;
-      Edt_Temperature.Text := FSetting.Temperature.ToString;
-      cbbModel.ItemIndex := Frm_Setting.cbbModel.Items.IndexOf(FSetting.Model);
-      Edt_SourceIdentifier.Text := FSetting.Identifier;
-      chk_CodeFormatter.Checked := FSetting.CodeFormatter;
-      chk_Rtl.Checked := FSetting.RighToLeft;
-      chk_History.Checked := FSetting.HistoryEnabled;
-      lbEdt_History.Text := FSetting.HistoryPath;
-      lbEdt_History.Enabled := FSetting.HistoryEnabled;
-      Btn_HistoryPathBuilder.Enabled := FSetting.HistoryEnabled;
-      ColorBox_Highlight.Selected := FSetting.HighlightColor;
-      chk_AnimatedLetters.Checked := FSetting.AnimatedLetters;
-      lbEdt_Timeout.Text := FSetting.TimeOut.ToString;
-
-
-      chk_Offline.Checked := FSetting.IsOffline;
-      cbbModel.Enabled := not FSetting.IsOffline;
-      edt_MaxToken.Enabled := not FSetting.IsOffline;
-      edt_OfflineModel.Enabled := FSetting.IsOffline;
-      if FSetting.IsOffline then
-        edt_OfflineModel.Text := FSetting.Model;
-
-      AddAllDefinedQuestions;
-
-      chk_WriteSonic.Checked := FSetting.EnableWriteSonic;
-      lbEdt_WriteSonicAPIKey.Text := FSetting.WriteSonicAPIKey;
-      lbEdt_WriteSonicBaseURL.Text := FSetting.WriteSonicBaseURL;
-      lbEdt_WriteSonicAPIKey.Enabled := FSetting.EnableWriteSonic;
-      lbEdt_WriteSonicBaseURL.Enabled := FSetting.EnableWriteSonic;
-
-      chk_YouChat.Checked := FSetting.EnableYouChat;
-      lbEdt_YouChatAPIKey.Text := FSetting.YouChatAPIKey;
-      lbEdt_YouChatBaseURL.Text := FSetting.YouChatBaseURL;
-      lbEdt_YouChatAPIKey.Enabled := FSetting.EnableYouChat;
-      lbEdt_YouChatBaseURL.Enabled := FSetting.EnableYouChat;
-
-      ShowModal;
-    end;
+    Frm_Setting.LoadFromSettings(FSetting);
+    Frm_Setting.ShowModal;
     if Frm_Setting.HasChanges then
-      RenewUI(FChatGPTDockForm);
+      RenewUI(FFusionAIDockForm);
   finally
     Frm_Setting.Free;
     FSetting.ReadRegistry; // In case something changed in setting that must reload.
@@ -322,8 +304,8 @@ begin
   if not Assigned(FAskMenu) then
   begin
     FAskMenu := TMenuItem.Create(nil);
-    FAskMenu.Name := 'Mnu_ChatGPT';
-    FAskMenu.Caption := 'Ask ChatGPT';
+    FAskMenu.Name := CAskMenuName;
+    FAskMenu.Caption := CAskMenuCaption;
     FAskMenu.OnClick := AskMenuClick;
     FAskMenu.ShortCut := TextToShortCut('Ctrl+Alt+Shift+C');
   end;
@@ -331,8 +313,8 @@ begin
   if not Assigned(FSettingMenu) then
   begin
     FSettingMenu := TMenuItem.Create(nil);
-    FSettingMenu.Name := 'Mnu_ChatGPTSetting';
-    FSettingMenu.Caption := 'ChatGPT Setting';
+    FSettingMenu.Name := CSettingsMenuName;
+    FSettingMenu.Caption := CSettingsMenuCaption;
     FSettingMenu.OnClick := ChatGPTSettingMenuClick;
     FSettingMenu.ImageIndex := 36;
   end;
@@ -401,19 +383,11 @@ begin
   end;
   {$ENDREGION}
 
-  if not Assigned(FAskMenuDockable) then
-  begin
-    FAskMenuDockable := TMenuItem.Create(nil);
-    FAskMenuDockable.Name := 'Mnu_ChatGPTDockable';
-    FAskMenuDockable.Caption := 'ChatGPT Dockabale';
-    FAskMenuDockable.OnClick := ChatGPTDockableMenuClick;
-  end;
-
   if not Assigned(FAboutMenu) then
   begin
     FAboutMenu := TMenuItem.Create(nil);
-    FAboutMenu.Name := 'Mnu_ChatGPTAbout';
-    FAboutMenu.Caption := 'About';
+    FAboutMenu.Name := CAboutMenuName;
+    FAboutMenu.Caption := CAboutMenuCaption;
     FAboutMenu.OnClick := ChatGPTAboutMenuClick;
     FAboutMenu.ImageIndex := 50;
   end;
@@ -421,10 +395,9 @@ begin
   if not Assigned(FRoot) then
   begin
     FRoot := TMenuItem.Create(nil);
-    FRoot.Caption := 'ChatGPTWizard';
-    FRoot.Name := 'ChatGPTRootMenu';
+    FRoot.Caption := CPluginName;
+    FRoot.Name := CRootMenuName;
     FRoot.Add(FAskMenu);
-    FRoot.Add(FAskMenuDockable);
     FRoot.Add(FSettingMenu);
     FRoot.Add(FAskSubMenuH);
     FRoot.Add(FAddTestH);
@@ -435,7 +408,7 @@ begin
     FRoot.Add(FAboutMenu);
   end;
 
-  if not Assigned((BorlandIDEServices as INTAServices).MainMenu.Items.Find('ChatGPTRootMenu')) then
+  if not Assigned((BorlandIDEServices as INTAServices).MainMenu.Items.Find(CRootMenuName)) then
   begin
     LvMainMenu := (BorlandIDEServices as INTAServices).MainMenu;
     LvMainMenu.Items.Insert(LvMainMenu.Items.Count - 1, FRoot);
@@ -448,28 +421,18 @@ end;
 procedure TChatGptMenuWizard.AskMenuClick(Sender: TObject);
 var
   LvSettingObj: TSingletonSettingObj;
-  FrmChatGPTMain: TFrmChatGPT;
 begin
   LvSettingObj := TSingletonSettingObj.Instance;
   LvSettingObj.ReadRegistry;
-
-  if LvSettingObj.ApiKey = '' then
+  if Length(LvSettingObj.GetEnabledProviderIds) = 0 then
   begin
-    if (LvSettingObj.IsOffline) and (LvSettingObj.GetSetting.Trim.IsEmpty) then
+    LvSettingObj.GetSetting;
+    LvSettingObj.ReadRegistry;
+    if Length(LvSettingObj.GetEnabledProviderIds) = 0 then
       Exit;
   end;
-
-  if LvSettingObj.ApiKey <> EmptyStr then
-  begin
-    FrmChatGPTMain := TFrmChatGPT.Create(Application);
-    try
-      LvSettingObj.RegisterFormClassForTheming(TFrmChatGPT, FrmChatGPTMain);  //Apply Theme
-      RenewUI(FrmChatGPTMain);
-      FrmChatGPTMain.ShowModal;
-    finally
-      FreeAndNil(FrmChatGPTMain);
-    end;
-  end;
+  if Length(LvSettingObj.GetEnabledProviderIds) > 0 then
+    OpenAssistantUI;
 end;
 
 procedure TChatGptMenuWizard.AskSubmenuHiddenOnClick(Sender: TObject);
@@ -502,10 +465,6 @@ procedure TChatGptMenuWizard.Destroyed;
 begin
   if Assigned(FAskMenu) then
     FreeAndNil(FAskMenu);
-
-  if Assigned(FAskMenuDockable) then
-    FreeAndNil(FAskMenuDockable);
-
   if Assigned(FSettingMenu) then
     FreeAndNil(FSettingMenu);
 
@@ -520,12 +479,12 @@ end;
 
 function TChatGptMenuWizard.GetIDString: string;
 begin
-  Result := 'ChatGptIDString';
+  Result := CWizardIDString;
 end;
 
 function TChatGptMenuWizard.GetName: string;
 begin
-  Result := 'ChatGptName';
+  Result := CWizardName;
 end;
 
 function TChatGptMenuWizard.GetState: TWizardState;
@@ -557,19 +516,18 @@ begin
         for I := AMainMenu.Items.Count - 1 downto 0 do
         begin
           LvRootMenu := AMainMenu.Items[I];
-          if LvRootMenu.Name = 'ChatGPTRootMenu' then
+          if LvRootMenu.Name = CRootMenuName then
           begin
             LvImgList := LvRootMenu.GetImageList;
             if Assigned(LvImgList) then
             begin
               try
                 FAskMenu.ImageIndex := LvImgList.Add(LvBmp, nil);
-                FAskMenuDockable.ImageIndex := FAskMenu.ImageIndex;
               except
                 FAskMenu.ImageIndex := 1;
-                FAskMenuDockable.ImageIndex := 1;
               end;
             end;
+            FAskMenu.Bitmap.Assign(LvBmp);
             Break;
           end;
         end;
@@ -610,34 +568,8 @@ begin
     Btn_Ask.Enabled := True;
     Align := alClient;
     pgcMain.ActivePageIndex := 0;
-    tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
-    tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
-
-    if TSingletonSettingObj.Instance.RighToLeft then
-    begin
-      Btn_Ask.Left := pnlTop.Width - Btn_Ask.Width - 5;
-      Btn_Clipboard.Left := Btn_Ask.Left - Btn_Clipboard.Width - 5;
-      Btn_Clear.Left := Btn_Clipboard.Left - Btn_Clear.Width - 5;
-
-      Btn_Ask.Anchors := [TAnchorKind.akTop, TAnchorKind.akRight];
-      Btn_Clipboard.Anchors := [TAnchorKind.akTop, TAnchorKind.akRight];
-      Btn_Clear.Anchors := [TAnchorKind.akTop, TAnchorKind.akRight];
-    end
-    else
-    begin
-      Btn_Ask.Left := 15;
-      Btn_Clipboard.Left := Btn_Ask.Left + Btn_Ask.Width + 5;
-      Btn_Clear.Left := Btn_Clipboard.Left + Btn_Clipboard.Width + 5;
-
-      Btn_Ask.Anchors := [TAnchorKind.akTop, TAnchorKind.akLeft];
-      Btn_Clipboard.Anchors := [TAnchorKind.akTop, TAnchorKind.akLeft];
-      Btn_Clear.Anchors := [TAnchorKind.akTop, TAnchorKind.akLeft];
-    end;
-
-    if TSingletonSettingObj.Instance.IsOffline then
-      tsChatGPTAnswer.Caption := 'Ollama(Offline)'
-    else
-      tsChatGPTAnswer.Caption := 'OpenAI(ChatGPT)';
+    ConfigureProviderPages;
+    UpdateTopButtonLayout;
   end;
   Cs.Leave;
 end;
@@ -656,6 +588,13 @@ begin
   AParentMenu.Add(LvItem);
   Result := LvItem;
 end;
+function TEditNotifierHelper.AddSeparatorMenuItem(AParentMenu: TMenuItem; const AName: string): TMenuItem;
+begin
+  Result := TMenuItem.Create(nil);
+  Result.Name := AName;
+  Result.Caption := '-';
+  AParentMenu.Add(Result);
+end;
 
 procedure TEditNotifierHelper.OnChatGPTContextMenuFixedQuestionClick(Sender: TObject);
 begin
@@ -671,6 +610,7 @@ begin
       6: DoExplain;
       7: DoRefactor;
       8: DoConvertToAssembly;
+      100: ShowSettingsDialog;
     end;
   end;
 end;
@@ -678,17 +618,19 @@ end;
 procedure TEditNotifierHelper.OnChatGPTSubMenuClick(Sender: TObject; MenuItem: TMenuItem);
 begin
   TSingletonSettingObj.Instance.ReadRegistry;
-  if not Assigned(MenuItem.Find('Ask')) then
+  if not Assigned(MenuItem.Find(CEditorSubMenuAskName)) then
   begin
-    AddMenuItem(MenuItem, 'ChatGPTAskSubMenu', 'Ask', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+A', 0);
-    AddMenuItem(MenuItem, 'ChatGPTAddTest', 'Add Test', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+T', 1);
-    AddMenuItem(MenuItem, 'ChatGPTFindBugs', 'Find Bugs', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+B', 2);
-    AddMenuItem(MenuItem, 'ChatGPTOptimize', 'Optimize', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+O', 3);
-    AddMenuItem(MenuItem, 'ChatGPTAddComments', 'Add Comments', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+M', 4);
-    AddMenuItem(MenuItem, 'ChatGPTCompleteCode', 'Complete Code', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+k', 5);
-    AddMenuItem(MenuItem, 'ChatGPTExplain', 'Explain Code', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+E', 6);
-    AddMenuItem(MenuItem, 'ChatGPTRefactor', 'Refactor Code', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+R', 7);
-    AddMenuItem(MenuItem, 'ChatGPTAsm', 'Convert to Assembly', OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+S', 8);
+    AddMenuItem(MenuItem, CEditorSubMenuAskName, CEditorAskCaption, OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+A', 0);
+    AddMenuItem(MenuItem, CEditorSubMenuAddTestName, CEditorAddTestCaption, OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+T', 1);
+    AddMenuItem(MenuItem, CEditorSubMenuFindBugsName, CEditorFindBugsCaption, OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+B', 2);
+    AddMenuItem(MenuItem, CEditorSubMenuOptimizeName, CEditorOptimizeCaption, OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+O', 3);
+    AddMenuItem(MenuItem, CEditorSubMenuAddCommentsName, CEditorAddCommentsCaption, OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+M', 4);
+    AddMenuItem(MenuItem, CEditorSubMenuCompleteCodeName, CEditorCompleteCodeCaption, OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+K', 5);
+    AddMenuItem(MenuItem, CEditorSubMenuExplainName, CEditorExplainCaption, OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+E', 6);
+    AddMenuItem(MenuItem, CEditorSubMenuRefactorName, CEditorRefactorCaption, OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+R', 7);
+    AddMenuItem(MenuItem, CEditorSubMenuAsmName, CEditorAsmCaption, OnChatGPTContextMenuFixedQuestionClick, 'Ctrl+Alt+Shift+S', 8);
+    AddSeparatorMenuItem(MenuItem, CEditorSubMenuSeparatorName);
+    AddMenuItem(MenuItem, CEditorSubMenuSettingsName, CSettingsMenuCaption, OnChatGPTContextMenuFixedQuestionClick, '', 100);
   end;
 end;
 
@@ -726,20 +668,35 @@ end;
 
 class procedure TEditNotifierHelper.RunInlineQuestion(AQuestion: string; AMsgType: TMsgType);
 begin
-  if not TSingletonSettingObj.Instance.ApiKey.Trim.IsEmpty then
+  if Length(TSingletonSettingObj.Instance.GetEnabledProviderIds) > 0 then
   begin
     Frm_Progress := TFrm_Progress.Create(nil);
     try
       Frm_Progress.SelectedText := AQuestion;
+      if TSingletonSettingObj.Instance.EnableFileLog then
+        AppendLogMessage(TSingletonSettingObj.Instance.LogDirectory,
+          'RunInlineQuestion: showing modal progress dialog.');
       TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Progress, Frm_Progress); //Apply Theme
       Frm_Progress.ShowModal;
-      if not Frm_Progress.Answer.Text.Trim.IsEmpty then
+      if TSingletonSettingObj.Instance.EnableFileLog then
+        AppendLogMessage(TSingletonSettingObj.Instance.LogDirectory,
+          'RunInlineQuestion: modal dialog closed. HasError=' +
+          BoolToStr(Frm_Progress.HasError, True) + ', AnswerLength=' +
+          IntToStr(Length(Frm_Progress.Answer.Text)));
+      if (not Frm_Progress.HasError) and (not Frm_Progress.Answer.Text.Trim.IsEmpty) then
       begin
+        if TSingletonSettingObj.Instance.EnableFileLog then
+          AppendLogMessage(TSingletonSettingObj.Instance.LogDirectory,
+            'RunInlineQuestion: writing response into editor.');
         WriteIntoEditor(RefineText(Frm_Progress.Answer, AMsgType));
-
-        if not (Frm_Progress.HasError) and (TSingletonSettingObj.Instance.CodeFormatter) then
+        if TSingletonSettingObj.Instance.EnableFileLog then
+          AppendLogMessage(TSingletonSettingObj.Instance.LogDirectory,
+            'RunInlineQuestion: editor write completed.');
+        if TSingletonSettingObj.Instance.CodeFormatter then
           TEditNotifierHelper.FormatSource;
       end;
+      if Frm_Progress.HasError and (not Frm_Progress.Answer.Text.Trim.IsEmpty) then
+        ShowAssistantMessage(Frm_Progress.Answer.Text.Trim);
     finally
       FreeAndNil(Frm_Progress);
     end;
@@ -754,9 +711,9 @@ begin
   FMenuHook.HookMenu(LvEditorPopUpMenu);
   if FMenuHook.IsHooked(LvEditorPopUpMenu) then
   begin
-    FChatGPTSubMenu := TCpMenuItemDef.Create('ChatGPTSubMenu', 'AI Assistant(ChatGPTWizard)', nil, ipAfter, 'ChatGPTSubMenu');
-    FChatGPTSubMenu.OnCreated := OnChatGPTSubMenuClick;
-    FMenuHook.AddMenuItemDef(FChatGPTSubMenu);
+    FFusionAISubMenu := TCpMenuItemDef.Create(CEditorSubMenuName, CEditorMenuCaption, nil, ipFirst, '');
+    FFusionAISubMenu.OnCreated := OnChatGPTSubMenuClick;
+    FMenuHook.AddMenuItemDef(FFusionAISubMenu);
   end;
 end;
 
@@ -764,6 +721,7 @@ constructor TEditNotifierHelper.Create;
 begin
   inherited Create;
   FMenuHook := TCpMenuHook.Create(nil);
+  FMenuHook.OnAfterPopup := AfterEditorContextMenuPopup;
 end;
 
 class function TEditNotifierHelper.CreateMsg(AType: TMsgType): string;
@@ -771,6 +729,7 @@ var
   LeftIdentifier: string;
   RightIdentifier: string;
 begin
+  Result := CNoSelectionMsg;
   case AType of
     mtNormalQuestion:
     begin
@@ -778,16 +737,17 @@ begin
       LeftIdentifier := TSingletonSettingObj.Instance.LeftIdentifier;
       RightIdentifier := TSingletonSettingObj.Instance.RightIdentifier;
       Cs.Leave;
-
-      Result := 'There is no selected text with the ChatGPT Plug-in''s desired format, follow the below sample, please.' +
-                   #13 + LeftIdentifier + ' Any Question... ' + RightIdentifier;
+      Result := Format(CAskSelectionRequiredMsgFmt, [LeftIdentifier, RightIdentifier]);
     end;
-
     mtAddTest,
     mtFindBugs,
+    mtAddComment,
     mtOptimize,
     mtCompleteCode,
-    mtExplain, mtASM: Result := 'There is no selected text.';
+    mtExplain,
+    mtRefactor,
+    mtASM:
+      Result := CNoSelectionMsg;
   end;
 end;
 
@@ -804,14 +764,14 @@ begin
   LvSelectedText := GetSelectedText;
   if not LvSelectedText.IsEmpty then
   begin
-    //If it is a ChatGPT question
-    if (SameStr(LeftStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.LeftIdentifier)) and (SameStr(RightStr(LvSelectedText, 4).ToLower, TSingletonSettingObj.Instance.RightIdentifier)) then
+    if (SameStr(LeftStr(LvSelectedText, Length(TSingletonSettingObj.Instance.LeftIdentifier)).ToLower, TSingletonSettingObj.Instance.LeftIdentifier)) and
+       (SameStr(RightStr(LvSelectedText, Length(TSingletonSettingObj.Instance.RightIdentifier)).ToLower, TSingletonSettingObj.Instance.RightIdentifier)) then
       RunInlineQuestion(GetQuestion(LvSelectedText), mtNormalQuestion)
     else
-      ShowMessage(CreateMsg(mtNormalQuestion));
+      OpenAssistantWithDraft(LvSelectedText, True);
   end
   else
-    ShowMessage(CreateMsg(mtNormalQuestion));
+    OpenAssistantWithDraft('', True);
 end;
 
 class procedure TEditNotifierHelper.DoAddTest;
@@ -822,7 +782,7 @@ begin
   if not LvSelectedText.IsEmpty then
     RunInlineQuestion(ContextMenuAddTest + #13 + LvSelectedText, mtAddTest)
   else
-    ShowMessage(CreateMsg(mtAddTest));
+    ShowAssistantMessage(CreateMsg(mtAddTest));
 end;
 
 class procedure TEditNotifierHelper.DoFindBugs;
@@ -833,7 +793,7 @@ begin
   if not LvSelectedText.IsEmpty then
     RunInlineQuestion(ContextMenuFindBugs + #13 + LvSelectedText, mtFindBugs)
   else
-    ShowMessage(CreateMsg(mtFindBugs));
+    ShowAssistantMessage(CreateMsg(mtFindBugs));
 end;
 
 class procedure TEditNotifierHelper.DoOptimize;
@@ -844,7 +804,7 @@ begin
   if not LvSelectedText.IsEmpty then
     RunInlineQuestion(ContextMenuOptimize + #13 + LvSelectedText, mtOptimize)
   else
-    ShowMessage(CreateMsg(mtOptimize));
+    ShowAssistantMessage(CreateMsg(mtOptimize));
 end;
 
 class procedure TEditNotifierHelper.DoAddComments;
@@ -855,7 +815,7 @@ begin
   if not LvSelectedText.IsEmpty then
     RunInlineQuestion(ContextMenuAddComments + #13 + LvSelectedText, mtAddComment)
   else
-    ShowMessage(CreateMsg(mtAddTest));
+    ShowAssistantMessage(CreateMsg(mtAddComment));
 end;
 
 class procedure TEditNotifierHelper.DoCompleteCode;
@@ -866,7 +826,7 @@ begin
   if not LvSelectedText.IsEmpty then
     RunInlineQuestion(ContextMenuCompleteCode + #13 + LvSelectedText, mtCompleteCode)
   else
-    ShowMessage(CreateMsg(mtCompleteCode));
+    ShowAssistantMessage(CreateMsg(mtCompleteCode));
 end;
 
 class procedure TEditNotifierHelper.DoConvertToAssembly;
@@ -877,7 +837,7 @@ begin
   if not LvSelectedText.IsEmpty then
     RunInlineQuestion(ContextMenuConvertToAsm + #13 + LvSelectedText, mtASM)
   else
-    ShowMessage(CreateMsg(mtASM));
+    ShowAssistantMessage(CreateMsg(mtASM));
 end;
 
 class procedure TEditNotifierHelper.DoExplain;
@@ -888,7 +848,7 @@ begin
   if not LvSelectedText.IsEmpty then
     RunInlineQuestion(ContextMenuExplain + #13 + LvSelectedText, mtExplain)
   else
-    ShowMessage(CreateMsg(mtExplain));
+    ShowAssistantMessage(CreateMsg(mtExplain));
 end;
 
 class procedure TEditNotifierHelper.DoRefactor;
@@ -899,7 +859,20 @@ begin
   if not LvSelectedText.IsEmpty then
     RunInlineQuestion(ContextMenuRefactor + #13 + LvSelectedText, mtRefactor)
   else
-    ShowMessage(CreateMsg(mtOptimize));
+    ShowAssistantMessage(CreateMsg(mtRefactor));
+end;
+procedure TEditNotifierHelper.AfterEditorContextMenuPopup(Sender: TObject; Menu: TPopupMenu);
+var
+  LMenuItem: TMenuItem;
+begin
+  if not Assigned(Menu) then
+    Exit;
+  LMenuItem := Menu.Items.Find(CEditorSubMenuName);
+  if Assigned(LMenuItem) and (LMenuItem.MenuIndex <> 0) then
+  begin
+    Menu.Items.Remove(LMenuItem);
+    Menu.Items.Insert(0, LMenuItem);
+  end;
 end;
 
 procedure TEditNotifierHelper.DockFormRefresh(const EditWindow: INTAEditWindow; DockForm: TDockableForm);
@@ -961,24 +934,24 @@ procedure TEditNotifierHelper.EditorViewActivated(const EditWindow: INTAEditWind
 var
   LvCurrentUnitName: string;
 begin
-  if not Assigned(FChatGPTSubMenu) then
+  if not Assigned(FFusionAISubMenu) then
     AddEditorContextMenu;
 
   LvCurrentUnitName := GetCurrentUnitPath;
 
   Cs.Enter;
-  if Assigned(FChatGPTDockForm) and (FChatGPTDockForm.Showing) and (FChatGPTDockForm.Fram_Question.pgcMain.ActivePageIndex = 1) and
+  if Assigned(FFusionAIDockForm) and (FFusionAIDockForm.Showing) and (FFusionAIDockForm.Fram_Question.pgcMain.ActivePageIndex = 1) and
     (not LvCurrentUnitName.Equals(TSingletonSettingObj.Instance.CurrentActiveViewName)) then
   begin
     TSingletonSettingObj.Instance.CurrentActiveViewName := LvCurrentUnitName;
     Cs.Leave;
 
-    if Assigned(FChatGPTDockForm) then
+    if Assigned(FFusionAIDockForm) then
     begin
-      with FChatGPTDockForm.Fram_Question do
+      with FFusionAIDockForm.Fram_Question do
       begin
         if (pgcMain.ActivePage = tsClassView) and (not ClassViewIsBusy) then
-          ReloadClassList(FChatGPTDockForm.FDockFormClassListObj);
+          ReloadClassList(FFusionAIDockForm.FDockFormClassListObj);
       end;
     end;
   end;
@@ -1005,40 +978,94 @@ begin
   LvTmpStr := AStr.Trim;
   if LeftStr(AStr, 2) = '//' then
     LvTmpStr := RightStr(AStr.Trim, AStr.Length - 2);
-
-  LvTmpStr := RightStr(AStr.Trim, AStr.Length - 4);
-  Result := LeftStr(LvTmpStr, LvTmpStr.Length - 4);
+  LvTmpStr := RightStr(LvTmpStr, LvTmpStr.Length - Length(TSingletonSettingObj.Instance.LeftIdentifier));
+  Result := LeftStr(LvTmpStr, LvTmpStr.Length - Length(TSingletonSettingObj.Instance.RightIdentifier));
 end;
 
 class function TEditNotifierHelper.GetSelectedText: string;
 var
-  LvEditorServices: IOTAEditorServices;
   LvEditView: IOTAEditView;
   LvEditBlock: IOTAEditBlock;
+  LvReader: IOTAEditReader;
+  LvStartPos: Integer;
+  LvEndPos: Integer;
+  LvOutStr: AnsiString;
 begin
   Result := '';
-
-  // Check if the API key is set or if the settings are empty
-  if (TSingletonSettingObj.Instance.ApiKey = '') and (TSingletonSettingObj.Instance.GetSetting.Trim.IsEmpty) then
-    Exit;
-
-  // Get the editor services
-  if Supports(BorlandIDEServices, IOTAEditorServices, LvEditorServices) then
+  LvEditView := GetTopMostEditView;
+  if Assigned(LvEditView) then
   begin
-    LvEditView := LvEditorServices.TopView;
-
-    // Ensure we have a valid edit view
-    if Assigned(LvEditView) then
+    LvEditBlock := LvEditView.GetBlock;
+    if Assigned(LvEditBlock) and LvEditView.Block.IsValid and (LvEditView.Block.Size > 0) then
     begin
-      LvEditBlock := LvEditView.GetBlock;
-
-      // Check if there is a selection in the edit block
-      if (LvEditBlock.StartingRow <> LvEditBlock.EndingRow) or (LvEditBlock.StartingColumn <> LvEditBlock.EndingColumn) then
-        Result := LvEditBlock.Text;
+      Result := TrimRight(LvEditBlock.Text);
+      if Result = '' then
+      begin
+        LvStartPos := EditPosToLinePos(OTAEditPos(LvEditBlock.StartingColumn, LvEditBlock.StartingRow), LvEditView);
+        LvEndPos := EditPosToLinePos(OTAEditPos(LvEditBlock.EndingColumn, LvEditBlock.EndingRow), LvEditView);
+        if LvEndPos > LvStartPos then
+        begin
+          SetLength(LvOutStr, LvEndPos - LvStartPos);
+          LvReader := LvEditView.Buffer.CreateReader;
+          try
+            LvReader.GetText(LvStartPos, PAnsiChar(LvOutStr), LvEndPos - LvStartPos);
+          finally
+            LvReader := nil;
+          end;
+          Result := TrimRight(ConvertEditorTextToTextW(LvOutStr));
+        end;
+      end;
     end;
   end;
 end;
-
+class procedure TEditNotifierHelper.ShowAssistantMessage(const AMessage: string);
+begin
+  ShowIDEMessage(AMessage, True, CPluginName);
+end;
+class procedure TEditNotifierHelper.ShowSettingsDialog;
+var
+  LSetting: TSingletonSettingObj;
+begin
+  LSetting := TSingletonSettingObj.Instance;
+  LSetting.ReadRegistry;
+  Frm_Setting := TFrm_Setting.Create(nil);
+  try
+    TSingletonSettingObj.RegisterFormClassForTheming(TFrm_Setting, Frm_Setting);
+    Frm_Setting.LoadFromSettings(LSetting);
+    Frm_Setting.ShowModal;
+  finally
+    Frm_Setting.Free;
+    LSetting.ReadRegistry;
+  end;
+end;
+class procedure TEditNotifierHelper.OpenAssistantWithDraft(const ASelectedText: string; AShowInlineHint: Boolean);
+var
+  FrmChatGPTMain: TFrmChatGPT;
+begin
+  {$IF CompilerVersion >= 32.0}
+  if TChatGptMenuWizard.CanUseDockableAssistant then
+  begin
+    if not Assigned(FFusionAIDockForm) then
+      FFusionAIDockForm := TChatGPTDockForm.Create(Application);
+    TSingletonSettingObj.RegisterFormClassForTheming(TChatGPTDockForm, FFusionAIDockForm);
+    FFusionAIDockForm.Show;
+    FFusionAIDockForm.BringToFront;
+    FFusionAIDockForm.Fram_Question.ConfigureProviderPages;
+    FFusionAIDockForm.Fram_Question.UpdateTopButtonLayout;
+    FFusionAIDockForm.Fram_Question.PrepareQuestionDraft(ASelectedText, AShowInlineHint);
+    Exit;
+  end;
+  {$IFEND}
+  FrmChatGPTMain := TFrmChatGPT.Create(Application);
+  try
+    FrmChatGPTMain.InitialQuestionDraft := ASelectedText;
+    FrmChatGPTMain.ShowInlineQuestionTip := AShowInlineHint;
+    TSingletonSettingObj.RegisterFormClassForTheming(TFrmChatGPT, FrmChatGPTMain);
+    FrmChatGPTMain.ShowModal;
+  finally
+    FreeAndNil(FrmChatGPTMain);
+  end;
+end;
 class procedure TEditNotifierHelper.WriteIntoEditor(AText: string);
 var
   LvEditView: IOTAEditView;
@@ -1049,6 +1076,9 @@ var
   LvCharIndex: Integer;
   LvLineText: String;
 begin
+  if TSingletonSettingObj.Instance.EnableFileLog then
+    AppendLogMessage(TSingletonSettingObj.Instance.LogDirectory,
+      'WriteIntoEditor: entered with text length=' + IntToStr(Length(AText)) + '.');
   LvEditView := GetTopMostEditView;
   if IsEditControl(Screen.ActiveControl) and Assigned(LvEditView) then
   begin
@@ -1073,6 +1103,9 @@ begin
       InsertSingleLine(LvLineNo, LvLineText, LvEditView);
     end;
   end;
+  if TSingletonSettingObj.Instance.EnableFileLog then
+    AppendLogMessage(TSingletonSettingObj.Instance.LogDirectory,
+      'WriteIntoEditor: completed.');
 end;
 {$ENDREGION}
 
@@ -1092,14 +1125,14 @@ end;
 constructor TChatGPTDockForm.Create(AOwner: TComponent);
 begin
   inherited;
-  DeskSection := 'ChatGPTPlugin';
+  DeskSection := CAssistantDeskSection;
   AutoSave := True;
   SaveStateNecessary := True;
   FDockFormClassListObj := TClassList.Create;
 
   with Self do
   begin
-    Caption := 'ChatGPT';
+    Caption := CAssistantWindowCaption;
     ClientHeight := 557;
     ClientWidth := 420;
     Position := poMainFormCenter;
@@ -1135,7 +1168,7 @@ begin
   SaveStateNecessary := True;
   FDockFormClassListObj.Free;
   inherited;
-  FChatGPTDockForm := nil;
+  FFusionAIDockForm := nil;
 end;
 
 procedure TChatGPTDockForm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -1152,17 +1185,7 @@ end;
 
 procedure TChatGPTDockForm.FormShow(Sender: TObject);
 begin
-  Cs.Enter;
-
-  if TSingletonSettingObj.Instance.IsOffline then
-    Fram_Question.tsChatGPTAnswer.Caption := 'Ollama(Offline)'
-  else
-    Fram_Question.tsChatGPTAnswer.Caption := 'OpenAI(ChatGPT)';
-
-  Fram_Question.tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
-  Fram_Question.tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
-
-  Cs.Leave;
+  Fram_Question.ConfigureProviderPages;
 end;
 
 {$ENDREGION}
@@ -1178,7 +1201,7 @@ begin
     // Styling does not work properly in Rio after changing the style, the following lines will make it better.
     if CompilerVersion = 33{Rio} then
     begin
-      with FChatGPTDockForm.Fram_Question do
+      with FFusionAIDockForm.Fram_Question do
       begin
         HistoryGrid.ParentColor := False;
         if (BorlandIDEServices as IOTAIDEThemingServices).ActiveTheme = 'Dark' then
@@ -1188,21 +1211,21 @@ begin
         tsChatGPT.StyleElements := [seFont, seBorder];
         pnlTop.StyleElements := [seFont, seBorder];
         pnlTop.ParentColor := False;
-        pnlTop.Color := FChatGPTDockForm.Color;
+        pnlTop.Color := FFusionAIDockForm.Color;
         pnlQuestion.ParentColor := False;
-        pnlQuestion.Color := FChatGPTDockForm.Color;
+        pnlQuestion.Color := FFusionAIDockForm.Color;
       end;
     end;
-    FChatGptMenuWizard.FAskMenuDockable.Click;
+    FChatGptMenuWizard.FAskMenu.Click;
   end;
 end;
 
 procedure TStylingNotifier.ChangingTheme;
 begin
-  if (Assigned(FChatGPTDockForm)) and (FChatGPTDockForm.Showing) then
+  if (Assigned(FFusionAIDockForm)) and (FFusionAIDockForm.Showing) then
   begin
-    TSingletonSettingObj.RegisterFormClassForTheming(TDockableForm, FChatGPTDockForm);
-    FChatGPTDockForm.Close;
+    TSingletonSettingObj.RegisterFormClassForTheming(TDockableForm, FFusionAIDockForm);
+    FFusionAIDockForm.Close;
     FShouldApplyTheme := True;
   end;
 end;
@@ -1210,8 +1233,8 @@ end;
 {$ENDREGION}
 
 initialization
-  FChatGPTSubMenu := nil;
-  FChatGPTDockForm := nil;
+  FFusionAISubMenu := nil;
+  FFusionAIDockForm := nil;
 
 finalization
   RemoveAferUnInstall;

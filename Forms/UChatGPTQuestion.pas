@@ -12,8 +12,8 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls, Vcl.ExtCtrls, UChatGPTThread,
-  Vcl.Menus, UChatGPTSetting, Vcl.Clipbrd, UChatGPTQFrame, System.Win.Registry;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.Menus, UChatGPTSetting, Vcl.Clipbrd, UChatGPTQFrame, System.Win.Registry, UConsts;
 
 type
   TFrmChatGPT = class(TForm)
@@ -22,7 +22,12 @@ type
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
+    FInitialQuestionDraft: string;
+    FShowInlineQuestionTip: Boolean;
     procedure SaveLastQuestion;
+  public
+    property InitialQuestionDraft: string read FInitialQuestionDraft write FInitialQuestionDraft;
+    property ShowInlineQuestionTip: Boolean read FShowInlineQuestionTip write FShowInlineQuestionTip;
   end;
 
 var
@@ -54,21 +59,19 @@ begin
     pnlMain.Parent := Fram_Question;
     pnlMain.Align := alClient;
     Cs.Enter;
-    tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
-    tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
     mmoQuestion.Lines.Clear;
-    if not TSingletonSettingObj.Instance.MainFormLastQuestion.Trim.IsEmpty then
+    UpdateQuestionDraftHint(False);
+    if FShowInlineQuestionTip or (not FInitialQuestionDraft.Trim.IsEmpty) then
+      PrepareQuestionDraft(FInitialQuestionDraft, FShowInlineQuestionTip)
+    else if not TSingletonSettingObj.Instance.MainFormLastQuestion.Trim.IsEmpty then
       mmoQuestion.Lines.Add(TSingletonSettingObj.Instance.MainFormLastQuestion);
-
-    if TSingletonSettingObj.Instance.IsOffline then
-      tsChatGPTAnswer.Caption := 'Ollama(Offline)'
-    else
-      tsChatGPTAnswer.Caption := 'OpenAI(ChatGPT)';
-
     Cs.Leave;
+    ConfigureProviderPages;
     ActivityIndicator1.Visible := False;
     FreeAndNil(pgcMain);
   end;
+  FShowInlineQuestionTip := False;
+  FInitialQuestionDraft := '';
 end;
 
 procedure TFrmChatGPT.SaveLastQuestion;
@@ -80,8 +83,10 @@ begin
     try
       LvRegKey.CloseKey;
       LvRegKey.RootKey := HKEY_CURRENT_USER;
-      if (LvRegKey.OpenKey('\SOFTWARE\ChatGPTWizard', True)) and (not Trim(Fram_Question.mmoQuestion.Text).IsEmpty) then
-        LvRegKey.WriteString('ChatGPTMainFormLastQuestion', Fram_Question.mmoQuestion.text);
+      if (LvRegKey.OpenKey(CRegistryRoot, True)) and
+         (not Trim(Fram_Question.mmoQuestion.Text).IsEmpty) and
+         (Pos(CQuestionDraftPlaceholder, Fram_Question.mmoQuestion.Text) = 0) then
+        LvRegKey.WriteString(CMainFormLastQuestionValueName, Fram_Question.mmoQuestion.text);
     finally
       LvRegKey.Free;
     end;

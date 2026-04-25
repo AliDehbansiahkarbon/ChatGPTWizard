@@ -14,15 +14,16 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.Menus, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.Clipbrd,
-  UChatGPTThread, UChatGPTSetting, UChatGPTLexer, System.Generics.Collections,
+  UChatGPTSetting, UChatGPTLexer, System.Generics.Collections,
   Vcl.Grids, Vcl.DBGrids, Vcl.Buttons, Data.DB, System.DateUtils,System.StrUtils,
+  System.Math,
   FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param, UHistory,
   FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf,
   FireDAC.Stan.Async, FireDAC.DApt, FireDAC.UI.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool,
   FireDAC.Phys, FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLite, FireDAC.Comp.Client,
   FireDAC.Comp.DataSet, FireDAC.VCLUI.Wait, FireDAC.Comp.UI, UConsts,
-  Vcl.WinXCtrls, System.ImageList, Vcl.ImgList, ShellApi
-  {$IF CompilerVersion >= 32.0}, UWriteSonicThread, UYouChatThread{$ENDIF};
+  Vcl.WinXCtrls, System.ImageList, Vcl.ImgList, ShellApi, UAICommon,
+  UAIProviders, UAIRequestCoordinator, UAIHistory, UEditorHelpers;
 
 type
   TOnClickProc = procedure(Sender: TObject) of object;
@@ -81,10 +82,10 @@ type
     splClassViewResult: TSplitter;
     pgcAnswers: TPageControl;
     tsChatGPTAnswer: TTabSheet;
-    tsWriteSonicAnswer: TTabSheet;
-    mmoWriteSonicAnswer: TMemo;
-    tsYouChat: TTabSheet;
-    mmoYouChatAnswer: TMemo;
+    tsClaudeAnswer: TTabSheet;
+    mmoClaudeAnswer: TMemo;
+    tsOllamaAnswer: TTabSheet;
+    mmoOllamaAnswer: TMemo;
     ActivityIndicator1: TActivityIndicator;
     GetQuestion: TMenuItem;
     pmClear: TPopupMenu;
@@ -139,17 +140,23 @@ type
     procedure Clearallhistoryitems1Click(Sender: TObject);
     procedure btnHelpClick(Sender: TObject);
   private
-    FChatGPTTrd: TExecutorTrd;
-    {$IF CompilerVersion >= 32.0}
-    FWriteSonicTrd: TWriteSonicTrd;
-    FYouChatTrd: TYouChatTrd;
-    {$ENDIF}
+    FCoordinator: TAIRequestCoordinator;
     FClassList: TClassList;
     FClassTreeView: TTreeView;
     FCellCloseBtn: TSpeedButton;
+    FBtnStop: TButton;
     FHistoryGrid: THistoryDBGrid;
     FLastQuestion: string;
     FClassViewIsBusy: Boolean;
+    FProviderTabs: TObjectDictionary<string, TTabSheet>;
+    FProviderMemos: TObjectDictionary<string, TMemo>;
+    FChatGPTAnswerTab: TTabSheet;
+    FChatGPTAnswerMemo: TMemo;
+    FProviderFilter: TComboBox;
+    FModelFilter: TComboBox;
+    FRequestTimer: TTimer;
+    FRequestStartedAt: TDateTime;
+    FInlineHintLabel: TLabel;
 
     procedure CopyToClipBoard;
     procedure CallThread(APrompt: string; AIsClassView: Boolean = False);
@@ -163,20 +170,30 @@ type
     procedure EnableUI(ATaskName: string);
     procedure ClearAnswers;
     function IslegacyModel: Boolean;
+    procedure Btn_StopClick(Sender: TObject);
+    function ValidateProviderBatch(AIsClassView: Boolean; const AActiveProviderId: string): Boolean;
+    function GetActiveProviderId: string;
+    procedure EnsureProviderControls;
+    function MemoForProvider(const AProviderId: string): TMemo;
+    function TabForProvider(const AProviderId: string): TTabSheet;
+    procedure UpdateHistoryFilterCombos;
+    procedure RequestTimeoutTimer(Sender: TObject);
+    procedure BeginRequestTimeoutWatch;
+    procedure EndRequestTimeoutWatch;
+    procedure ApplyTimeoutState;
   public
     procedure InitialFrame;
     procedure InitialClassViewMenueItems(AClassList: TClassList);
     procedure ReloadClassList(AClassList: TClassList);
     procedure TerminateAll;
+    procedure UpdateTopButtonLayout;
+    procedure UpdateQuestionDraftHint(AShowInlineHint: Boolean);
+    procedure PrepareQuestionDraft(const ASelectedText: string; AShowInlineHint: Boolean = False);
     function LoadHistory: Boolean;
-    procedure AddToHistory(AQuestion, AAnswer: string);
+    procedure AddToHistory(const AQuestion: string; const AResponse: TProviderResponse);
+    procedure ConfigureProviderPages;
 
-    procedure OnUpdateMessage(var Msg: TMessage); message WM_UPDATE_MESSAGE;
-    procedure OnProgressMessage(var Msg: TMessage); message WM_PROGRESS_MESSAGE;
-    {$IF CompilerVersion >= 32.0}
-    procedure OnWriteSonicUpdateMessage(var Msg: TMessage); message WM_WRITESONIC_UPDATE_MESSAGE;
-    procedure OnYouChatUpdateMessage(var Msg: TMessage); message WM_YOUCHAT_UPDATE_MESSAGE;
-    {$ENDIF}
+    procedure OnProviderMessage(var Msg: TMessage); message WM_PROVIDER_MESSAGE;
 
     property HistoryGrid: THistoryDBGrid read FHistoryGrid write FHistoryGrid;
     property ClassViewIsBusy: Boolean read FClassViewIsBusy write FClassViewIsBusy;
@@ -186,7 +203,13 @@ implementation
 
 {$R *.dfm}
 
-procedure TFram_Question.AddToHistory(AQuestion, AAnswer: string);
+const
+  CaptionProviderGemini = 'Gemini';
+  CaptionProviderClaude = 'Claude';
+  CaptionProviderOllama = 'Ollama';
+  CaptionProviderChatGPT = 'ChatGPT';
+
+procedure TFram_Question.AddToHistory(const AQuestion: string; const AResponse: TProviderResponse);
 begin
   if (TSingletonSettingObj.Instance.HistoryEnabled) then
   begin
@@ -195,12 +218,7 @@ begin
 
     if FDConnection.Connected then
     begin
-      FDQryHistory.Append;
-      FDQryHistoryQuestion.AsString := AQuestion;
-      FDQryHistoryAnswer.AsString := AAnswer;
-      FDQryHistoryDate.AsLargeInt := DateTimeToUnix(Date);
-      FDQryHistory.Post;
-
+      THistoryService.InsertEntry(FDConnection, AQuestion, AResponse);
       TSingletonSettingObj.Instance.ShouldReloadHistory := True;
     end;
   end;
@@ -210,7 +228,7 @@ procedure TFram_Question.btnHelpClick(Sender: TObject);
 var
   LvUrl: string;
 begin
-  LvUrl := 'https://github.com/AliDehbansiahkarbon/ChatGPTWizard';
+  LvUrl := CPluginRepositoryUrl;
   ShellExecute(0, nil, PChar(LvUrl), nil, nil, SW_SHOWNORMAL);
 end;
 
@@ -218,28 +236,31 @@ procedure TFram_Question.Btn_AskClick(Sender: TObject);
 begin
   if IslegacyModel then
   begin
-    ShowMessage('You are trying to use the model"' + TSingletonSettingObj.Instance.Model + '" which is deprecated, you can change the Model in setting form.');
+    ShowIDEMessage('You are trying to use the model "' + TSingletonSettingObj.Instance.Model +
+      '" which is deprecated, you can change the model in the settings form.');
     Exit;
   end;
   
   if mmoQuestion.Lines.Text.Trim.IsEmpty then
   begin
-    ShowMessage('Really?!😂' + #13 + 'You need to type a question first.');
+    ShowIDEMessage(CQuestionRequiredMsg);
     if mmoQuestion.CanFocus then
       mmoQuestion.SetFocus;
 
     Exit;
   end;
-  mmoAnswer.Lines.Clear;
   CallThread(mmoQuestion.Lines.Text);
+end;
+
+procedure TFram_Question.Btn_StopClick(Sender: TObject);
+begin
+  TerminateAll;
 end;
 
 procedure TFram_Question.Btn_ClearClick(Sender: TObject);
 begin
   mmoQuestion.Lines.Clear;
-  mmoAnswer.Lines.Clear;
-  mmoWriteSonicAnswer.Lines.Clear;
-  mmoYouChatAnswer.Lines.Clear;
+  ClearAnswers;
 end;
 
 procedure TFram_Question.Btn_ClipboardClick(Sender: TObject);
@@ -278,110 +299,28 @@ begin
 end;
 
 procedure TFram_Question.CallThread(APrompt: string; AIsClassView: Boolean);
-var
-  LvChatGPTApiKey: string;
-  LvChatGPTBaseUrl: string;
-
-  LvEnableWriteSonic: Boolean;
-  LvWriteSonicAPIKey: string;
-  LvWriteSonicBaseUrl: string;
-
-  LvEnableYouChat: Boolean;
-  LvYouChatAPIKey: string;
-  LvYouChatBaseUrl: string;
-
-  LvModel: string;
-  LvQuestion: string;
-  LvMaxToken: Integer;
-  LvTemperature: Integer;
-
-  LvIsProxyActive: Boolean;
-  LvProxyHost: string;
-  LvProxyPort: Integer;
-  LvProxyUsername: string;
-  LvProxyPassword: string;
-  LvAnimatedLetters: Boolean;
-  LvTimeOut: Integer;
-  LvIsOffline: Boolean;
-
-  MultiAI: Boolean;
-  LvSetting: TSingletonSettingObj;
 begin
-  Cs.Enter;
-  LvSetting := TSingletonSettingObj.Instance;
-  LvChatGPTApiKey := LvSetting.ApiKey;
-  LvChatGPTBaseUrl := LvSetting.URL;
-  LvModel := LvSetting.Model;
+  if not ValidateProviderBatch(AIsClassView, GetActiveProviderId) then
+    Exit;
 
-  LvMaxToken := LvSetting.MaxToken;
-  LvTemperature := LvSetting.Temperature;
-  LvQuestion := APrompt;
-
-  LvIsProxyActive :=  LvSetting.ProxySetting.Active;
-  LvProxyHost := LvSetting.ProxySetting.ProxyHost;
-  LvProxyPort := LvSetting.ProxySetting.ProxyPort;
-  LvProxyUsername := LvSetting.ProxySetting.ProxyUsername;
-  LvProxyPassword := LvSetting.ProxySetting.ProxyPassword;
-  LvAnimatedLetters := LvSetting.AnimatedLetters;
-  LvTimeOut := LvSetting.TimeOut;
-  LvIsOffline := LvSetting.IsOffline;
-
-  LvEnableWriteSonic := LvSetting.EnableWriteSonic;
-  LvWriteSonicAPIKey := LvSetting.WriteSonicAPIKey;
-  LvWriteSonicBaseUrl := LvSetting.WriteSonicBaseURL;
-
-  LvEnableYouChat := LvSetting.EnableYouChat;
-  LvYouChatAPIKey := LvSetting.YouChatAPIKey;
-  LvYouChatBaseUrl := LvSetting.YouChatBaseURL;
-
-  MultiAI := LvSetting.MultiAI;
-
-  LvSetting.TaskList.Clear;
-  if not AIsClassView then
+  if Assigned(FCoordinator) then
+    FCoordinator.TargetHandle := Handle;
+  ClearAnswers;
+  Btn_Ask.Enabled := False;
+  if Assigned(FBtnStop) then
+    FBtnStop.Enabled := True;
+  ActivityIndicator1.Visible := True;
+  BeginRequestTimeoutWatch;
+  if AIsClassView then
   begin
-    FClassViewIsBusy := False;
-    LvSetting.TaskList.Add('GPT');
-    if (CompilerVersion >= 32) and (LvEnableWriteSonic) then
-      LvSetting.TaskList.Add('WS');
-
-    if (CompilerVersion >= 32) and (LvEnableYouChat) then
-      LvSetting.TaskList.Add('YC');
+    FClassViewIsBusy := True;
+    FCoordinator.StartSingleProvider(TSingletonSettingObj.Instance.GetPrimaryProviderId, APrompt, 'CLS');
   end
   else
   begin
-    LvSetting.TaskList.Add('CLS');
-    FClassViewIsBusy := True;
+    FClassViewIsBusy := False;
+    FCoordinator.StartPromptBatch(APrompt, 'ASK', GetActiveProviderId);
   end;
-
-  Cs.Leave;
-
-  FChatGPTTrd := TExecutorTrd.Create(Self.Handle, LvChatGPTApiKey, LvModel, LvQuestion, LvChatGPTBaseUrl,
-    LvMaxToken, LvTemperature, LvIsProxyActive, LvProxyHost, LvProxyPort, LvProxyUsername,
-    LvProxyPassword, LvAnimatedLetters, LvTimeOut, LvIsOffline);
-  FChatGPTTrd.Start;
-
-  {$IF CompilerVersion >= 32.0}
-  if (not AIsClassView) and (MultiAI) then
-  begin
-    if LvEnableWriteSonic then
-    begin
-      mmoWriteSonicAnswer.Lines.Clear;
-      FWriteSonicTrd := TWriteSonicTrd.Create(Self.Handle, LvWriteSonicAPIKey, LvWriteSonicBaseUrl, LvQuestion, LvIsProxyActive,
-        LvProxyHost, LvProxyPort, LvProxyUsername, LvProxyPassword, LvAnimatedLetters, LvTimeOut);
-
-      FWriteSonicTrd.Start;
-    end;
-
-    if LvEnableYouChat then
-    begin
-      mmoYouChatAnswer.Lines.Clear;
-      FYouChatTrd := TYouChatTrd.Create(Self.Handle, LvYouChatAPIKey, LvYouChatBaseUrl, LvQuestion, LvIsProxyActive,
-        LvProxyHost, LvProxyPort, LvProxyUsername, LvProxyPassword, LvAnimatedLetters, LvTimeOut);
-
-      FYouChatTrd.Start;
-    end;
-  end;
-  {$ENDIF}
 end;
 
 procedure TFram_Question.Chk_CaseSensitiveClick(Sender: TObject);
@@ -433,10 +372,12 @@ begin
 end;
 
 procedure TFram_Question.ClearAnswers;
+var
+  LMemo: TMemo;
 begin
-  mmoAnswer.Lines.Clear;
-  mmoWriteSonicAnswer.Lines.Clear;
-  mmoYouChatAnswer.Lines.Clear;
+  EnsureProviderControls;
+  for LMemo in FProviderMemos.Values do
+    LMemo.Clear;
 end;
 
 procedure TFram_Question.ClearQuestion1Click(Sender: TObject);
@@ -451,18 +392,28 @@ begin
 end;
 
 procedure TFram_Question.CopyToClipBoard;
+var
+  LMemo: TMemo;
 begin
   if Assigned(pgcMain) then
   begin
     if pgcMain.ActivePage = tsChatGPT then
-      Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text))
+    begin
+      LMemo := MemoForProvider(GetActiveProviderId);
+      if Assigned(LMemo) then
+        Clipboard.SetTextBuf(PWideChar(LMemo.Lines.Text));
+    end
     else if pgcMain.ActivePage = tsClassView then
-      Clipboard.SetTextBuf(pwidechar(mmoClassViewDetail.Lines.Text))
+      Clipboard.SetTextBuf(PWideChar(mmoClassViewDetail.Lines.Text))
     else if pgcMain.ActivePage = tsHistory then
-      Clipboard.SetTextBuf(pwidechar(mmoHistoryDetail.Lines.Text));
+      Clipboard.SetTextBuf(PWideChar(mmoHistoryDetail.Lines.Text));
   end
   else
-    Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
+  begin
+    LMemo := MemoForProvider(GetActiveProviderId);
+    if Assigned(LMemo) then
+      Clipboard.SetTextBuf(PWideChar(LMemo.Lines.Text));
+  end;
 end;
 
 procedure TFram_Question.CopytoClipboard1Click(Sender: TObject);
@@ -588,11 +539,86 @@ begin
   Cs.Leave;
 end;
 
+procedure TFram_Question.EnsureProviderControls;
+
+  procedure PrepareMemo(AMemo: TMemo);
+  begin
+    AMemo.ReadOnly := True;
+    AMemo.ScrollBars := ssVertical;
+  end;
+
+begin
+  if not Assigned(FCoordinator) then
+    FCoordinator := TAIRequestCoordinator.Create(Self, Handle);
+
+  if not Assigned(FProviderTabs) then
+    FProviderTabs := TObjectDictionary<string, TTabSheet>.Create
+  else
+    FProviderTabs.Clear;
+
+  if not Assigned(FProviderMemos) then
+    FProviderMemos := TObjectDictionary<string, TMemo>.Create
+  else
+    FProviderMemos.Clear;
+
+  if not Assigned(FChatGPTAnswerTab) then
+  begin
+    FChatGPTAnswerTab := TTabSheet.Create(Self);
+    FChatGPTAnswerTab.PageControl := pgcAnswers;
+    FChatGPTAnswerTab.Caption := CaptionProviderChatGPT;
+
+    FChatGPTAnswerMemo := TMemo.Create(Self);
+    FChatGPTAnswerMemo.Parent := FChatGPTAnswerTab;
+    FChatGPTAnswerMemo.Align := alClient;
+    FChatGPTAnswerMemo.Font.Assign(mmoAnswer.Font);
+    PrepareMemo(FChatGPTAnswerMemo);
+  end;
+
+  PrepareMemo(mmoAnswer);
+  PrepareMemo(mmoClaudeAnswer);
+  PrepareMemo(mmoOllamaAnswer);
+
+  tsChatGPTAnswer.Caption := CaptionProviderGemini;
+  tsClaudeAnswer.Caption := CaptionProviderClaude;
+  tsOllamaAnswer.Caption := CaptionProviderOllama;
+  FChatGPTAnswerTab.Caption := CaptionProviderChatGPT;
+
+  FProviderTabs.AddOrSetValue(ProviderGemini, tsChatGPTAnswer);
+  FProviderTabs.AddOrSetValue(ProviderClaude, tsClaudeAnswer);
+  FProviderTabs.AddOrSetValue(ProviderOllama, tsOllamaAnswer);
+  FProviderTabs.AddOrSetValue(ProviderChatGPT, FChatGPTAnswerTab);
+
+  FProviderMemos.AddOrSetValue(ProviderGemini, mmoAnswer);
+  FProviderMemos.AddOrSetValue(ProviderClaude, mmoClaudeAnswer);
+  FProviderMemos.AddOrSetValue(ProviderOllama, mmoOllamaAnswer);
+  FProviderMemos.AddOrSetValue(ProviderChatGPT, FChatGPTAnswerMemo);
+end;
+
 procedure TFram_Question.FDQryHistoryAfterScroll(DataSet: TDataSet);
+var
+  LProviderName: string;
+  LModelId: string;
+  LStatus: string;
+  LError: string;
 begin
   if Assigned(pgcMain) then
   begin
     mmoHistoryDetail.Lines.Clear;
+    LProviderName := FDQryHistory.FieldByName('provider_display_name').AsString;
+    LModelId := FDQryHistory.FieldByName('model_id').AsString;
+    LStatus := FDQryHistory.FieldByName('status').AsString;
+    LError := FDQryHistory.FieldByName('error_text').AsString;
+
+    if not LProviderName.IsEmpty then
+      mmoHistoryDetail.Lines.Add('Provider: ' + LProviderName);
+    if not LModelId.IsEmpty then
+      mmoHistoryDetail.Lines.Add('Model: ' + LModelId);
+    if not LStatus.IsEmpty then
+      mmoHistoryDetail.Lines.Add('Status: ' + LStatus);
+    if not LError.IsEmpty then
+      mmoHistoryDetail.Lines.Add('Error: ' + LError);
+    if mmoHistoryDetail.Lines.Count > 0 then
+      mmoHistoryDetail.Lines.Add('');
     mmoHistoryDetail.Lines.Add(FDQryHistoryAnswer.AsString);
   end;
 end;
@@ -604,11 +630,29 @@ begin
 end;
 
 procedure TFram_Question.FDQryHistoryFilterRecord(DataSet: TDataSet; var Accept: Boolean);
+var
+  LSearchAccept: Boolean;
 begin
+  Accept := True;
+
+  if Assigned(FProviderFilter) and (FProviderFilter.ItemIndex > 0) then
+    Accept := Accept and SameText(DataSet.FieldByName('provider_display_name').AsString, FProviderFilter.Text);
+
+  if Assigned(FModelFilter) and (FModelFilter.ItemIndex > 0) then
+    Accept := Accept and SameText(DataSet.FieldByName('model_id').AsString, FModelFilter.Text);
+
+  if not Accept then
+    Exit;
+
+  if Trim(Edt_Search.Text).IsEmpty then
+    Exit;
+
   if Chk_FuzzyMatch.Checked then
-    Accept := FuzzyMatchStr(Edt_Search.Text, DataSet.FieldByName('Question').AsString, nil, Chk_CaseSensitive.Checked)
+    LSearchAccept := FuzzyMatchStr(Edt_Search.Text, DataSet.FieldByName('Question').AsString, nil, Chk_CaseSensitive.Checked)
   else
-    Accept := XPos(Edt_Search.Text, DataSet.FieldByName('Question').AsString, Chk_CaseSensitive.Checked) > 0;
+    LSearchAccept := XPos(Edt_Search.Text, DataSet.FieldByName('Question').AsString, Chk_CaseSensitive.Checked) > 0;
+
+  Accept := LSearchAccept;
 end;
 
 procedure TFram_Question.FDQryHistoryQuestionGetText(Sender: TField; var Text: string; DisplayText: Boolean);
@@ -854,8 +898,29 @@ begin
   FLastQuestion := '';
   FClassViewIsBusy := False;
   Align := alClient;
-  tsWriteSonicAnswer.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableWriteSonic);
-  tsYouChat.TabVisible := (CompilerVersion >= 32) and (TSingletonSettingObj.Instance.EnableYouChat);
+  EnsureProviderControls;
+  ConfigureProviderPages;
+
+  if not Assigned(FBtnStop) then
+  begin
+    FBtnStop := TButton.Create(Self);
+    FBtnStop.Parent := pnlTop;
+    FBtnStop.Top := Btn_Ask.Top;
+    FBtnStop.Width := 70;
+    FBtnStop.Height := Btn_Ask.Height;
+    FBtnStop.Caption := 'Stop';
+    FBtnStop.Enabled := False;
+    FBtnStop.OnClick := Btn_StopClick;
+  end;
+  if not Assigned(FRequestTimer) then
+  begin
+    FRequestTimer := TTimer.Create(Self);
+    FRequestTimer.Enabled := False;
+    FRequestTimer.Interval := 500;
+    FRequestTimer.OnTimer := RequestTimeoutTimer;
+  end;
+  UpdateTopButtonLayout;
+  UpdateQuestionDraftHint(False);
 
   FCellCloseBtn := TSpeedButton.Create(Self);
   FCellCloseBtn.Glyph.LoadFromResourceName(HInstance, 'CLOSE');
@@ -918,19 +983,220 @@ begin
     FHistoryGrid.StyleElements := [seFont, seBorder];
     FHistoryGrid.ParentColor := True;
   end;
+end;
 
-  if TSingletonSettingObj.Instance.IsOffline then
-    tsChatGPTAnswer.Caption := 'Ollama(Offline)'
-  else
-    tsChatGPTAnswer.Caption := 'OpenAI(ChatGPT)';
+procedure TFram_Question.ConfigureProviderPages;
+var
+  LPrimaryProviderId: string;
+  LTab: TTabSheet;
+begin
+  EnsureProviderControls;
+
+  tsChatGPTAnswer.Caption := CaptionProviderGemini;
+  tsClaudeAnswer.Caption := CaptionProviderClaude;
+  tsOllamaAnswer.Caption := CaptionProviderOllama;
+  FChatGPTAnswerTab.Caption := CaptionProviderChatGPT;
+
+  tsChatGPTAnswer.TabVisible := TSingletonSettingObj.Instance.EnableGemini;
+  tsClaudeAnswer.TabVisible := TSingletonSettingObj.Instance.EnableClaude;
+  tsOllamaAnswer.TabVisible := TSingletonSettingObj.Instance.EnableOllama;
+  FChatGPTAnswerTab.TabVisible := TSingletonSettingObj.Instance.EnableChatGPT;
+
+  LPrimaryProviderId := TSingletonSettingObj.Instance.GetPrimaryProviderId;
+  LTab := TabForProvider(LPrimaryProviderId);
+  if Assigned(LTab) and LTab.TabVisible then
+    pgcAnswers.ActivePage := LTab;
+end;
+
+function TFram_Question.GetActiveProviderId: string;
+var
+  LProviderId: string;
+begin
+  EnsureProviderControls;
+  Result := TSingletonSettingObj.Instance.GetPrimaryProviderId;
+
+  if not Assigned(pgcAnswers) or not Assigned(pgcAnswers.ActivePage) then
+    Exit;
+
+  for LProviderId in FProviderTabs.Keys do
+    if FProviderTabs[LProviderId] = pgcAnswers.ActivePage then
+      Exit(LProviderId);
+end;
+
+function TFram_Question.MemoForProvider(const AProviderId: string): TMemo;
+begin
+  EnsureProviderControls;
+  if not FProviderMemos.TryGetValue(AProviderId, Result) then
+    Result := nil;
+end;
+
+function TFram_Question.TabForProvider(const AProviderId: string): TTabSheet;
+begin
+  EnsureProviderControls;
+  if not FProviderTabs.TryGetValue(AProviderId, Result) then
+    Result := nil;
+end;
+
+procedure TFram_Question.UpdateHistoryFilterCombos;
+var
+  LProviders: TStringList;
+  LModels: TStringList;
+begin
+  if not Assigned(FProviderFilter) then
+  begin
+    FProviderFilter := TComboBox.Create(Self);
+    FProviderFilter.Parent := pnlSearchHistory;
+    FProviderFilter.Left := 3;
+    FProviderFilter.Top := 8;
+    FProviderFilter.Width := 100;
+    FProviderFilter.Style := csDropDownList;
+    FProviderFilter.OnChange := Edt_SearchChange;
+  end;
+
+  if not Assigned(FModelFilter) then
+  begin
+    FModelFilter := TComboBox.Create(Self);
+    FModelFilter.Parent := pnlSearchHistory;
+    FModelFilter.Left := 108;
+    FModelFilter.Top := 8;
+    FModelFilter.Width := 100;
+    FModelFilter.Style := csDropDownList;
+    FModelFilter.OnChange := Edt_SearchChange;
+  end;
+
+  Edt_Search.Left := 213;
+  Edt_Search.Width := 108;
+
+  LProviders := TStringList.Create;
+  LModels := TStringList.Create;
+  try
+    LProviders.Sorted := True;
+    LProviders.Duplicates := dupIgnore;
+    LModels.Sorted := True;
+    LModels.Duplicates := dupIgnore;
+
+    if FDQryHistory.Active then
+    begin
+      FDQryHistory.DisableControls;
+      try
+        FDQryHistory.First;
+        while not FDQryHistory.Eof do
+        begin
+          if not FDQryHistory.FieldByName('provider_display_name').IsNull then
+            LProviders.Add(FDQryHistory.FieldByName('provider_display_name').AsString);
+          if not FDQryHistory.FieldByName('model_id').IsNull then
+            LModels.Add(FDQryHistory.FieldByName('model_id').AsString);
+          FDQryHistory.Next;
+        end;
+        FDQryHistory.First;
+      finally
+        FDQryHistory.EnableControls;
+      end;
+    end;
+
+    FProviderFilter.Items.BeginUpdate;
+    try
+      FProviderFilter.Items.Clear;
+      FProviderFilter.Items.Add('All Providers');
+      FProviderFilter.Items.AddStrings(LProviders);
+      FProviderFilter.ItemIndex := 0;
+    finally
+      FProviderFilter.Items.EndUpdate;
+    end;
+
+    FModelFilter.Items.BeginUpdate;
+    try
+      FModelFilter.Items.Clear;
+      FModelFilter.Items.Add('All Models');
+      FModelFilter.Items.AddStrings(LModels);
+      FModelFilter.ItemIndex := 0;
+    finally
+      FModelFilter.Items.EndUpdate;
+    end;
+  finally
+    LProviders.Free;
+    LModels.Free;
+  end;
+end;
+
+procedure TFram_Question.OnProviderMessage(var Msg: TMessage);
+var
+  LPayload: TProviderMessagePayload;
+  LResponse: TProviderResponse;
+  LMemo: TMemo;
+begin
+  if csDestroying in ComponentState then
+    Exit;
+
+  LPayload := TProviderMessagePayload(Msg.WParam);
+  try
+    if not Assigned(LPayload) then
+      Exit;
+
+    if Assigned(FCoordinator) and (LPayload.BatchId <> '') and
+       (not SameText(LPayload.BatchId, FCoordinator.CurrentBatchId)) then
+      Exit;
+
+    case LPayload.Kind of
+      pmRequestStarted:
+        begin
+          ActivityIndicator1.Visible := True;
+          Btn_Ask.Enabled := False;
+          if Assigned(FBtnStop) then
+            FBtnStop.Enabled := True;
+        end;
+
+      pmRequestCompleted:
+        begin
+          LResponse := LPayload.Response;
+          if not Assigned(LResponse) then
+            Exit;
+
+          if SameText(LResponse.QuestionLabel, 'CLS') then
+          begin
+            if LResponse.Status = prsSucceeded then
+              mmoClassViewResult.Lines.Text := LResponse.ResponseText
+            else
+              mmoClassViewResult.Lines.Text := LResponse.ErrorText;
+          end
+          else
+          begin
+            LMemo := MemoForProvider(LResponse.ProviderId);
+            if Assigned(LMemo) then
+            begin
+              if LResponse.Status = prsSucceeded then
+                LMemo.Lines.Text := LResponse.ResponseText
+              else
+                LMemo.Lines.Text := LResponse.ErrorText;
+            end;
+          end;
+
+          AddToHistory(IfThen(SameText(LResponse.QuestionLabel, 'CLS'), FLastQuestion, mmoQuestion.Lines.Text), LResponse);
+        end;
+
+      pmBatchCompleted:
+        begin
+          EndRequestTimeoutWatch;
+          Btn_Ask.Enabled := True;
+          ActivityIndicator1.Visible := False;
+          if Assigned(FBtnStop) then
+            FBtnStop.Enabled := False;
+          FClassViewIsBusy := False;
+          if chk_AutoCopy.Checked then
+            CopyToClipBoard;
+          TSingletonSettingObj.Instance.ShouldReloadHistory := True;
+        end;
+    end;
+  finally
+    LPayload.Free;
+  end;
 end;
 
 function TFram_Question.IslegacyModel: Boolean;
 begin
-  with TSingletonSettingObj.Instance do
-  begin
-    Result := Model.Equals('text-davinci-003') or URL.Equals('https://api.openai.com/v1/completions');
-  end;
+  Result := SameText(GetActiveProviderId, ProviderChatGPT) and
+            (TSingletonSettingObj.Instance.Model.Equals('text-davinci-003') or
+             TSingletonSettingObj.Instance.URL.Equals('https://api.openai.com/v1/completions'));
 end;
 
 procedure TFram_Question.JavaClick(Sender: TObject);
@@ -972,173 +1238,17 @@ begin
     Btn_Ask.Click;
 end;
 
-procedure TFram_Question.OnProgressMessage(var Msg: TMessage);
-begin
-  if Msg.WParam = 0 then
-  begin
-    Cs.Enter;
-    if TSingletonSettingObj.Instance.TaskList.Count = 0 then
-    begin
-      Btn_Ask.Enabled := True;
-      ActivityIndicator1.Visible := False;
-    end;
-    Cs.Leave;
-  end
-  else if Msg.WParam = 1 then
-    ActivityIndicator1.Visible := True;
-end;
-
-procedure TFram_Question.OnUpdateMessage(var Msg: TMessage);
-begin
-  if Assigned(pgcMain) then
-  begin
-    if pgcMain.ActivePage = tsChatGPT then
-    begin
-      if Msg.LParam = 0 then //whole string in one message.
-      begin
-        mmoAnswer.Lines.Clear;
-        mmoAnswer.Lines.Add(String(Msg.WParam));
-      end
-      else if Msg.LParam = 1 then // Char by Char.
-      begin
-        mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] := mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] + char(Msg.WParam);
-      end
-      else if Msg.LParam = 2 then // Finished.
-      begin
-        EnableUI('GPT');
-        AddToHistory(mmoQuestion.Lines.Text, mmoAnswer.Lines.Text);
-      end
-      else if Msg.LParam = 3 then // Exception.
-      begin
-        mmoAnswer.Lines.Clear;
-        mmoAnswer.Lines.Add(String(Msg.WParam));
-        EnableUI('GPT');
-      end;
-    end
-    else if pgcMain.ActivePage = tsClassView then
-    begin
-      if Msg.LParam = 0 then //whole string in one message.
-      begin
-        mmoClassViewResult.Lines.Clear;
-        mmoClassViewResult.Lines.Add(String(Msg.WParam));
-      end
-      else if Msg.LParam = 1 then // Char by Char.
-      begin
-        mmoClassViewResult.Lines[Pred(mmoClassViewResult.Lines.Count)] := mmoClassViewResult.Lines[Pred(mmoClassViewResult.Lines.Count)] + char(Msg.WParam);
-      end
-      else if Msg.LParam = 2 then // Finished.
-      begin
-        EnableUI('CLS');
-        AddToHistory(FLastQuestion , mmoClassViewResult.Lines.Text);
-      end
-      else if Msg.LParam = 3 then // Exception.
-      begin
-        EnableUI('CLS');
-        mmoClassViewResult.Lines.Clear;
-        mmoClassViewResult.Lines.Add(String(Msg.WParam));
-      end;
-    end;
-  end
-  else
-  begin
-    if Msg.LParam = 0 then //whole string in one message.
-    begin
-      mmoAnswer.Lines.Clear;
-      mmoAnswer.Lines.Add(String(Msg.WParam));
-    end
-    else if Msg.LParam = 1 then // Char by Char.
-    begin
-      mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] := mmoAnswer.Lines[Pred(mmoAnswer.Lines.Count)] + char(Msg.WParam);
-    end
-    else if Msg.LParam = 2 then // Finished.
-    begin
-      EnableUI('GPT');
-      AddToHistory(mmoQuestion.Lines.Text, mmoAnswer.Lines.Text);
-    end;
-  end;
-
-  if Msg.LParam = 2 then
-  begin
-    if chk_AutoCopy.Checked then
-      CopyToClipBoard;
-
-    Cs.Enter;
-    TSingletonSettingObj.Instance.ShouldReloadHistory := True;
-    Cs.Leave;
-  end;
-end;
-
-{$IF CompilerVersion >= 32.0}
-procedure TFram_Question.OnWriteSonicUpdateMessage(var Msg: TMessage);
-begin
-  if Msg.LParam = 0 then //whole string in one message.
-  begin
-    mmoWriteSonicAnswer.Lines.Clear;
-    mmoWriteSonicAnswer.Lines.Add(String(Msg.WParam));
-  end
-  else if Msg.LParam = 1 then // Char by Char.
-  begin
-    mmoWriteSonicAnswer.Lines[Pred(mmoWriteSonicAnswer.Lines.Count)] := mmoWriteSonicAnswer.Lines[Pred(mmoWriteSonicAnswer.Lines.Count)] + char(Msg.WParam);
-    if Char(Msg.WParam) = CrLf then
-      mmoWriteSonicAnswer.Lines.Add('');
-  end
-  else if Msg.LParam = 2 then // Finished.
-  begin
-    EnableUI('WS');
-    AddToHistory(mmoQuestion.Lines.Text, '***** WriteSonic *****' + #13 + mmoWriteSonicAnswer.Lines.Text);
-    Cs.Enter;
-    TSingletonSettingObj.Instance.ShouldReloadHistory := True;
-    Cs.Leave;
-  end
-  else if Msg.LParam = 3 then // Exception
-  begin
-    mmoWriteSonicAnswer.Lines.Clear;
-    mmoWriteSonicAnswer.Lines.Add(String(Msg.WParam));
-    EnableUI('WS');
-  end;
-end;
-
-procedure TFram_Question.OnYouChatUpdateMessage(var Msg: TMessage);
-begin
-  if Msg.LParam = 0 then //whole string in one message.
-  begin
-    mmoYouChatAnswer.Lines.Clear;
-    mmoYouChatAnswer.Lines.Add(String(Msg.WParam));
-  end
-  else if Msg.LParam = 1 then // Char by Char.
-  begin
-    mmoYouChatAnswer.Lines[Pred(mmoYouChatAnswer.Lines.Count)] := mmoYouChatAnswer.Lines[Pred(mmoYouChatAnswer.Lines.Count)] + char(Msg.WParam);
-    if Char(Msg.WParam) = CrLf then
-      mmoYouChatAnswer.Lines.Add('');
-  end
-  else if Msg.LParam = 2 then // Finished.
-  begin
-    EnableUI('YC');
-    AddToHistory(mmoQuestion.Lines.Text, '***** YouChat *****' + #13 + mmoYouChatAnswer.Lines.Text);
-    Cs.TryEnter;
-    TSingletonSettingObj.Instance.ShouldReloadHistory := True;
-    Cs.Leave;
-  end
-  else if Msg.LParam = 3 then // Exception
-  begin
-    mmoYouChatAnswer.Lines.Clear;
-    mmoYouChatAnswer.Lines.Add(String(Msg.WParam));
-    EnableUI('YC');
-  end;
-end;
-{$ENDIF}
-
 procedure TFram_Question.pgcAnswersChange(Sender: TObject);
+var
+  LMemo: TMemo;
 begin
   if chk_AutoCopy.Checked then
   begin
-    case pgcAnswers.ActivePageIndex of
-      0: Clipboard.SetTextBuf(pwidechar(mmoAnswer.Lines.Text));
-      1: Clipboard.SetTextBuf(pwidechar(mmoWriteSonicAnswer.Lines.Text));
-      2: Clipboard.SetTextBuf(pwidechar(mmoYouChatAnswer.Lines.Text));
-    end;
+    LMemo := MemoForProvider(GetActiveProviderId);
+    if Assigned(LMemo) then
+      Clipboard.SetTextBuf(PWideChar(LMemo.Lines.Text));
   end;
-  ActivityIndicator1.Visible := TSingletonSettingObj.Instance.TaskList.Count > 0;
+  ActivityIndicator1.Visible := Assigned(FCoordinator) and FCoordinator.HasPendingRequests;
 end;
 
 procedure TFram_Question.pgcMainChange(Sender: TObject);
@@ -1172,7 +1282,7 @@ end;
 
 procedure TFram_Question.pgcMainChanging(Sender: TObject; var AllowChange: Boolean);
 begin
-  AllowChange := TSingletonSettingObj.Instance.TaskList.Count = 0;
+  AllowChange := (not Assigned(FCoordinator)) or (not FCoordinator.HasPendingRequests);
 end;
 
 procedure TFram_Question.pmClassOperationsPopup(Sender: TObject);
@@ -1230,22 +1340,35 @@ begin
   Result := False;
   if TSingletonSettingObj.Instance.HistoryEnabled then
   begin
-    if FileExists(TSingletonSettingObj.Instance.GetHistoryFullPath) then
-    begin
-      try
-        FDConnection.Close;
-        FDConnection.Params.Clear;
-        FDConnection.Params.Add('DriverID=SQLite');
-        FDConnection.Params.Add('Database=' + TSingletonSettingObj.Instance.GetHistoryFullPath);
-        FDConnection.Open;
-        FDQryHistory.Open;
-        Result := True;
-      except on E: Exception do
-        ShowMessage('SQLite Connection didn''t established.' + #13 + 'Error: ' + E.Message);
-      end;
-    end
-    else
-      ShowMessage('The database file doesn''t exist.')
+    try
+      ForceDirectories(ExtractFileDir(TSingletonSettingObj.Instance.GetHistoryFullPath));
+      FDConnection.Close;
+      FDConnection.Params.Clear;
+      FDConnection.Params.Add('DriverID=SQLite');
+      FDConnection.Params.Add('Database=' + TSingletonSettingObj.Instance.GetHistoryFullPath);
+      FDConnection.Open;
+      THistoryService.EnsureSchema(FDConnection);
+
+      FDQryHistory.Close;
+      FDQryHistory.SQL.Text :=
+        'SELECT HID, ' +
+        'COALESCE(question_text, Question) AS Question, ' +
+        'COALESCE(answer_text, Answer) AS Answer, ' +
+        'COALESCE(completed_at, Date) AS Date, ' +
+        'COALESCE(provider_display_name, provider_id, ''Unknown'') AS provider_display_name, ' +
+        'COALESCE(model_id, '''') AS model_id, ' +
+        'COALESCE(status, ''succeeded'') AS status, ' +
+        'COALESCE(error_text, '''') AS error_text, ' +
+        'COALESCE(batch_id, '''') AS batch_id, ' +
+        'COALESCE(request_id, '''') AS request_id ' +
+        'FROM TbHistory ORDER BY HID DESC';
+      FDQryHistory.Open;
+      UpdateHistoryFilterCombos;
+      Result := True;
+    except
+      on E: Exception do
+        ShowIDEMessage('SQLite connection could not be established.' + sLineBreak + 'Error: ' + E.Message);
+    end;
   end;
 end;
 
@@ -1272,27 +1395,250 @@ begin
   pnlSearchHistory.Visible := SearchMnu.Checked;
   if not SearchMnu.Checked then
     Edt_Search.Clear;
+  UpdateHistoryFilterCombos;
 end;
 
 procedure TFram_Question.TerminateAll;
 begin
-  try
-    if Assigned(FChatGPTTrd) then FChatGPTTrd.Terminate;
-  except
-  end;
-
-  {$IF CompilerVersion >= 32.0}
-  try
-    if Assigned(FWriteSonicTrd) then FWriteSonicTrd.Terminate;
-  except
-  end;
-
-  try
-    if Assigned(FYouChatTrd) then FYouChatTrd.Terminate;
-  except
-  end;
-  {$ENDIF}
+  if Assigned(FCoordinator) then
+    FCoordinator.CancelAll;
+  EndRequestTimeoutWatch;
   Btn_Ask.Enabled := True;
+  if Assigned(FBtnStop) then
+    FBtnStop.Enabled := False;
+  FClassViewIsBusy := False;
+  ActivityIndicator1.Visible := False;
+end;
+
+procedure TFram_Question.BeginRequestTimeoutWatch;
+begin
+  FRequestStartedAt := Now;
+  if Assigned(FRequestTimer) then
+    FRequestTimer.Enabled := True;
+end;
+
+procedure TFram_Question.EndRequestTimeoutWatch;
+begin
+  if Assigned(FRequestTimer) then
+    FRequestTimer.Enabled := False;
+end;
+
+procedure TFram_Question.ApplyTimeoutState;
+var
+  LMemo: TMemo;
+  LMessage: string;
+begin
+  if TSingletonSettingObj.Instance.TimeOut > 0 then
+    LMessage := Format(CProgressTimeoutFmt, [Max(CMinRequestTimeoutSeconds, TSingletonSettingObj.Instance.TimeOut)])
+  else
+    LMessage := Format(CProgressTimeoutFmt, [CDefaultRequestTimeoutSeconds]);
+  if FClassViewIsBusy then
+    mmoClassViewResult.Lines.Text := LMessage
+  else
+    for LMemo in FProviderMemos.Values do
+      LMemo.Lines.Text := LMessage;
+end;
+
+procedure TFram_Question.RequestTimeoutTimer(Sender: TObject);
+var
+  LElapsedSeconds: Integer;
+  LTimeoutSeconds: Integer;
+begin
+  if not Assigned(FCoordinator) or not FCoordinator.HasPendingRequests then
+  begin
+    EndRequestTimeoutWatch;
+    Exit;
+  end;
+
+  if TSingletonSettingObj.Instance.TimeOut > 0 then
+    LTimeoutSeconds := Max(CMinRequestTimeoutSeconds, TSingletonSettingObj.Instance.TimeOut)
+  else
+    LTimeoutSeconds := CDefaultRequestTimeoutSeconds;
+  LElapsedSeconds := SecondsBetween(Now, FRequestStartedAt);
+  if LElapsedSeconds >= LTimeoutSeconds then
+  begin
+    if Assigned(FCoordinator) then
+      FCoordinator.CancelAll;
+    EndRequestTimeoutWatch;
+    ApplyTimeoutState;
+    Btn_Ask.Enabled := True;
+    if Assigned(FBtnStop) then
+      FBtnStop.Enabled := False;
+    FClassViewIsBusy := False;
+    ActivityIndicator1.Visible := False;
+  end;
+end;
+
+procedure TFram_Question.UpdateTopButtonLayout;
+const
+  Gap = 6;
+begin
+  Btn_Ask.Width := 74;
+  Btn_Clipboard.Width := 110;
+  Btn_Clear.Width := 74;
+
+  if not Assigned(FBtnStop) then
+    Exit;
+
+  FBtnStop.Width := 70;
+  FBtnStop.Height := Btn_Ask.Height;
+  FBtnStop.Top := Btn_Ask.Top;
+
+  if TSingletonSettingObj.Instance.RighToLeft then
+  begin
+    Btn_Ask.Anchors := [akTop, akRight];
+    FBtnStop.Anchors := [akTop, akRight];
+    Btn_Clipboard.Anchors := [akTop, akRight];
+    Btn_Clear.Anchors := [akTop, akRight];
+
+    Btn_Ask.Left := btnHelp.Left - Gap - Btn_Ask.Width;
+    FBtnStop.Left := Btn_Ask.Left - Gap - FBtnStop.Width;
+    Btn_Clipboard.Left := FBtnStop.Left - Gap - Btn_Clipboard.Width;
+    Btn_Clear.Left := Btn_Clipboard.Left - Gap - Btn_Clear.Width;
+  end
+  else
+  begin
+    Btn_Ask.Anchors := [akTop, akLeft];
+    FBtnStop.Anchors := [akTop, akLeft];
+    Btn_Clipboard.Anchors := [akTop, akLeft];
+    Btn_Clear.Anchors := [akTop, akLeft];
+
+    Btn_Ask.Left := 40;
+    FBtnStop.Left := Btn_Ask.Left + Btn_Ask.Width + Gap;
+    Btn_Clipboard.Left := FBtnStop.Left + FBtnStop.Width + Gap;
+    Btn_Clear.Left := Btn_Clipboard.Left + Btn_Clipboard.Width + Gap;
+  end;
+end;
+
+function TFram_Question.ValidateProviderBatch(AIsClassView: Boolean; const AActiveProviderId: string): Boolean;
+var
+  LRegistry: IAIProviderRegistry;
+  LProviderIds: TArray<string>;
+  LProviderId: string;
+  LProvider: IAIProvider;
+  LSettings: TAIProviderSetting;
+  LError: string;
+begin
+  if AIsClassView then
+  begin
+    SetLength(LProviderIds, 1);
+    LProviderIds[0] := TSingletonSettingObj.Instance.GetPrimaryProviderId;
+  end
+  else
+    LProviderIds := TSingletonSettingObj.Instance.GetEnabledProviderIds;
+
+  if (Length(LProviderIds) = 0) and (AActiveProviderId <> '') then
+  begin
+    SetLength(LProviderIds, 1);
+    LProviderIds[0] := AActiveProviderId;
+  end;
+
+  if Length(LProviderIds) = 0 then
+  begin
+    ShowIDEMessage(CNoProviderConfiguredMsg);
+    Exit(False);
+  end;
+
+  LRegistry := TAIProviderRegistry.Instance;
+  for LProviderId in LProviderIds do
+  begin
+    LProvider := LRegistry.GetProvider(LProviderId);
+    if not Assigned(LProvider) then
+    begin
+      ShowIDEMessage('The selected provider "' + LProviderId + '" is not available.');
+      Exit(False);
+    end;
+
+    LSettings := TSingletonSettingObj.Instance.GetProviderSetting(LProviderId);
+    try
+      if not LProvider.ValidateSettings(LSettings, LError) then
+      begin
+        ShowIDEMessage(LProvider.GetDisplayName + ': ' + LError + sLineBreak + CReviewProviderSettingsMsg);
+        Exit(False);
+      end;
+    finally
+      LSettings.Free;
+    end;
+  end;
+
+  Result := True;
+end;
+
+procedure TFram_Question.UpdateQuestionDraftHint(AShowInlineHint: Boolean);
+var
+  LHintTop: Integer;
+  LHintLeft: Integer;
+  LQuestionTop: Integer;
+begin
+  LHintTop := Btn_Ask.Top + Btn_Ask.Height + 5;
+  LHintLeft := 14;
+  LQuestionTop := Lbl_Question.Top + Lbl_Question.Height + 6;
+
+  if not Assigned(FInlineHintLabel) then
+  begin
+    FInlineHintLabel := TLabel.Create(Self);
+    FInlineHintLabel.Parent := pnlTop;
+    FInlineHintLabel.Left := LHintLeft;
+    FInlineHintLabel.Top := LHintTop;
+    FInlineHintLabel.Width := pnlTop.ClientWidth - LHintLeft - btnHelp.Width - 16;
+    FInlineHintLabel.Height := 16;
+    FInlineHintLabel.Anchors := [akLeft, akTop, akRight];
+    FInlineHintLabel.WordWrap := False;
+    FInlineHintLabel.Transparent := True;
+    FInlineHintLabel.ShowHint := False;
+    FInlineHintLabel.Font.Assign(Font);
+    FInlineHintLabel.Font.Size := 8;
+    FInlineHintLabel.Font.Color := clSilver;
+  end;
+
+  FInlineHintLabel.Caption := Format(CInlineEditorHintFmt,
+    [TSingletonSettingObj.Instance.LeftIdentifier, TSingletonSettingObj.Instance.RightIdentifier]);
+  FInlineHintLabel.Visible := AShowInlineHint;
+  FInlineHintLabel.Left := LHintLeft;
+  FInlineHintLabel.Top := LHintTop;
+  FInlineHintLabel.Width := pnlTop.ClientWidth - LHintLeft - btnHelp.Width - 16;
+
+  pnlTop.Height := IfThen(AShowInlineHint, 60, 44);
+  if pnlQuestion.Height < 120 then
+    pnlQuestion.Height := 120;
+  mmoQuestion.SetBounds(5, LQuestionTop, pnlQuestion.ClientWidth - 10, pnlQuestion.ClientHeight - LQuestionTop - 6);
+end;
+
+procedure TFram_Question.PrepareQuestionDraft(const ASelectedText: string; AShowInlineHint: Boolean);
+var
+  LDraft: TStringList;
+  LPlaceholderPos: Integer;
+begin
+  if Assigned(pgcMain) then
+    pgcMain.ActivePage := tsChatGPT;
+
+  LDraft := TStringList.Create;
+  try
+    LDraft.Add(CQuestionPromptLabel);
+    LDraft.Add(CQuestionDraftPlaceholder);
+    if ASelectedText.Trim <> '' then
+    begin
+      LDraft.Add('');
+      LDraft.Add(CSelectedCodeLabel);
+      LDraft.Add(ASelectedText);
+    end;
+    mmoQuestion.Lines.Text := LDraft.Text;
+  finally
+    LDraft.Free;
+  end;
+
+  UpdateQuestionDraftHint(AShowInlineHint);
+  if mmoQuestion.CanFocus then
+    mmoQuestion.SetFocus;
+
+  LPlaceholderPos := Pos(CQuestionDraftPlaceholder, mmoQuestion.Text);
+  if LPlaceholderPos > 0 then
+  begin
+    mmoQuestion.SelStart := LPlaceholderPos - 1;
+    mmoQuestion.SelLength := Length(CQuestionDraftPlaceholder);
+  end
+  else
+    mmoQuestion.SelStart := mmoQuestion.GetTextLen;
 end;
 
 procedure TFram_Question.tvOnChange(Sender: TObject; Node: TTreeNode);

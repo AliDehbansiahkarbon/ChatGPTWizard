@@ -490,16 +490,16 @@ object Frm_Setting: TFrm_Setting
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 0
-        object grp_WriteSonic: TGroupBox
+        object grp_Gemini: TGroupBox
           AlignWithMargins = True
           Left = 3
           Top = 135
           Width = 431
           Height = 126
           Align = alTop
-          Caption = 'Writesonic'
+          Caption = 'Gemini'
           TabOrder = 0
-          object pnlWriteSonic: TPanel
+          object pnlGemini: TPanel
             AlignWithMargins = True
             Left = 5
             Top = 20
@@ -508,16 +508,16 @@ object Frm_Setting: TFrm_Setting
             Align = alClient
             BevelOuter = bvLowered
             TabOrder = 0
-            object chk_WriteSonic: TCheckBox
+            object chk_Gemini: TCheckBox
               Left = 8
               Top = 4
               Width = 121
               Height = 17
-              Caption = 'Enable WriteSonic'
+              Caption = 'Enable Gemini'
               TabOrder = 0
-              OnClick = chk_WriteSonicClick
+              OnClick = chk_GeminiClick
             end
-            object lbEdt_WriteSonicAPIKey: TLabeledEdit
+            object lbEdt_GeminiAPIKey: TLabeledEdit
               Left = 74
               Top = 31
               Width = 330
@@ -531,7 +531,7 @@ object Frm_Setting: TFrm_Setting
               TabOrder = 1
               Text = ''
             end
-            object lbEdt_WriteSonicBaseURL: TLabeledEdit
+            object lbEdt_GeminiBaseURL: TLabeledEdit
               Left = 74
               Top = 60
               Width = 330
@@ -546,16 +546,16 @@ object Frm_Setting: TFrm_Setting
             end
           end
         end
-        object grp_YouChat: TGroupBox
+        object grp_Claude: TGroupBox
           AlignWithMargins = True
           Left = 3
           Top = 3
           Width = 431
           Height = 126
           Align = alTop
-          Caption = 'YouChat'
+          Caption = 'Claude'
           TabOrder = 1
-          object pnlYouChat: TPanel
+          object pnlClaude: TPanel
             AlignWithMargins = True
             Left = 5
             Top = 20
@@ -564,16 +564,16 @@ object Frm_Setting: TFrm_Setting
             Align = alClient
             BevelOuter = bvLowered
             TabOrder = 0
-            object chk_YouChat: TCheckBox
+            object chk_Claude: TCheckBox
               Left = 8
               Top = 4
               Width = 121
               Height = 17
-              Caption = 'Enable YouChat'
+              Caption = 'Enable Claude'
               TabOrder = 0
-              OnClick = chk_YouChatClick
+              OnClick = chk_ClaudeClick
             end
-            object lbEdt_YouChatAPIKey: TLabeledEdit
+            object lbEdt_ClaudeAPIKey: TLabeledEdit
               Left = 74
               Top = 31
               Width = 330
@@ -587,7 +587,7 @@ object Frm_Setting: TFrm_Setting
               TabOrder = 1
               Text = ''
             end
-            object lbEdt_YouChatBaseURL: TLabeledEdit
+            object lbEdt_ClaudeBaseURL: TLabeledEdit
               Left = 74
               Top = 60
               Width = 330

@@ -16,7 +16,7 @@ object Fram_Question: TFram_Question
     OnChange = pgcMainChange
     OnChanging = pgcMainChanging
     object tsChatGPT: TTabSheet
-      Caption = 'ChatGPT'
+      Caption = 'FusionAI'
       object pnlMain: TPanel
         Left = 0
         Top = 0
@@ -192,7 +192,7 @@ object Fram_Question: TFram_Question
               TabOrder = 0
               OnChange = pgcAnswersChange
               object tsChatGPTAnswer: TTabSheet
-                Caption = 'ChatGPT'
+                Caption = 'Gemini'
                 Font.Charset = DEFAULT_CHARSET
                 Font.Color = clWindowText
                 Font.Height = -8
@@ -216,10 +216,10 @@ object Fram_Question: TFram_Question
                   TabOrder = 0
                 end
               end
-              object tsWriteSonicAnswer: TTabSheet
-                Caption = 'WriteSonic'
+              object tsClaudeAnswer: TTabSheet
+                Caption = 'Claude'
                 ImageIndex = 1
-                object mmoWriteSonicAnswer: TMemo
+                object mmoClaudeAnswer: TMemo
                   Left = 0
                   Top = 0
                   Width = 415
@@ -230,10 +230,10 @@ object Fram_Question: TFram_Question
                   TabOrder = 0
                 end
               end
-              object tsYouChat: TTabSheet
-                Caption = 'YouChat'
+              object tsOllamaAnswer: TTabSheet
+                Caption = 'Ollama'
                 ImageIndex = 2
-                object mmoYouChatAnswer: TMemo
+                object mmoOllamaAnswer: TMemo
                   Left = 0
                   Top = 0
                   Width = 415

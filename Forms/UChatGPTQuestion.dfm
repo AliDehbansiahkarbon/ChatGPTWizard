@@ -2,7 +2,7 @@ object FrmChatGPT: TFrmChatGPT
   Left = 0
   Top = 0
   BiDiMode = bdLeftToRight
-  Caption = 'ChatGPT'
+  Caption = 'FusionAI'
   ClientHeight = 485
   ClientWidth = 421
   Color = clBtnFace
@@ -82,13 +82,13 @@ object FrmChatGPT: TFrmChatGPT
                     ExplicitHeight = 227
                   end
                 end
-                inherited tsWriteSonicAnswer: TTabSheet
-                  inherited mmoWriteSonicAnswer: TMemo
+                inherited tsClaudeAnswer: TTabSheet
+                  inherited mmoClaudeAnswer: TMemo
                     StyleElements = [seFont, seClient, seBorder]
                   end
                 end
-                inherited tsYouChat: TTabSheet
-                  inherited mmoYouChatAnswer: TMemo
+                inherited tsOllamaAnswer: TTabSheet
+                  inherited mmoOllamaAnswer: TMemo
                     StyleElements = [seFont, seClient, seBorder]
                   end
                 end

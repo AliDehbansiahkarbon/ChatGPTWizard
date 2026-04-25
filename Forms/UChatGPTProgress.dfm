@@ -3,7 +3,7 @@ object Frm_Progress: TFrm_Progress
   Top = 0
   BorderStyle = bsNone
   Caption = 'Frm_Progress'
-  ClientHeight = 56
+  ClientHeight = 84
   ClientWidth = 301
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -11,6 +11,7 @@ object Frm_Progress: TFrm_Progress
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
+  KeyPreview = True
   Position = poMainFormCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -21,7 +22,7 @@ object Frm_Progress: TFrm_Progress
     Left = 0
     Top = 0
     Width = 301
-    Height = 56
+    Height = 84
     Align = alClient
     BorderStyle = bsSingle
     TabOrder = 0
@@ -50,11 +51,19 @@ object Frm_Progress: TFrm_Progress
       Style = pbstMarquee
       TabOrder = 0
     end
+    object Lbl_Status: TLabel
+      Left = 15
+      Top = 48
+      Width = 44
+      Height = 15
+      Caption = 'Starting'
+    end
     object btnClose: TBitBtn
       Left = 274
       Top = 0
       Width = 22
       Height = 16
+      Cancel = True
       Glyph.Data = {
         D6000000424DD60000000000000076000000280000000C0000000C0000000100
         04000000000060000000330B0000330B00001000000010000000000000000000
@@ -66,5 +75,12 @@ object Frm_Progress: TFrm_Progress
       TabOrder = 1
       OnClick = btnCloseClick
     end
+  end
+  object TimerStatus: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = TimerStatusTimer
+    Left = 264
+    Top = 56
   end
 end
