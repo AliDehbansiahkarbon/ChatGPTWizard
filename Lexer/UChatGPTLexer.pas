@@ -37,6 +37,217 @@ type
 
 implementation
 
+function StripInlineComment(const ALine: string): string;
+var
+  I: Integer;
+  LInSingleQuote: Boolean;
+begin
+  Result := '';
+  LInSingleQuote := False;
+  I := 1;
+  while I <= Length(ALine) do
+  begin
+    if ALine[I] = '''' then
+    begin
+      Result := Result + ALine[I];
+      if (I < Length(ALine)) and (ALine[I + 1] = '''') then
+      begin
+        Inc(I);
+        Result := Result + ALine[I];
+      end
+      else
+        LInSingleQuote := not LInSingleQuote;
+    end
+    else if (not LInSingleQuote) and (ALine[I] = '/') and (I < Length(ALine)) and (ALine[I + 1] = '/') then
+      Break
+    else
+      Result := Result + ALine[I];
+    Inc(I);
+  end;
+end;
+
+function NormalizeTypeName(const AName: string): string;
+var
+  LValue: string;
+  LPos: Integer;
+begin
+  LValue := Trim(AName);
+  LPos := Pos('<', LValue);
+  if LPos > 0 then
+    LValue := Trim(Copy(LValue, 1, LPos - 1));
+  Result := LValue;
+end;
+
+function IsSectionBoundary(const ALineLower: string): Boolean;
+begin
+  Result :=
+    StartsText('const', ALineLower) or
+    StartsText('var', ALineLower) or
+    StartsText('threadvar', ALineLower) or
+    StartsText('resourcestring', ALineLower) or
+    StartsText('procedure', ALineLower) or
+    StartsText('function', ALineLower) or
+    StartsText('constructor', ALineLower) or
+    StartsText('destructor', ALineLower) or
+    StartsText('operator', ALineLower) or
+    StartsText('implementation', ALineLower) or
+    StartsText('initialization', ALineLower) or
+    StartsText('finalization', ALineLower) or
+    StartsText('exports', ALineLower);
+end;
+
+function IsSupportedTypeStarter(const ALineLower: string): Boolean;
+begin
+  Result :=
+    (Pos('= class', ALineLower) > 0) or
+    (Pos('= record', ALineLower) > 0) or
+    (Pos('= packed record', ALineLower) > 0) or
+    (Pos('= interface', ALineLower) > 0) or
+    (Pos('= dispinterface', ALineLower) > 0) or
+    (Pos('= object', ALineLower) > 0) or
+    (Pos('class helper', ALineLower) > 0) or
+    (Pos('record helper', ALineLower) > 0) or
+    (Pos('helper for', ALineLower) > 0);
+end;
+
+function CountTypeStarts(const ALineLower: string): Integer;
+begin
+  Result := 0;
+  if IsSupportedTypeStarter(ALineLower) then
+    Inc(Result);
+end;
+
+function CountTypeEnds(const ALineLower: string): Integer;
+var
+  LTrim: string;
+begin
+  LTrim := Trim(ALineLower);
+  Result := 0;
+  if StartsText('end', LTrim) and (Pos(';', LTrim) > 0) then
+    Inc(Result);
+end;
+
+function TryExtractTypeName(const ALine: string; out ATypeName: string): Boolean;
+var
+  LLine: string;
+  LPos: Integer;
+begin
+  Result := False;
+  ATypeName := '';
+  LLine := Trim(ALine);
+  if StartsText('type ', LowerCase(LLine)) then
+    LLine := Trim(Copy(LLine, 5, MaxInt));
+
+  if (LLine = '') or (LLine[1] = '[') then
+    Exit;
+
+  LPos := Pos('=', LLine);
+  if LPos <= 1 then
+    Exit;
+
+  ATypeName := NormalizeTypeName(Trim(Copy(LLine, 1, LPos - 1)));
+  Result := ATypeName <> '';
+end;
+
+function IsRoutineStart(const ALineLower, ATypeNameLower: string): Boolean;
+begin
+  Result :=
+    (ATypeNameLower <> '') and
+    (Pos(ATypeNameLower + '.', ALineLower) > 0) and
+    (StartsText('function', ALineLower) or
+     StartsText('class function', ALineLower) or
+     StartsText('procedure', ALineLower) or
+     StartsText('class procedure', ALineLower) or
+     StartsText('constructor', ALineLower) or
+     StartsText('destructor', ALineLower) or
+     StartsText('operator', ALineLower) or
+     StartsText('class operator', ALineLower));
+end;
+
+function CountKeywordOccurrence(const ALineLower, AKeyword: string): Integer;
+var
+  LSearchFrom: Integer;
+  LPos: Integer;
+begin
+  Result := 0;
+  LSearchFrom := 1;
+  repeat
+    LPos := PosEx(AKeyword, ALineLower, LSearchFrom);
+    if LPos > 0 then
+    begin
+      Inc(Result);
+      LSearchFrom := LPos + Length(AKeyword);
+    end;
+  until LPos = 0;
+end;
+
+function ExtractRoutineImplementations(AUnitContent: TStrings; const ATypeName: string): string;
+var
+  I: Integer;
+  J: Integer;
+  LTypeNameLower: string;
+  LLineLower: string;
+  LTrimLower: string;
+  LDepth: Integer;
+  LBodyStarted: Boolean;
+  LOutput: TStringList;
+begin
+  LOutput := TStringList.Create;
+  try
+    LTypeNameLower := LowerCase(ATypeName);
+    I := 0;
+    while I < AUnitContent.Count do
+    begin
+      LLineLower := LowerCase(Trim(StripInlineComment(AUnitContent[I])));
+      if IsRoutineStart(LLineLower, LTypeNameLower) then
+      begin
+        LDepth := 0;
+        LBodyStarted := False;
+        J := I;
+        while J < AUnitContent.Count do
+        begin
+          LOutput.Add(AUnitContent[J]);
+          LTrimLower := LowerCase(Trim(StripInlineComment(AUnitContent[J])));
+
+          if Pos('begin', LTrimLower) > 0 then
+          begin
+            Inc(LDepth, CountKeywordOccurrence(LTrimLower, 'begin'));
+            LBodyStarted := True;
+          end;
+          if Pos('case', LTrimLower) > 0 then
+            Inc(LDepth, CountKeywordOccurrence(LTrimLower, 'case'));
+          if Pos('try', LTrimLower) > 0 then
+            Inc(LDepth, CountKeywordOccurrence(LTrimLower, 'try'));
+          if Pos('asm', LTrimLower) > 0 then
+            Inc(LDepth, CountKeywordOccurrence(LTrimLower, 'asm'));
+          if Pos('repeat', LTrimLower) > 0 then
+            Inc(LDepth, CountKeywordOccurrence(LTrimLower, 'repeat'));
+
+          if StartsText('until', LTrimLower) and LBodyStarted then
+            Dec(LDepth);
+
+          if StartsText('end', LTrimLower) and (Pos(';', LTrimLower) > 0) and LBodyStarted then
+          begin
+            Dec(LDepth);
+            if LDepth <= 0 then
+              Break;
+          end;
+
+          Inc(J);
+        end;
+        if (LOutput.Count > 0) and (Trim(LOutput[LOutput.Count - 1]) <> '') then
+          LOutput.Add('');
+        I := J;
+      end;
+      Inc(I);
+    end;
+
+    Result := Trim(LOutput.Text);
+  finally
+    LOutput.Free;
+  end;
+end;
+
 { TcpLexer }
 
 constructor TcpLexer.Create(AClassList: TClassList);
@@ -286,16 +497,57 @@ end;
 procedure TcpLexer.ParseSourceCode2(ACurrentUnitPath: string);
 var
   I: Integer;
-  LvClassName: string;
+  LvTypeName: string;
   LvTempStr: TStringList;
   LvFileStream: TFileStream;
+  LCurrentTypeName: string;
+  LTypeSource: TStringList;
+  LInsideTypeSection: Boolean;
+  LBodyDetected: Boolean;
+  LTypeDepth: Integer;
+  LLine: string;
+  LLineLower: string;
+  LTypeText: string;
+  LRoutineText: string;
+  LStoredLines: TStringList;
+
+  procedure ResetCurrentType;
+  begin
+    LCurrentTypeName := '';
+    FreeAndNil(LTypeSource);
+    LBodyDetected := False;
+    LTypeDepth := 0;
+  end;
+
+  procedure StoreCurrentType;
+  begin
+    if (LCurrentTypeName = '') or (not Assigned(LTypeSource)) then
+      Exit;
+
+    if not FClassList.TryGetValue(LCurrentTypeName, LStoredLines) then
+    begin
+      LStoredLines := TStringList.Create;
+      FClassList.Add(LCurrentTypeName, LStoredLines);
+    end
+    else
+      LStoredLines.Clear;
+
+    LTypeText := Trim(LTypeSource.Text);
+    LRoutineText := ExtractRoutineImplementations(LvTempStr, LCurrentTypeName);
+    if LRoutineText <> '' then
+      LStoredLines.Text := Trim(LTypeText + sLineBreak + sLineBreak + LRoutineText)
+    else
+      LStoredLines.Text := LTypeText;
+
+    ResetCurrentType;
+  end;
 begin
   FClassList.Clear;
   if not FileExists(ACurrentUnitPath) then
     Exit;
 
   LvTempStr := TStringList.Create;
-  // Open the file in read-only mode and create a file stream safely
+  LTypeSource := nil;
   LvFileStream := TFileStream.Create(ACurrentUnitPath, fmOpenRead or fmShareDenyNone);
   try
     LvTempStr.LoadFromStream(LvFileStream);
@@ -304,36 +556,95 @@ begin
   end;
 
   try
-    //LvTempStr.LoadFromFile(ACurrentUnitPath);
+    LInsideTypeSection := False;
+    LCurrentTypeName := '';
+    LBodyDetected := False;
+    LTypeDepth := 0;
+
     for I := 0 to Pred(LvTempStr.Count) do
     begin
-      if LeftStr(LvTempStr[I].TrimLeft.ToUpper, 1) = 'T' then
+      LLine := Trim(StripInlineComment(LvTempStr[I]));
+      LLineLower := LowerCase(LLine);
+
+      if LCurrentTypeName <> '' then
       begin
-        if IsClassLine(LvTempStr[I]) then
+        LTypeSource.Add(LvTempStr[I]);
+        if not LBodyDetected then
         begin
-          LvClassName := StringReplace(LeftStr(LvTempStr[I].TrimLeft, Pos('=', LvTempStr[I]) - 2).Trim, '=', '', [rfReplaceAll]).TrimLeft;
-          if not FClassList.ContainsKey(LvClassName) then
-            FClassList.Add(LvClassName, TStringList.Create);
+          if IsSupportedTypeStarter(LLineLower) then
+          begin
+            LBodyDetected := True;
+            Inc(LTypeDepth, CountTypeStarts(LLineLower));
+            Dec(LTypeDepth, CountTypeEnds(LLineLower));
+            if LTypeDepth <= 0 then
+              StoreCurrentType;
+          end
+          else if IsSectionBoundary(LLineLower) then
+            ResetCurrentType;
+        end
+        else
+        begin
+          Inc(LTypeDepth, CountTypeStarts(LLineLower));
+          Dec(LTypeDepth, CountTypeEnds(LLineLower));
+          if LTypeDepth <= 0 then
+            StoreCurrentType;
         end;
+        Continue;
+      end;
+
+      if not LInsideTypeSection then
+      begin
+        if SameText(LLineLower, 'type') or StartsText('type ', LLineLower) then
+        begin
+          LInsideTypeSection := True;
+          if StartsText('type ', LLineLower) then
+          begin
+            LLine := Trim(Copy(LLine, 5, MaxInt));
+            LLineLower := LowerCase(LLine);
+          end
+          else
+            Continue;
+        end;
+      end;
+
+      if not LInsideTypeSection then
+        Continue;
+
+      if IsSectionBoundary(LLineLower) then
+      begin
+        LInsideTypeSection := False;
+        Continue;
+      end;
+
+      if TryExtractTypeName(LLine, LvTypeName) then
+      begin
+        LCurrentTypeName := LvTypeName;
+        LTypeSource := TStringList.Create;
+        LTypeSource.Add(LvTempStr[I]);
+        LBodyDetected := IsSupportedTypeStarter(LLineLower);
+        if LBodyDetected then
+        begin
+          LTypeDepth := CountTypeStarts(LLineLower) - CountTypeEnds(LLineLower);
+          if LTypeDepth <= 0 then
+            StoreCurrentType;
+        end
+        else
+          LTypeDepth := 0;
       end;
     end;
 
-    for LvClassName in FClassList.Keys do
-    begin
-      FClassList[LvClassName].Clear;
-      FClassList[LvClassName].Add(GetSingleClassSource(LvTempStr, LvClassName));
-    end;
+    StoreCurrentType;
   finally
+    FreeAndNil(LTypeSource);
     LvTempStr.Free;
   end;
 end;
 
 procedure TcpLexer.Reload;
 begin
-  ParseSourceCode(GetCurrentUnitPath); //parse code using Lexer.
-
-//  if FClassList.Count = 0 then
-//    ParseSourceCode(LvUnitName); //Parse code without Lexer.
+  ParseSourceCode2(GetCurrentUnitPath); // parse code using a text-based parser that tolerates newer Delphi syntax better.
+  if FClassList.Count = 0 then
+    ParseSourceCode(GetCurrentUnitPath); // fallback to the legacy lexer path.
 end;
 
 procedure TcpLexer.StructureViewToSL(ASL: TStringList);

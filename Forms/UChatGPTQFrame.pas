@@ -181,6 +181,8 @@ type
     procedure BeginRequestTimeoutWatch;
     procedure EndRequestTimeoutWatch;
     procedure ApplyTimeoutState;
+    function TryGetSelectedClassSource(out AClassName, AClassSource: string; ASilent: Boolean = False): Boolean;
+    procedure ShowClassSelectionUnavailable;
   public
     procedure InitialFrame;
     procedure InitialClassViewMenueItems(AClassList: TClassList);
@@ -269,30 +271,39 @@ begin
 end;
 
 procedure TFram_Question.CSharpClick(Sender: TObject);
+var
+  LClassName: string;
+  LClassSource: string;
 begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
+  if TryGetSelectedClassSource(LClassName, LClassSource) then
   begin
-    FLastQuestion := 'Convert this Delphi Code to C# code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to C# code: ' + #13 + LClassSource;
     mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion, True);
   end;
 end;
 
 procedure TFram_Question.CClick(Sender: TObject);
+var
+  LClassName: string;
+  LClassSource: string;
 begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
+  if TryGetSelectedClassSource(LClassName, LClassSource) then
   begin
-    FLastQuestion := 'Convert this Delphi Code to C code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to C code: ' + #13 + LClassSource;
     mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion, True);
   end;
 end;
 
 procedure TFram_Question.CPlusPlusClick(Sender: TObject);
+var
+  LClassName: string;
+  LClassSource: string;
 begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
+  if TryGetSelectedClassSource(LClassName, LClassSource) then
   begin
-    FLastQuestion := 'Convert this Delphi Code to C++ code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to C++ code: ' + #13 + LClassSource;
     mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion, True);
   end;
@@ -332,8 +343,10 @@ procedure TFram_Question.ClassViewMenuItemClick(Sender: TObject);
 var
   LvSettingObj: TSingletonSettingObj;
   LvQuestion: string;
+  LClassName: string;
+  LClassSource: string;
 begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then // Not applicable to the first node of the TreeView.
+  if TryGetSelectedClassSource(LClassName, LClassSource) then
   begin
     Cs.Enter;
     LvSettingObj := TSingletonSettingObj.Instance;
@@ -342,8 +355,8 @@ begin
       Cs.Leave;
       if not LvQuestion.Trim.IsEmpty then
       begin
-        FLastQuestion := LvQuestion + #13 + FClassTreeView.Selected.Text; // Shorter string will be logged.
-        LvQuestion  := LvQuestion  + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+        FLastQuestion := LvQuestion + #13 + LClassName; // Shorter string will be logged.
+        LvQuestion := LvQuestion + #13 + LClassSource;
         mmoClassViewResult.Lines.Clear;
         CallThread(LvQuestion, True);
       end;
@@ -422,7 +435,13 @@ begin
 end;
 
 procedure TFram_Question.CustomCommandClick(Sender: TObject);
+var
+  LClassName: string;
+  LClassSource: string;
 begin
+  if not TryGetSelectedClassSource(LClassName, LClassSource) then
+    Exit;
+
   FLastQuestion := '';
   if InputQuery('Custom Command(use @Class to represent the selected class)', 'Write your command here', FLastQuestion) then
   begin
@@ -433,9 +452,9 @@ begin
     Exit;
 
   if FLastQuestion.ToLower.Trim.Contains('@class') then
-    FLastQuestion := StringReplace(FLastQuestion, '@class', ' ' + FClassList.Items[FClassTreeView.Selected.Text].Text + ' ', [rfReplaceAll, rfIgnoreCase])
+    FLastQuestion := StringReplace(FLastQuestion, '@class', ' ' + LClassSource + ' ', [rfReplaceAll, rfIgnoreCase])
   else
-    FLastQuestion := FLastQuestion + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := FLastQuestion + #13 + LClassSource;
 
   mmoClassViewResult.Lines.Clear;
   CallThread(FLastQuestion, True);
@@ -714,10 +733,13 @@ begin
 end;
 
 procedure TFram_Question.GoClick(Sender: TObject);
+var
+  LClassName: string;
+  LClassSource: string;
 begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
+  if TryGetSelectedClassSource(LClassName, LClassSource) then
   begin
-    FLastQuestion := 'Convert this Delphi Code to the GO programming language code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to the GO programming language code: ' + #13 + LClassSource;
     mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion, True);
   end;
@@ -1200,20 +1222,26 @@ begin
 end;
 
 procedure TFram_Question.JavaClick(Sender: TObject);
+var
+  LClassName: string;
+  LClassSource: string;
 begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
+  if TryGetSelectedClassSource(LClassName, LClassSource) then
   begin
-    FLastQuestion := 'Convert this Delphi Code to Java code: ' + #13 + FClassList.Items [FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to Java code: ' + #13 + LClassSource;
     mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion, True);
   end;
 end;
 
 procedure TFram_Question.JavascriptClick(Sender: TObject);
+var
+  LClassName: string;
+  LClassSource: string;
 begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
+  if TryGetSelectedClassSource(LClassName, LClassSource) then
   begin
-    FLastQuestion := 'Convert this Delphi Code to Javascript code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to Javascript code: ' + #13 + LClassSource;
     mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion, True);
   end;
@@ -1287,16 +1315,23 @@ end;
 
 procedure TFram_Question.pmClassOperationsPopup(Sender: TObject);
 begin
-  FClassTreeView.OnChange(FClassTreeView, FClassTreeView.Selected);
-  if FClassTreeView.Selected = FClassTreeView.TopItem then
+  if not Assigned(FClassTreeView) then
+    Exit;
+
+  if Assigned(FClassTreeView.OnChange) then
+    FClassTreeView.OnChange(FClassTreeView, FClassTreeView.Selected);
+  if Assigned(FClassTreeView.Selected) and (FClassTreeView.Selected = FClassTreeView.TopItem) then
     keybd_event(VK_ESCAPE, Mapvirtualkey(VK_ESCAPE, 0), 0, 0);
 end;
 
 procedure TFram_Question.PythonClick(Sender: TObject);
+var
+  LClassName: string;
+  LClassSource: string;
 begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
+  if TryGetSelectedClassSource(LClassName, LClassSource) then
   begin
-    FLastQuestion := 'Convert this Delphi Code to Pyhton code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to Pyhton code: ' + #13 + LClassSource;
     mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion, True);
   end;
@@ -1306,6 +1341,10 @@ procedure TFram_Question.ReloadClassList(AClassList: TClassList);
 var
   LvLexer: TcpLexer;
 begin
+  if Assigned(FClassTreeView) then
+    FreeAndNil(FClassTreeView);
+
+  FClassList := AClassList;
   FClassTreeView := TTreeView.Create(tsClassView);
   with FClassTreeView do
   begin
@@ -1325,6 +1364,7 @@ begin
     LvLexer.Reload;
     FClassList.FillTreeView(FClassTreeView);
     mmoClassViewDetail.Lines.Clear;
+    mmoClassViewResult.Lines.Clear;
   finally
     LvLexer.Free;
   end;
@@ -1381,10 +1421,13 @@ begin
 end;
 
 procedure TFram_Question.RustClick(Sender: TObject);
+var
+  LClassName: string;
+  LClassSource: string;
 begin
-  if FClassTreeView.Selected <> FClassTreeView.TopItem then
+  if TryGetSelectedClassSource(LClassName, LClassSource) then
   begin
-    FLastQuestion := 'Convert this Delphi Code to Rust code: ' + #13 + FClassList.Items[FClassTreeView.Selected.Text].Text;
+    FLastQuestion := 'Convert this Delphi Code to Rust code: ' + #13 + LClassSource;
     mmoClassViewResult.Lines.Clear;
     CallThread(FLastQuestion, True);
   end;
@@ -1408,6 +1451,52 @@ begin
     FBtnStop.Enabled := False;
   FClassViewIsBusy := False;
   ActivityIndicator1.Visible := False;
+end;
+
+procedure TFram_Question.ShowClassSelectionUnavailable;
+begin
+  ShowIDEMessage('The selected class/type could not be resolved. Please reopen the Class View tab and select the item again.');
+end;
+
+function TFram_Question.TryGetSelectedClassSource(out AClassName, AClassSource: string; ASilent: Boolean): Boolean;
+var
+  LLines: TStringList;
+begin
+  Result := False;
+  AClassName := '';
+  AClassSource := '';
+
+  if (not Assigned(FClassTreeView)) or (not Assigned(FClassList)) then
+  begin
+    if not ASilent then
+      ShowClassSelectionUnavailable;
+    Exit;
+  end;
+
+  if (not Assigned(FClassTreeView.Selected)) or (FClassTreeView.Selected = FClassTreeView.TopItem) then
+  begin
+    if not ASilent then
+      ShowClassSelectionUnavailable;
+    Exit;
+  end;
+
+  AClassName := FClassTreeView.Selected.Text;
+  if not FClassList.TryGetValue(AClassName, LLines) or (not Assigned(LLines)) then
+  begin
+    if not ASilent then
+      ShowClassSelectionUnavailable;
+    Exit;
+  end;
+
+  AClassSource := Trim(LLines.Text);
+  if AClassSource = '' then
+  begin
+    if not ASilent then
+      ShowClassSelectionUnavailable;
+    Exit;
+  end;
+
+  Result := True;
 end;
 
 procedure TFram_Question.BeginRequestTimeoutWatch;
@@ -1642,11 +1731,14 @@ begin
 end;
 
 procedure TFram_Question.tvOnChange(Sender: TObject; Node: TTreeNode);
+var
+  LClassName: string;
+  LClassSource: string;
 begin
   mmoClassViewDetail.Lines.Clear;
   mmoClassViewDetail.ScrollBars := TScrollStyle.ssNone;
-  if Node <> FClassTreeView.TopItem then
-    mmoClassViewDetail.Lines.Add(FClassList.Items[Node.Text].Text);
+  if TryGetSelectedClassSource(LClassName, LClassSource, True) then
+    mmoClassViewDetail.Lines.Text := LClassSource;
   mmoClassViewDetail.ScrollBars := TScrollStyle.ssVertical;
 end;
 
