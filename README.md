@@ -1,377 +1,378 @@
-# ChatGPTWizard
+# FusionAI
 
-<img src="https://user-images.githubusercontent.com/5601608/225608017-be60c550-0413-49db-b4b6-3664da20e82f.png" width=500 heigth=500 style="margin-left:70px;" />
+<p align="center">
+  <img src="./Logo.png" alt="FusionAI logo" width="220" />
+</p>
 
-<br />
+<p align="center">
+  AI assistance for Embarcadero RAD Studio 10.x and 11.x, directly inside the IDE.
+</p>
 
+<p align="center">
+  <img src="https://img.shields.io/github/license/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="License" />
+  <img src="https://img.shields.io/github/stars/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="Stars" />
+  <img src="https://img.shields.io/github/forks/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="Forks" />
+  <img src="https://img.shields.io/github/last-commit/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="Last commit" />
+</p>
 
+<p align="center">
+  <a href="https://www.buymeacoffee.com/adehbanr" target="_blank">
+    <img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174" />
+  </a>
+</p>
 
-<a href="https://www.buymeacoffee.com/adehbanr" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
-<br />
-<img src="https://img.shields.io/github/license/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="license">
-<img src="https://img.shields.io/github/forks/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="forks">
-<img src="https://img.shields.io/github/stars/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="stars">
-<img src="https://img.shields.io/github/watchers/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="watchers">
-<a href="https://github.com/AliDehbansiahkarbon/ChatGPTWizard/issues"><img src="https://img.shields.io/github/issues-closed/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="issues"></a>
-<a href="https://github.com/AliDehbansiahkarbon/ChatGPTWizard/pulls"><img src="https://img.shields.io/github/issues-pr-closed/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="pulls"></a>
-<br />
-<img src="https://img.shields.io/github/last-commit/AliDehbansiahkarbon/ChatGPTWizard.svg" alt="last-commit">
-[![Downloads](https://static.pepy.tech/personalized-badge/video2tfrecord?period=month&units=international_system&left_color=grey&right_color=orange&left_text=Downloads)](https://pepy.tech/project/video2tfrecord)
-[![](https://tokei.rs/b1/github/AliDehbansiahkarbon/ChatGPTWizard?category=lines)](https://github.com/AliDehbansiahkarbon/ChatGPTWizard)
-[![](https://tokei.rs/b1/github/AliDehbansiahkarbon/ChatGPTWizard?category=code)](https://github.com/AliDehbansiahkarbon/ChatGPTWizard) 
-[![](https://tokei.rs/b1/github/AliDehbansiahkarbon/ChatGPTWizard?category=files)](https://github.com/AliDehbansiahkarbon/ChatGPTWizard)
+> FusionAI is the current evolution of the original `ChatGPTWizard` project.
 
-<h2>An AI plug-in for Embarcadero RAD Studio IDE.</h2>
+## What It Is
 
-<h3>First Plugin Ever to support Online(ChatGPT, Writesonic, and YouChat) and Offline(Ollama) AI servers!</h3>
+FusionAI is a Delphi plug-in for RAD Studio that brings AI-assisted workflows into the IDE:
 
-<h1> Important Update</h1>
-<h2>
+- Ask free-form questions in a chat window
+- Run inline questions directly from the editor
+- Use predefined right-click actions such as explain, optimize, add comments, add tests, and find bugs
+- Work with class/type-based prompts from a dedicated Class View
+- Compare answers across multiple AI providers
+- Keep a searchable local history database
+- Use local file logging for diagnostics when needed
 
-# Embarcadero introduced a built-in AI engine called Smart Codeinsight starting from version 12.2, so this plugin will not be updated for versions 12.2 and higher version but will be maintained for version 12.1 and earlier.
-# Do not install this plugin on RAD Studio 12.2 or above IDE versions.
+The project is intended for RAD Studio versions that do not have the newer built-in AI workflow as the primary path.
 
-  
-</h2>
+## Supported IDE Versions
 
+This repository currently targets:
 
+- RAD Studio 10.x
+  - 10.1 Berlin
+  - 10.2 Tokyo
+  - 10.3 Rio
+  - 10.4 Sydney
+- RAD Studio 11.x
+  - 11 Alexandria
 
+This repository is **not** the main target for RAD Studio 12.2+.
 
+For older IDEs, use the separate branch/repository:
 
-#### **PLEASE NOTE THAT You will need an API key (just in Online mode) to use this plugin. see the [API section](#platforms) to Generate an API key**
-#### Some API Keys are Limited to a certain usage, after that, you will need to purchase credits to keep using them.
+- [ChatGPTWizard-XE2-to-XE8](https://github.com/AliDehbansiahkarbon/ChatGPTWizard-XE2-to-XE8)
 
+## Supported AI Providers
 
-## Key Features:
+FusionAI currently supports:
 
-- Free text question form.
-- Dockable question form.
-- Inline questions(in the editor).
-- Context menu options to help you to find bugs, write tests, optimize code, add comments, etc...
-- Class view(Code conversion, code optimizing, test units, and other options per class).
-- Predefined Questions for class view.
-- History to save your tokens on OpenAI!
-- Fuzzy string match searches in the history.
-- Animated letters(Like the website).
-- AI Code Translator
-- Proxy server options. 
-- Supports [OpenAI](https://openai.com) ChatGPT as the main AI service.
-- Supports [Writesonic](https://writesonic.com/chat) AI as the second AI service.
-- Supports [YouChat](https://you.com/code) AI as the third AI service.
-- Supports [Ollama(Offline)](https://ollama.com)
+- OpenAI ChatGPT
+- Google Gemini
+- Anthropic Claude
+- Ollama
 
-<br />
+### Notes
 
-# Supported IDE Versions 
+- ChatGPT, Gemini, and Claude require valid API credentials.
+- Ollama can be used locally without a cloud API key.
+- You can choose a default AI service in the settings.
+- Available models can be refreshed and cached per provider.
+
+## Main Features
+
+- Unified FusionAI chat window
+- Dockable assistant UI when the IDE version supports it
+- Inline editor prompts with the `cpt: ... :cpt` format
+- Right-click editor actions for selected code
+- Class View with prompt actions and code conversion helpers
+- Provider-aware answer tabs
+- Provider-aware SQLite history
+- History filtering by provider and model
+- Proxy configuration
+- File-based diagnostic logging
+- Configurable timeouts and provider-specific parameters
+
+## Installation
+
+### Option 1: Delphinus
+
+Install through [Delphinus](https://github.com/Memnarch/Delphinus).
+
+### Option 2: Direct package install
+
+1. Open [FusionAI.dproj](./FusionAI.dproj) in RAD Studio.
+2. Build the package.
+3. Install the generated package from the IDE.
+
+## Quick Start
+
+1. Open `FusionAI Settings`.
+2. Go to `AI Services`.
+3. Enable at least one provider.
+4. Fill in the provider settings:
+   - Base URL
+   - Access key if required
+   - Default model
+   - Optional provider-specific parameters
+5. Save and reopen the assistant if needed.
+
+## How To Use
+
+### Chat Window
+
+Open `FusionAI` from the IDE menu and ask a normal question.
+
+Use this for:
+
+- code explanation
+- refactoring ideas
+- architecture questions
+- debugging help
+- ad hoc snippets
+
+<div style="display:inline">
+<img width="350" height="500" src="https://user-images.githubusercontent.com/5601608/220568940-7eba2b94-f091-4400-a031-49b35d1f0d5e.png" alt="FusionAI main form"/>
+<img width="350" height="500" src="https://user-images.githubusercontent.com/5601608/220568742-8ec94dec-ca44-4331-b245-202d64181fa5.png" alt="FusionAI answer view"/>
+</div>
+
+### Inline Questions
+
+There are two main inline workflows:
+
+1. Use direct inline prompt markers:
+
 ```delphi
-Delphi 10.x (10.1 Berlin, 10.2 Tokyo, 10.3 Rio, 10.4 Sydney)
-Delphi 11.x Alexandria
-Delphi 12.x Athens
-```
-# Older IDE versions (XE2 to XE8)
-If you are using Delphi XE2 to XE8, there is a limited version of this plug-in available, which has the main functionality.
-Please have a look at that version [here](https://github.com/AliDehbansiahkarbon/ChatGPTWizard-XE2-to-XE8).
-
-
-# Disclaimer
-As a user of the API key, it is important to understand that you are solely responsible for all content generated through the prompt. Please note that there is no text moderation with this plugin, and your prompt will be sent directly to the AI Server through the API. While mistakes can happen while using browsers, mobile apps, or this plugin, it remains the responsibility of the user to ensure the accuracy and appropriateness of the content generated(prompts).
-
-The plugin serves as a bridge between the user's IDE and the AI Server, enabling faster and smarter development. Please note that the plugin is intended for programming purposes only, and users should use it accordingly. 
-For more information, please refer to the Terms of Use defined by OpenAI: [Terms of use](https://openai.com/policies/terms-of-use#:~:text=What%20You%20Cannot,compete%20with%20OpenAI.)
-
-<br />
-
-# 🟢🟢🟢 How to use it in Offline mode 🟢🟢🟢
-
-<details>
-<summary>
-  🟢 Set up an Offline AI server 👈👈👈
-</summary>
-
-In order to use this plug-in with a local host follow these steps:
-
-
-1- Download and Install Ollama : [here](https://ollama.com)
-
-2- Check if the server is running by opening it in your browser: http://localhost:11434
-
-  You should see something like this screenshot:
-
-  ![Screenshot 2024-04-02 094238](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/assets/5601608/72eb4b84-7971-4354-bcc8-dd8c3818d3ad)
-  
-  
-3- Then you need at least one trained model to be attached to your new AI server, there are a lot of models [here](https://ollama.com/library), so choose one (codellama is a good one, I suggest that for now) and install it with this command in command-line: 
-```
-ollama run codellama
-```
-![Screenshot 2024-04-02 094133](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/assets/5601608/d72a4775-c95d-47fa-b3a0-f2ef8ce027b5)
-
-After pulling the model is finished you can ask some questions in CMD right away.
-
-4- Now use this URL instead of the OpenAPI's URL in the setting form of the Plugin in RAD Studio: 
-```
-http://localhost:11434/api/generate
+cpt: Explain what this method does. :cpt
 ```
 
-You don't need an Accesskey, no need to change or even clear it, just leave it.
+Then run the `Ask` action from the editor popup menu or use its shortcut.
 
-5- Tick the checkbox called Ollama(Offline) and add your model name in the text box in front of the checkbox, in my case, I use "codellama" as the model name.
-
-6- Congratulations! you did it, now enjoy forever free AI assistance.
-
-Note: depending on the hardware resources, the model size, and the parameter count of the model you can experience different speeds and performance, **so do not open any issues about the Offline solution's speed or performance**, there is nothing to do about that with the Plug-in itself, Plug-in is just a bridge between AI server and RAD Studio.
-
-Good luck!
-
-</details>
-
-<br />
-
-## Demo videos
-
-<details>
-<summary>
-  🟢 Short1(all features)
-</summary>
-<a href="https://www.youtube.com/watch?v=jHFmmmrk3BU" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
-</details>
-
-
-<details>
-  <summary>
-  🟢 Short2(ChatGPT, Writesonic, and YouChat actions at the same time)
-</summary>
-    <a href="https://youtu.be/tEiKmalzZo8" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
-</details>
-
-<details>  
-<summary>
-  🟢 Long
-</summary>
-<a href="https://www.youtube.com/watch?v=qHqEGfxAhIM" target="_blank"><img src="https://img.youtube.com/vi/qHqEGfxAhIM/0.jpg" /></a>
-</details>
-
-
-
-<br />
-
-## Platforms
-
-This Plugin Supports the following AI Services:
-
-### [ChatGPT](https://chat.openai.com/chat)
-
-[generate API Key here](https://beta.openai.com/account/api-keys)
-
-### [Writesonic](https://writesonic.com)
-
-[generate API Key here](https://docs.writesonic.com/reference/finding-your-api-key)
-
-### [YouChat](https://you.com/code)
-
-[generate API Key here](https://api.you.com)
-
-**NOTE: ChatGPT is working with Rad Studio 10.1 and above but Other(non-ChatGPT) AI Services are enabled in Rad Studio 10.2 and above!**
-
-
-## Remarks
-
-- This plugin is free but some AI Services are not free forever.
-- It's compatible with Delphi 10.1 Berlin and later versions.
-- Uses the XSuperObject library which is included in the project files. you can also find the latest version [here](https://github.com/onryldz/x-superobject/blob/master/XSuperObject.pas)
-- Settings are stored in the registry which can be found here: `Computer\HKEY_CURRENT_USER\Software\ChatGPTWizard`
-
-<br />
-
-
-## How to Install
-1- [Getit package manager](https://getitnow.embarcadero.com/chatgptwizard/)
-
-2- [Delphinus package manager](https://github.com/Memnarch/Delphinus/wiki/Installing-Delphinus) - you can install Delphinus package manager and install ChatGPTWizard there. (Delphinus-Support)
-
-3- Direct installation - Open the project in Delphi, right-click on the project node in the project manager, build, and install.
-
-
-<br />
-
-## How to Use
-
-### **Plug-in's main form**
-
-You can use the ChatGPT menu from the IDE's main menu directly to ask questions and get the answer.
-Click on the newly added ChatGPT menu on the IDE(or press Ctrl+Shidt+Alt+C) to open the wizard, type the question, and press the Ask button(or Ctrl+Enter).
-
-<br />
-
-<div style="display:inline">
-<img width="350" height="500" src="https://user-images.githubusercontent.com/5601608/220568940-7eba2b94-f091-4400-a031-49b35d1f0d5e.png" alt="how-to-use1"/>
-<img width="350" height="500" src="https://user-images.githubusercontent.com/5601608/220568742-8ec94dec-ca44-4331-b245-202d64181fa5.png" alt="how-to-use2"/>
-</div>
-
-<br />
-
-**Two New Tabs has been added to get separate results for Writesonic and YouChat.**
-
-So now you can get multiple different answers based on any question, compare, merge, and get the best quality and accuracy for your code.
-
-<br />
-
-![image](./Resources/writesonic-result-tab.jpg)
-
-<br />
-
-
-### **Settings**
-
-**"Other AI Services"** Tab is responsible for setting up Other AI service's tokens including Writesonic's credentials.
-
-<br />
-
-![image](./Resources/other-ai-services-tab.jpg)
-
-<br />
-
-
-## Inline Questions
-
-If you need to use the ChatGPT inside the editor you need to type a question directly inside the code editor and surround it with `cpt:` at the beginning and `:cpt` at the end of the question then press `Ctrl+Shift+Alt+A` or simply select "Ask" from the editor's context menu by right-clicking on the selected text.
-
-
-**Usage Scenario for Inline Questions**
-
-Open a new `vcl` application project, add a new unit, and remove all the code from it! and type the following line, 
-select all and press `Ctrl+Shift+Alt+A`.
-
-`cpt:Create a full unit in Delphi including a class to create an XML file.:cpt`
-
-
-<br />
-
-## Dockable Form
-
-<br />
-
-<div style="display:inline">
-<img width="350" height="500" src="https://user-images.githubusercontent.com/24512608/232242537-e2d7737b-4044-4ba9-a76e-c466ade7e6d7.png" alt="dockable-form1"/>
-<img width="350" height="500" src="https://user-images.githubusercontent.com/24512608/232242545-5af9612b-27d0-4cf6-b5b2-3d3f187e5fe0.png" alt="dockable-form2"/>
-</div>
-
-<br />
-
-
-Use the **"ChatGPT Dockable"** menu from the main menu to show the dockable form and try to dock the form to the left or right side panel of the IDE, and enjoy with your new Google killer assistant!
-<br />
-
-
-
-<br />
-
-
-## Context Menu
-
-Context Menu for Selected text or a block of code. The Result will be inserted after the selected text as a multi-line comment between two brackets `{}`
-
-**Options**
+2. Select code and use a predefined action from the popup menu:
 
 - Ask
-- Add Test  - Will try to create a unit test for the selected text.
-- Find Bugs - Find fugs in the selected text.
-- Optimize - Will Optimize the selected text.
-- Add Comments - Will add necessary comments to the selected code.
-- Complete code - Will try to add any missing code to the selected code.
-- Explain code - will explain what the selected code does in Delphi.
+- Add Test
+- Find Bugs
+- Optimize
+- Add Comments
+- Complete Code
+- Explain Code
+- Refactor Code
+- Convert to Assembly
 
-<br />
-<br />
+The response is inserted back into the editor as a multiline comment after the selected code.
 
-![image](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/assets/5601608/51bf3bd9-ab79-4a3c-be18-9e3f7b0cdc06)
+### Context Menu
 
-<br />
+For selected text or a code block, FusionAI can insert the result after the selection as a multiline Delphi comment block.
 
-![image_2023-04-25_16-08-40](https://user-images.githubusercontent.com/24512608/236584029-c3982eb3-1824-4146-a611-7c861b034e28.png)
+Available actions include:
 
+- Ask
+- Add Test
+- Find Bugs
+- Optimize
+- Add Comments
+- Complete Code
+- Explain Code
+- Refactor Code
+- Convert to Assembly
 
-<br />
+![Context menu](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/assets/5601608/51bf3bd9-ab79-4a3c-be18-9e3f7b0cdc06)
 
-## Class View
+![Context menu actions](https://user-images.githubusercontent.com/24512608/236584029-c3982eb3-1824-4146-a611-7c861b034e28.png)
 
-Using the class view you have your class list with some functionalities in a popup menu.
-It is also possible to use your custom command based on the selected class in the TreeView, in this case, `@Class` will represent the selected class
-in your custom command, if you don't use `@Class` the selected class' source will be attached to the end of your command, just pay attention there will be 
-some limitations because at the moment it's not possible to send thousands of lines through the API request.
+### Selected Code Without Inline Markers
 
-Please note that it is best to use this feature for small classes. due to API limitations, you cannot send a class with several thousand lines of code in a question.
+If you select code and trigger the first `Ask` action without the `cpt: ... :cpt` format, FusionAI opens the chat window and prepares a draft question for you.
 
-<br />
+### Class View
 
-![image](https://user-images.githubusercontent.com/5601608/220570745-1720a8eb-026f-42b0-b6d3-c578874a3c9c.png)
+The Class View tab lets you work with types parsed from the current Delphi unit.
 
-<br />
+Typical uses:
+
+- explain a type
+- optimize a type
+- add tests for a type
+- run custom prompts against the selected type
+- convert a type to another language
+
+The parser has been improved to better tolerate newer Delphi syntax, but Class View is still best treated as a practical helper rather than a full compiler-grade parser.
+
+![Class View](https://user-images.githubusercontent.com/5601608/220570745-1720a8eb-026f-42b0-b6d3-c578874a3c9c.png)
+
+## Provider Configuration
+
+Each provider has its own configuration tab under `AI Services`.
+
+Depending on the provider, you can configure:
+
+- enable/disable state
+- base URL
+- access key
+- model
+- timeout
+- max tokens
+- temperature
+- top-p
+- top-k
+- API version fields when required by the provider
+
+### ChatGPT
+
+- Uses the OpenAI Chat Completions API
+- Works with current GPT-4 and GPT-5 style models
+
+### Gemini
+
+- Uses the Google Generative Language API
+
+### Claude
+
+- Uses the Anthropic API
+
+### Ollama
+
+- Uses a local or remote Ollama endpoint
+- Suitable for offline or private workflows
+
+### Settings UI
+
+Provider settings are managed from the `AI Services` page.
+<img width="445" height="620" alt="image" src="https://github.com/user-attachments/assets/45e85309-a335-47a5-9318-8f860126930f" />
+<img width="445" height="622" alt="image" src="https://github.com/user-attachments/assets/630ce34d-d626-47ae-a750-44f5a53c5664" />
+
+## Ollama Setup
+
+1. Install Ollama from [ollama.com](https://ollama.com).
+2. Make sure the server is running.
+3. Pull at least one model, for example:
+
+```bash
+ollama run llama3.2
+```
+
+4. In FusionAI settings, enable `Ollama`.
+5. Set the base URL, usually:
+
+```text
+http://localhost:11434
+```
+
+6. Choose or enter the model name.
+
+Legacy setup screenshot:
+
+![Ollama local server](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/assets/5601608/72eb4b84-7971-4354-bcc8-dd8c3818d3ad)
 
 ## History
 
-History is available if you enable it in the setting form, it's using SQLite as a simple file-based database.
-You can find an empty database in `Resource\DB` that named `"History.sdb"`, copy this file to any place in the disk and address it to the folder in the setting.
+FusionAI can store requests and responses in a local SQLite database.
 
-<br />
+History includes provider-aware metadata such as:
 
-![image](https://user-images.githubusercontent.com/5601608/222926278-9978259a-9ac4-4ba7-bfbb-9675b123756c.png)
+- provider
+- model
+- status
+- timestamps
+- duration
 
-<br />
+You can filter the history by provider and model, and use text or fuzzy search to find older conversations.
 
-![image](https://user-images.githubusercontent.com/5601608/222926296-3cdaeb05-bfcd-4e5c-8959-e06ee6945c6f.png)
+![History grid](https://user-images.githubusercontent.com/5601608/222926278-9978259a-9ac4-4ba7-bfbb-9675b123756c.png)
 
-<br />
+![History detail](https://user-images.githubusercontent.com/5601608/222926296-3cdaeb05-bfcd-4e5c-8959-e06ee6945c6f.png)
 
+### Search In History
 
-## Search in History
+History supports text and fuzzy filtering with extra search options.
 
-Right-click on the History grid and check the search item in the search bar that appears, it's not visible by default to save some space, finally, type the keyword
-to search and filter, there are two checkboxes as extra options like case sensitive and fuzzy match string search.
+![History search 1](https://user-images.githubusercontent.com/5601608/223150719-40e9169e-e4ea-4bdd-96b5-94830418c9d4.png)
 
-<br />
+![History search 2](https://user-images.githubusercontent.com/5601608/223151111-d376cc1f-3688-4eae-82ea-dcf57f877046.png)
 
-![image](https://user-images.githubusercontent.com/5601608/223150719-40e9169e-e4ea-4bdd-96b5-94830418c9d4.png)
+![History search 3](https://user-images.githubusercontent.com/5601608/223151270-0355edbe-80db-43da-a5a0-266e1be8d339.png)
 
-<br />
+## Logging
 
-![image](https://user-images.githubusercontent.com/5601608/223151111-d376cc1f-3688-4eae-82ea-dcf57f877046.png)
+FusionAI supports optional file-based logging for troubleshooting.
 
-<br />
+When enabled, logs can include:
 
-![image](https://user-images.githubusercontent.com/5601608/223151270-0355edbe-80db-43da-a5a0-266e1be8d339.png)
+- request URL
+- request JSON
+- response JSON
+- provider status transitions
+- timeout and inline-flow diagnostics
 
-<br />
+API keys are not written to the log file.
 
-## Issues with SSL
+## Notes And Limitations
 
-This issue can be fixed if you put SSL libraries(can find them in the resource folder) alongside the `bds.exe` or in the Bpl folder(mine is `C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl`)
-or you can use a build event on the project's properties to copy these two class libraries if they don't exist.
-Another thing is, You don't have to do that because it will work fine when you open any project in the IDE before using this plugin! I'm not sure that this behavior depends on the installed components or libraries or if the IDE loads SSL libraries at the moment you open even a new application. although using the plugin when you are working on a project seems more useful anyways.
+- Some providers are paid services or have usage limits.
+- Generated content is sent directly to the configured AI provider.
+- You are responsible for reviewing generated code and text before using it.
+- Class View parsing is best-effort and may not perfectly represent every source shape.
+- Very large prompts or very large type bodies may still hit provider-side token limits.
 
-<br />
+## Troubleshooting
 
-## Miscellaneous
+### SSL / HTTP issues
 
-**Presentation: [ChatGPT wizard.pptx](https://github.com/AliDehbansiahkarbon/ChatGPTWizard/files/10612086/CHAtGPT.wizard.pptx)**
+If HTTPS requests fail inside the IDE, make sure the required SSL libraries are available in the environment used by `bds.exe`.
 
-<br />
+### Empty or invalid provider results
 
+Check:
 
-## Contributors
+- provider is enabled
+- base URL is correct
+- access key is valid
+- model is available for that provider
+- timeout is high enough for the selected model
 
-**Special Thanks to**
+### Class View issues
 
-- [Ali Sawari](https://github.com/AliSawari)
-- [limelect](https://github.com/limelect)
+If Class View looks stale after switching units or reopening the assistant:
 
+- switch away from `Class View` and back again
+- reopen the assistant window
+- verify the current unit is the one you expect
 
-<br />
+## Demo Videos
 
-Do not hesitate to star! if you like it take a leap of faith and hit that 'Star' button, also watch the repository to stay tuned with the latest updates, debugs, features, etc.
-All PRs, discussions, and issues are welcome but please read and check the closed issues before opening a new one to avoid duplicates!
+<details>
+<summary>Short 1 (all features)</summary>
+<a href="https://www.youtube.com/watch?v=jHFmmmrk3BU" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
+</details>
 
-**Good luck!**
+<details>
+<summary>Short 2 (multi-provider demo)</summary>
+<a href="https://youtu.be/tEiKmalzZo8" target="_blank"><img src="https://img.youtube.com/vi/vUgHg3ZPvXI/0.jpg" /></a>
+</details>
+
+<details>
+<summary>Long demo</summary>
+<a href="https://www.youtube.com/watch?v=qHqEGfxAhIM" target="_blank"><img src="https://img.youtube.com/vi/qHqEGfxAhIM/0.jpg" /></a>
+</details>
+
+## Legacy Name
+
+This repository still uses the historical GitHub repository name `ChatGPTWizard`, but the current plug-in and package name is **FusionAI**.
+
+## Contributing
+
+Issues, pull requests, and discussions are welcome.
+
+Please include:
+
+- RAD Studio version
+- provider name
+- active model
+- exact steps to reproduce
+- log output if file logging is enabled
+
+## License
+
+MIT. See [LICENSE](./LICENSE).
+
+## Support
+
+If you find the project useful, starring the repository helps a lot.
+
 <hr>
 <p align="center">
 <img src="https://i0.wp.com/blogs.embarcadero.com/wp-content/uploads/2022/11/dlogonew-5582740.png?resize=254%2C242&ssl=1" alt="Delphi">
